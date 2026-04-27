@@ -24,7 +24,11 @@ class MissionCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(mission.logoUrl, width: 40, height: 40, fit: BoxFit.cover),
+                  child: Image.network(
+                    mission.logoUrl,
+                    width: 45, height: 45, fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, color: Colors.white10),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -45,7 +49,14 @@ class MissionCard extends StatelessWidget {
             margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              image: DecorationImage(image: NetworkImage(mission.bannerUrl), fit: BoxFit.cover),
+              image: DecorationImage(image: Image.network(
+                mission.bannerUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.white10,
+                  child: const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
+                ),
+              ),),
             ),
           ),
         ],
