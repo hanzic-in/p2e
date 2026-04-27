@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../models/building_model.dart';
 
 class DashboardProvider extends ChangeNotifier {
   double _balance = 0.0;
