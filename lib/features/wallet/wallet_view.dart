@@ -163,46 +163,63 @@ class _WalletViewState extends State<WalletView> {
 
   // --- WIDGET HELPER ---
   Widget _wdMethod(String label, String url) {
+    Color brandColor;
+    switch (label) {
+      case "DANA": brandColor = const Color(0xFF118EEA); break;
+      case "GOPAY": brandColor = const Color(0xFF00AED6); break;
+      case "OVO": brandColor = const Color(0xFF4C3494); break;
+      default: brandColor = AppColors.primaryGreen;
+    }
+
     return InkWell(
       onTap: () => _showWithdrawPopup(context, label),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.28, 
-        padding: const EdgeInsets.symmetric(vertical: 22),
+        width: MediaQuery.of(context).size.width * 0.28,
+        padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: brandColor.withOpacity(0.3), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
+              color: brandColor.withOpacity(0.1),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             )
           ],
         ),
         child: Column(
           children: [
-            Image.network(
-              url, 
-              height: 28,
-              errorBuilder: (c, e, s) => const Icon(Icons.wallet_outlined, color: Colors.white24),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: brandColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Image.network(
+                url,
+                height: 24,
+                width: 24,
+                errorBuilder: (c, e, s) => Icon(Icons.account_balance_wallet, color: brandColor, size: 20),
+              ),
             ),
             const SizedBox(height: 12),
             Text(
-              label, 
-              style: const TextStyle(
-                color: Colors.white, 
-                fontSize: 11, 
+              label,
+              style: TextStyle(
+                color: brandColor.withOpacity(0.9),
+                fontSize: 10,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 0.5
-              )
+                letterSpacing: 1,
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
 
 
   Widget _buildAdBanner() {
