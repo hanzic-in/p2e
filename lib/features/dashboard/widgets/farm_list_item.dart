@@ -5,8 +5,15 @@ import '../../../core/constants/app_colors.dart';
 class FarmListItem extends StatelessWidget {
   final FarmItem item;
   final VoidCallback onTap;
+  final VoidCallback onUpgrade;
+  final VoidCallback onSell;
 
-  const FarmListItem({required this.item, required this.onTap});
+  const FarmListItem({
+    required this.item, 
+    required this.onTap, 
+    required this.onUpgrade, 
+    required this.onSell
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,64 +25,78 @@ class FarmListItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _getBorderColor()),
       ),
-      child: Row(
+      child: Column(
         children: [
-      
-          Container(
-            height: 60, width: 60,
-            child: item.status == ProductionStatus.locked 
-              ? const Icon(Icons.lock, color: Colors.white24)
-              : Image.asset(item.assetPath, errorBuilder: (c, e, s) => const Icon(Icons.broken_image, color: Colors.white10)),
+          Row(
+            children: [
+              SizedBox(
+                height: 50, width: 50,
+                child: item.status == ProductionStatus.locked 
+                  ? const Icon(Icons.lock, color: Colors.white24)
+                  : Image.asset(item.assetPath, errorBuilder: (c, e, s) => const Icon(Icons.grass, color: Colors.white10)),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${item.name} (Lv.${item.level})", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(item.status == ProductionStatus.producing 
+                      ? "Proses: ${item.remainingSeconds}s" 
+                      : "Gudang: ${item.stock} item", 
+                      style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: item.status == ProductionStatus.locked ? null : onTap,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _getBtnColor(),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: Text(_getBtnText()),
+              ),
+            ],
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (item.status != ProductionStatus.locked) ...[
+            const Divider(color: Colors.white10, height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(item.status == ProductionStatus.producing 
-                  ? "Sisa waktu: ${item.remainingSeconds}s" 
-                  : "Hasil: ${item.incomeBCoin} B-Coin", 
-                  style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                _actionIcon(Icons.upgrade, "UPGRADE (${item.upgradePrice.toInt()})", Colors.amber, onUpgrade),
+                _actionIcon(Icons.sell, "JUAL", Colors.blueAccent, onSell),
               ],
-            ),
-          ),
-  
-          ElevatedButton(
-            onPressed: item.status == ProductionStatus.locked ? null : onTap,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getBtnColor(),
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(_getBtnText()),
-          ),
+            )
+          ]
         ],
       ),
     );
   }
 
-  Color _getBorderColor() {
-    if (item.status == ProductionStatus.ready) return AppColors.primaryGreen;
-    if (item.status == ProductionStatus.producing) return Colors.amber;
-    return Colors.white10;
+  Widget _actionIcon(IconData icon, String label, Color color, VoidCallback action) {
+    return InkWell(
+      onTap: action,
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 5),
+          Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
   }
 
+  Color _getBorderColor() => item.status == ProductionStatus.ready ? AppColors.primaryGreen : Colors.white10;
   Color _getBtnColor() {
-    switch (item.status) {
-      case ProductionStatus.idle: return AppColors.primaryGreen;
-      case ProductionStatus.ready: return Colors.amber;
-      case ProductionStatus.producing: return Colors.white24;
-      default: return Colors.grey;
-    }
+    if (item.status == ProductionStatus.idle) return AppColors.primaryGreen;
+    if (item.status == ProductionStatus.ready) return Colors.amber;
+    return Colors.white24;
   }
-
   String _getBtnText() {
-    switch (item.status) {
-      case ProductionStatus.idle: return "PRODUKSI";
-      case ProductionStatus.ready: return "KLAIM";
-      case ProductionStatus.producing: return "PROSES...";
-      default: return "LOCKED";
-    }
+    if (item.status == ProductionStatus.idle) return "PANEN";
+    if (item.status == ProductionStatus.ready) return "KLAIM";
+    if (item.status == ProductionStatus.producing) return "${item.remainingSeconds}s";
+    return "LOCKED";
   }
 }
