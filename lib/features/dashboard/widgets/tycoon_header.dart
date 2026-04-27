@@ -3,10 +3,15 @@ import '../../../core/constants/app_colors.dart';
 
 class TycoonHeader extends StatelessWidget {
   final double bCoin;
-  final double key;
+  final double keyCoin;
   final double special;
 
-  const TycoonHeader({required this.bCoin, required this.key, required this.special});
+  const TycoonHeader({
+    super.key,
+    required this.bCoin, 
+    required this.keyCoin, 
+    required this.special
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +26,7 @@ class TycoonHeader extends StatelessWidget {
         children: [
           _buildCoinInfo("SPECIAL", special.toStringAsFixed(4), AppColors.primaryGreen),
           _buildCoinInfo("B-COIN", bCoin.toStringAsFixed(1), Colors.amber),
-          _buildCoinInfo("KEY", key.toStringAsFixed(1), Colors.blueGrey),
+          _buildCoinInfo("KEY", keyCoin.toStringAsFixed(1), Colors.blueGrey), // Pake keyCoin
         ],
       ),
     );
