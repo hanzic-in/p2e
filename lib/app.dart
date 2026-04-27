@@ -23,8 +23,8 @@ class _MainNavigationState extends State<MainNavigation> {
   // Daftar halaman
   final List<Widget> _pages = [
     DashboardView(),
-    PlaceholderPage("INDUSTRIAL MISSION"), // Halaman Misi nanti
-    PlaceholderPage("CITY WALLET"),      // Halaman WD nanti
+    PlaceholderPage("INDUSTRIAL MISSION"),
+    PlaceholderPage("CITY WALLET"), 
   ];
 
   @override
