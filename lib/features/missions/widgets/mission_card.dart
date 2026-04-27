@@ -50,13 +50,13 @@ class MissionCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               image: DecorationImage(image: NetworkImage(
-                mission.bannerUrl,
+                mission.bannerUrl),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.white10,
                   child: const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
                 ),
-              ),),
+              ),
             ),
           ),
         ],
