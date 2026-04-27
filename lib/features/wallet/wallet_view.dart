@@ -215,7 +215,7 @@ class _WalletViewState extends State<WalletView> {
 
   Widget _wdMethod(String label, String url) {
     return InkWell(
-      onTap: () {},
+      onTap: () => _showWithdrawPopup(context, label),
       child: Container(
         width: 100,
         padding: const EdgeInsets.symmetric(vertical: 18),
