@@ -1,8 +1,52 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-class WalletView extends StatelessWidget {
+class WalletView extends StatefulWidget {
   const WalletView({super.key});
+
+  @override
+  State<WalletView> createState() => _WalletViewState();
+}
+
+class _WalletViewState extends State<WalletView> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+
+  // Dummy
+  final List<String> _bannerAds = [
+    "https://images.unsplash.com/photo-1611974714112-9e90098f98b9?q=80&w=800",
+    "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: 0);
+    // Logic Auto-Slide
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+      if (_currentPage < _bannerAds.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.fastOutSlowIn,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,33 +58,20 @@ class WalletView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. HEADER LOGO & NAMA
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Icon(Icons.account_balance_wallet_rounded, 
-                         color: AppColors.primaryGreen, size: 48),
-                    const SizedBox(height: 10),
-                    const Text("CITY WALLET", 
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2)),
-                    const Text("Aset & Penarikan Saldo", 
-                      style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
+              // 1. HEADER
+              _buildHeader(),
               
               const SizedBox(height: 30),
 
-              // 2. KARTU SALDO UTAMA
+              // 2. KARTU SALDO
               _buildMainBalanceCard(),
 
               const SizedBox(height: 30),
               const Text("PILIH METODE PENARIKAN", 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1)),
               const SizedBox(height: 15),
 
-              // 3. OPSI PENARIKAN (DANA, GOPAY, OVO)
+              // 3. OPSI PENARIKAN
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -53,40 +84,77 @@ class WalletView extends StatelessWidget {
               const SizedBox(height: 30),
               
               // 4. TOMBOL TARIK SALDO
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 0,
-                  ),
-                  child: const Text("TARIK SALDO SEKARANG", 
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
-                ),
-              ),
+              _buildWdButton(),
 
               const SizedBox(height: 10),
-              const Center(
-                child: Text("Minimum penarikan: 50.000 B-Coins", 
-                  style: TextStyle(color: Colors.white24, fontSize: 10)),
-              ),
+              const Center(child: Text("Minimum penarikan: 50.000 B-Coins", style: TextStyle(color: Colors.white24, fontSize: 10))),
 
+              // --- 5. BANNER ADS AUTO-SLIDE ---
               const SizedBox(height: 30),
-              const Text("RIWAYAT TERAKHIR", 
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              _buildAdBanner(),
+
+              const SizedBox(height: 20),
+              const Text("RIWAYAT TERAKHIR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
               const SizedBox(height: 15),
 
-              // 5. LIST RIWAYAT (DUMMY)
+              // 6. LIST RIWAYAT
               _historyItem("Klaim Gandum #12", "+1.5", "Barusan", true),
               _historyItem("Misi AstraPay", "+5.000", "Kemarin", true),
               const SizedBox(height: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // Widget Banner Ads dengan PageView
+  Widget _buildAdBanner() {
+    return SizedBox(
+      height: 130,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: _bannerAds.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg,
+              borderRadius: BorderRadius.circular(20),
+              image: DecorationImage(
+                image: NetworkImage(_bannerAds[index]),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.darken),
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 10, left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)),
+                    child: const Text("AD", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Center(
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          Icon(Icons.account_balance_wallet_rounded, color: AppColors.primaryGreen, size: 48),
+          const SizedBox(height: 10),
+          const Text("CITY WALLET", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2)),
+          const Text("Aset & Penarikan Saldo", style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
@@ -99,21 +167,13 @@ class WalletView extends StatelessWidget {
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10))
-        ]
       ),
       child: Column(
         children: [
-          const Text("SALDO B-COIN", 
-            style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+          const Text("SALDO B-COIN", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
           const SizedBox(height: 8),
-          const Text("1.250,5", 
-            style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900)),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0),
-            child: Divider(color: Colors.white10),
-          ),
+          const Text("1.250,5", style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900)),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 20.0), child: Divider(color: Colors.white10)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -122,6 +182,23 @@ class WalletView extends StatelessWidget {
             ],
           )
         ],
+      ),
+    );
+  }
+
+  Widget _buildWdButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryGreen,
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 0,
+        ),
+        child: const Text("TARIK SALDO SEKARANG", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
       ),
     );
   }
