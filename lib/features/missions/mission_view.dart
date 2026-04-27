@@ -18,8 +18,8 @@ class MissionView extends StatelessWidget {
                 child: ListView(
                   children: [
                     _missionItem("Tugas Pemula", "Install AstraPay & Register", "5.000", Icons.star),
-                    _missionItem("Member Elite", "Mainkan Game Top War (Lv.10)", "25.000", Icons.EmojiEvents),
-                    _missionItem("Survey Harian", "Isi Survey Cepat 2 Menit", "1.500", Icons.Description),
+                    _missionItem("Member Elite", "Mainkan Game Top War (Lv.10)", "25.000", Icons.emoji_events), // SUDAH FIX
+                    _missionItem("Survey Harian", "Isi Survey Cepat 2 Menit", "1.500", Icons.description), // SUDAH FIX
                   ],
                 ),
               ),
