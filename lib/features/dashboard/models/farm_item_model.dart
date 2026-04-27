@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
 
+enum ProductionStatus { locked, idle, producing, ready }
+
 class FarmItem {
+  final int id;
   final String name;
-  final String productionLabel;
-  final double incomePerCycle;
+  final String assetPath;
   final int cycleDuration;
-  final bool isLocked;
-  final double unlockPrice;
-  final IconData icon;
+  final double incomeBCoin;
+  final double incomeKey;
+
+  ProductionStatus status;
+  int remainingSeconds;
 
   FarmItem({
+    required this.id,
     required this.name,
-    required this.productionLabel,
-    required this.incomePerCycle,
+    required this.assetPath,
     required this.cycleDuration,
-    this.isLocked = true,
-    this.unlockPrice = 0,
-    required this.icon,
+    required this.incomeBCoin,
+    required this.incomeKey,
+    this.status = ProductionStatus.locked,
+    this.remainingSeconds = 0,
   });
 }
 
-List<FarmItem> initialFarmData = [
-  FarmItem(name: "Gandum", productionLabel: "2 / 9s", incomePerCycle: 2, cycleDuration: 9, isLocked: false, icon: Icons.grass),
-  FarmItem(name: "Kentang", productionLabel: "5 / 15s", incomePerCycle: 5, cycleDuration: 15, unlockPrice: 1500, icon: Icons.fiber_manual_record),
-  FarmItem(name: "Wortel", productionLabel: "10 / 30s", incomePerCycle: 10, cycleDuration: 30, unlockPrice: 3000, icon: Icons.commit),
+List<FarmItem> initialFarms = [
+  FarmItem(id: 1, name: "Gandum", assetPath: "assets/wheat.png", cycleDuration: 9, incomeBCoin: 2, incomeKey: 0.1, status: ProductionStatus.idle),
+  FarmItem(id: 2, name: "Kentang", assetPath: "assets/potato.png", cycleDuration: 15, incomeBCoin: 5, incomeKey: 0.2, status: ProductionStatus.locked),
 ];
