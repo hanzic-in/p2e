@@ -49,7 +49,7 @@ class MissionCard extends StatelessWidget {
             margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              image: DecorationImage(image: Image.network(
+              image: DecorationImage(image: NetworkImage(
                 mission.bannerUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
