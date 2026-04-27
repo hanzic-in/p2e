@@ -31,8 +31,18 @@ class DashboardView extends StatelessWidget {
                 style: TextStyle(color: AppColors.textGray, fontSize: 14)),
               SizedBox(height: 15),
 
-              // Tempat Grid Kota
-              Expanded(child: CityGrid()),
+              // Tempat Grid
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 10),
+                  children: [
+                    const FarmListItem(name: "Gandum", production: "2 koin / 9s", progress: 0.6),
+                    const FarmListItem(name: "Kentang", production: "5 koin / 15s", isLocked: true, lockPrice: "1.5K"),
+                    const FarmListItem(name: "Wortel", production: "10 koin / 30s", isLocked: true, lockPrice: "3K"),
+                  ],
+                ),
+              ),
+
 
               // Tombol Bensin (Iklan Video)
               Padding(
