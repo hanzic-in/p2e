@@ -41,43 +41,102 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  void _showSellDialog(BuildContext context, int index, DashboardProvider prov) {
-    int amountToSell = 1;
-    var farm = prov.myFarms[index];
-    if (farm.stock == 0) return;
+void _showSellDialog(BuildContext context, int index, DashboardProvider prov) {
+  int amountToSell = 1;
+  var farm = prov.myFarms[index];
+  if (farm.stock == 0) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.cardBg,
-          title: Text("Jual ${farm.name}", style: const TextStyle(color: Colors.white)),
-          content: Column(
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.5), width: 2),
+          ),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Jumlah: $amountToSell / ${farm.stock}", style: const TextStyle(color: Colors.white70)),
-              Slider(
-                value: amountToSell.toDouble(),
-                min: 1,
-                max: farm.stock.toDouble(),
-                activeColor: AppColors.primaryGreen,
-                onChanged: (val) => setDialogState(() => amountToSell = val.toInt()),
+              const Icon(Icons.shopping_cart_checkout, color: AppColors.primaryGreen, size: 50),
+              const SizedBox(height: 16),
+              Text(
+                "PASAR ${farm.name.toUpperCase()}",
+                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 2),
               ),
-              Text("Hasil: ${amountToSell * 10} B-Coin", style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text("Stok tersedia: ${farm.stock} unit", style: const TextStyle(color: Colors.white54)),
+              const SizedBox(height: 30),
+            
+              Text(
+                "$amountToSell",
+                style: const TextStyle(color: AppColors.primaryGreen, fontSize: 48, fontWeight: FontWeight.bold),
+              ),
+              
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.primaryGreen,
+                  thumbColor: AppColors.primaryGreen,
+                  overlayColor: AppColors.primaryGreen.withOpacity(0.2),
+                  valueIndicatorColor: AppColors.primaryGreen,
+                ),
+                child: Slider(
+                  value: amountToSell.toDouble(),
+                  min: 1,
+                  max: farm.stock.toDouble(),
+                  onChanged: (val) => setDialogState(() => amountToSell = val.toInt()),
+                ),
+              ),
+              
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(15)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("ESTIMASI PENDAPATAN", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text("${amountToSell * 10} B-COIN", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("BATAL", style: TextStyle(color: Colors.white38)),
+                    ),
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      onPressed: () {
+                        prov.sellStock(index, amountToSell);
+                        Navigator.pop(context);
+                      },
+                      child: const Text("KONFIRMASI JUAL", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("BATAL")),
-            ElevatedButton(
-              onPressed: () {
-                prov.sellStock(index, amountToSell);
-                Navigator.pop(context);
-              },
-              child: const Text("JUAL"),
-            ),
-          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
