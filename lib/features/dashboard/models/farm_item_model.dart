@@ -28,7 +28,6 @@ class FarmItem {
     this.remainingSeconds = 0,
   });
 
-  // Leveling Logic
   double get currentIncome => baseIncome * level;
   double get upgradePrice => 100.0 * level;
 }
