@@ -11,38 +11,27 @@ class BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primaryNeon.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
       ),
       child: Column(
         children: [
+          Text("TOTAL EARNINGS", style: TextStyle(color: AppColors.textGray, fontSize: 10, letterSpacing: 1.5)),
+          SizedBox(height: 8),
           Text(
-            "TOTAL MINING REWARD",
-            style: TextStyle(color: AppColors.textGray, fontSize: 12, letterSpacing: 2),
-          ),
-          SizedBox(height: 10),
-          Text(
-            balance.toStringAsFixed(4),
+            balance.toStringAsFixed(2),
             style: GoogleFonts.orbitron(
-              color: AppColors.goldAccent,
+              color: AppColors.primaryGreen,
               fontSize: 32,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bolt, color: AppColors.primaryNeon, size: 16),
-              Text(
-                "Rate: ${hashrate.toStringAsFixed(4)} / sec",
-                style: TextStyle(color: AppColors.primaryNeon, fontSize: 14),
-              ),
-            ],
-          ),
+          SizedBox(height: 5),
+          Text("B-Coins", style: TextStyle(color: AppColors.primaryGreen.withOpacity(0.6), fontSize: 12)),
         ],
       ),
     );
