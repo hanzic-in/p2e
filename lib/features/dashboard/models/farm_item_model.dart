@@ -1,20 +1,27 @@
-class Building {
-  final String name;
-  final String assetPath;
-  final double addedHashrate;
-  final int adRequired;
+import 'package:flutter/material.dart';
 
-  Building({
+class FarmItem {
+  final String name;
+  final String productionLabel;
+  final double incomePerCycle;
+  final int cycleDuration;
+  final bool isLocked;
+  final double unlockPrice;
+  final IconData icon;
+
+  FarmItem({
     required this.name,
-    required this.assetPath,
-    required this.addedHashrate,
-    required this.adRequired,
+    required this.productionLabel,
+    required this.incomePerCycle,
+    required this.cycleDuration,
+    this.isLocked = true,
+    this.unlockPrice = 0,
+    required this.icon,
   });
 }
 
-// Daftar gedung awal
-List<Building> buildingList = [
-  Building(name: "Small Solar Panel", assetPath: "assets/solar.png", addedHashrate: 0.0005, adRequired: 3),
-  Building(name: "Wind Turbine", assetPath: "assets/wind.png", addedHashrate: 0.0015, adRequired: 7),
-  Building(name: "Data Center", assetPath: "assets/server.png", addedHashrate: 0.0050, adRequired: 15),
+List<FarmItem> initialFarmData = [
+  FarmItem(name: "Gandum", productionLabel: "2 / 9s", incomePerCycle: 2, cycleDuration: 9, isLocked: false, icon: Icons.grass),
+  FarmItem(name: "Kentang", productionLabel: "5 / 15s", incomePerCycle: 5, cycleDuration: 15, unlockPrice: 1500, icon: Icons.fiber_manual_record),
+  FarmItem(name: "Wortel", productionLabel: "10 / 30s", incomePerCycle: 10, cycleDuration: 30, unlockPrice: 3000, icon: Icons.commit),
 ];
