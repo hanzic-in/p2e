@@ -167,19 +167,45 @@ class _WalletViewState extends State<WalletView> {
   Widget _wdMethod(String label, String url) {
     return InkWell(
       onTap: () => _showWithdrawPopup(context, label),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        width: 100, padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.white.withOpacity(0.05))),
+        width: MediaQuery.of(context).size.width * 0.28, 
+        padding: const EdgeInsets.symmetric(vertical: 22),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
         child: Column(
           children: [
-            Image.network(url, height: 22, errorBuilder: (c, e, s) => const Icon(Icons.payment, color: Colors.white10)),
-            const SizedBox(height: 10),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+            Image.network(
+              url, 
+              height: 28,
+              errorBuilder: (c, e, s) => const Icon(Icons.wallet_outlined, color: Colors.white24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label, 
+              style: const TextStyle(
+                color: Colors.white, 
+                fontSize: 11, 
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5
+              )
+            ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildAdBanner() {
     return SizedBox(
@@ -211,10 +237,6 @@ class _WalletViewState extends State<WalletView> {
       decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.05))),
       child: Column(children: [const Text("SALDO B-COIN", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)), const SizedBox(height: 8), const Text("1.250,5", style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900)), const Padding(padding: EdgeInsets.symmetric(vertical: 20.0), child: Divider(color: Colors.white10)), Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [_subBalance("SPECIAL", "0.0042", AppColors.primaryGreen), _subBalance("KEY", "12.0", Colors.amber)])]),
     );
-  }
-
-  Widget _buildWdButton() {
-    return SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () => _showWithdrawPopup(context, "WALLET"), style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0), child: const Text("TARIK SALDO SEKARANG", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1))));
   }
 
   Widget _subBalance(String label, String value, Color color) {
