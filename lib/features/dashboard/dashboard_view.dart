@@ -17,7 +17,7 @@ class DashboardView extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            TycoonHeader(bCoin: prov.bCoin, key: prov.key, special: prov.special),
+            TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special,),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),
