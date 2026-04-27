@@ -26,7 +26,7 @@ class TycoonHeader extends StatelessWidget {
         children: [
           _buildCoinInfo("SPECIAL", special.toStringAsFixed(4), AppColors.primaryGreen),
           _buildCoinInfo("B-COIN", bCoin.toStringAsFixed(1), Colors.amber),
-          _buildCoinInfo("KEY", keyCoin.toStringAsFixed(1), Colors.blueGrey), // Pake keyCoin
+          _buildCoinInfo("KEY", keyCoin.toStringAsFixed(1), Colors.blueGrey),
         ],
       ),
     );
