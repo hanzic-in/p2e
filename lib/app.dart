@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
 import 'features/dashboard/dashboard_view.dart';
+import 'features/missions/mission_view.dart';
+import 'features/wallet/wallet_view.dart';
 import 'core/constants/app_colors.dart';
-
-class PlaceholderPage extends StatelessWidget {
-  final String title;
-  const PlaceholderPage(this.title);
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.darkBg,
-    body: Center(child: Text(title, style: TextStyle(color: Colors.white))),
-  );
-}
 
 class MainNavigation extends StatefulWidget {
   @override
@@ -20,11 +12,10 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  // Daftar halaman
   final List<Widget> _pages = [
     DashboardView(),
-    PlaceholderPage("INDUSTRIAL MISSION"),
-    PlaceholderPage("CITY WALLET"), 
+    MissionView(),
+    WalletView(),
   ];
 
   @override
@@ -35,13 +26,13 @@ class _MainNavigationState extends State<MainNavigation> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         backgroundColor: AppColors.cardBg,
-        selectedItemColor: AppColors.primaryNeon,
+        selectedItemColor: AppColors.primaryGreen,
         unselectedItemColor: AppColors.textGray,
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.location_city), label: "City"),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: "Mission"),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet), label: "Wallet"),
+          BottomNavigationBarItem(icon: Icon(Icons.agriculture), label: "Farm"),
+          BottomNavigationBarItem(icon: Icon(Icons.paid), label: "Dapatkan"),
+          BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Dompet"),
         ],
       ),
     );
