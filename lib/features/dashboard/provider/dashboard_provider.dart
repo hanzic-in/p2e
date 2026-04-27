@@ -1,37 +1,42 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/building_model.dart';
+import '../models/farm_item_model.dart';
 
 class DashboardProvider extends ChangeNotifier {
   double _balance = 0.0;
-  double _hashrate = 0.001;
+  List<FarmItem> _myFarms = initialFarmData;
 
   double get balance => _balance;
-  double get hashrate => _hashrate;
+  List<FarmItem> get myFarms => _myFarms;
 
   DashboardProvider() {
-    _startMining();
+    _startFarmProduction();
   }
 
-  void _startMining() {
-    Timer.periodic(Duration(seconds: 1), (timer) {
-      _balance += _hashrate;
+  void _startFarmProduction() {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      for (var farm in _myFarms) {
+        if (!farm.isLocked) {
+          _balance += (farm.incomePerCycle / farm.cycleDuration);
+        }
+      }
       notifyListeners();
     });
   }
 
-  void upgradeHashrate(double value) {
-    _hashrate += value;
-    notifyListeners();
-  }
-  
-  List<Building?> _slots = List.generate(9, (index) => null);
-
-  List<Building?> get slots => _slots;
-
-  void buildStructure(int index, Building building) {
-    _slots[index] = building;
-    _hashrate += building.addedHashrate;
-    notifyListeners();
+  void unlockFarm(int index) {
+    if (_balance >= _myFarms[index].unlockPrice) {
+      _balance -= _myFarms[index].unlockPrice;
+      var item = _myFarms[index];
+      _myFarms[index] = FarmItem(
+        name: item.name,
+        productionLabel: item.productionLabel,
+        incomePerCycle: item.incomePerCycle,
+        cycleDuration: item.cycleDuration,
+        isLocked: false,
+        icon: item.icon,
+      );
+      notifyListeners();
+    }
   }
 }
