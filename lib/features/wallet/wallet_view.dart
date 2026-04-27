@@ -214,7 +214,7 @@ class _WalletViewState extends State<WalletView> {
   }
 
   Widget _buildWdButton() {
-    return SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0), child: const Text("TARIK SALDO SEKARANG", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1))));
+    return SizedBox(width: double.infinity, height: 55, child: ElevatedButton(onPressed: () => _showWithdrawPopup(context, "WALLET"), style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryGreen, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 0), child: const Text("TARIK SALDO SEKARANG", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1))));
   }
 
   Widget _subBalance(String label, String value, Color color) {
