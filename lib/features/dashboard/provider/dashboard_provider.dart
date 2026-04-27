@@ -18,7 +18,6 @@ class DashboardProvider extends ChangeNotifier {
   void startProduction(int index) {
     var farm = _myFarms[index];
     if (farm.status != ProductionStatus.idle) return;
-
     farm.status = ProductionStatus.producing;
     farm.remainingSeconds = farm.cycleDuration;
     notifyListeners();
@@ -38,18 +37,28 @@ class DashboardProvider extends ChangeNotifier {
   void claimResult(int index) {
     var farm = _myFarms[index];
     if (farm.status != ProductionStatus.ready) return;
-
-    _balanceBCoin += farm.incomeBCoin;
-    _balanceKeyCoin += farm.incomeKey;
+    
+    farm.stock += farm.currentIncome.toInt();
+    _balanceKeyCoin += farm.baseIncomeKey;
     farm.status = ProductionStatus.idle;
     notifyListeners();
   }
 
-  @override
-  void dispose() {
-    for (var timer in _timers.values) {
-      timer?.cancel();
+  void upgradeFarm(int index) {
+    var farm = _myFarms[index];
+    if (_balanceBCoin >= farm.upgradePrice) {
+      _balanceBCoin -= farm.upgradePrice;
+      farm.level++;
+      notifyListeners();
     }
-    super.dispose();
+  }
+
+  void sellStock(int index, int amount) {
+    var farm = _myFarms[index];
+    if (farm.stock >= amount) {
+      farm.stock -= amount;
+      _balanceBCoin += (amount * 10);
+      notifyListeners();
+    }
   }
 }
