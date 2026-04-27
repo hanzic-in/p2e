@@ -8,6 +8,8 @@ class FarmListItem extends StatelessWidget {
   final double progress;
   final bool isLocked;
   final String? lockPrice;
+  final IconData icon;
+  final VoidCallback onUnlock;
 
   const FarmListItem({
     required this.name,
@@ -15,6 +17,8 @@ class FarmListItem extends StatelessWidget {
     this.progress = 0.0,
     this.isLocked = false,
     this.lockPrice,
+    required this.icon,
+    required this.onUnlock,
   });
 
   @override
@@ -25,51 +29,46 @@ class FarmListItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isLocked ? Colors.white10 : Colors.white24),
+        border: Border.all(color: isLocked ? Colors.white10 : AppColors.primaryGreen.withOpacity(0.3)),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              // Icon Tanaman/Hewan
               Container(
-                height: 60, width: 60,
-                decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(15)),
-                child: Icon(isLocked ? Icons.lock : Icons.grass, color: isLocked ? Colors.grey : Colors.lime),
+                height: 50, width: 50,
+                decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(12)),
+                child: Icon(isLocked ? Icons.lock : icon, color: isLocked ? Colors.grey : AppColors.primaryGreen),
               ),
               const SizedBox(width: 15),
-              // Info Produksi
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                    const SizedBox(height: 5),
-                    Text("PRODUKSI: $production", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                    Text("PRODUKSI: $production", style: const TextStyle(color: Colors.grey, fontSize: 11)),
                   ],
                 ),
               ),
-              // Tombol Aksi
-              isLocked 
-                ? ElevatedButton(
-                    onPressed: () {}, 
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-                    child: Text("Buka $lockPrice"),
-                  )
-                : const Icon(Icons.pets, color: Colors.white24),
+              if (isLocked)
+                ElevatedButton(
+                  onPressed: onUnlock,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  child: Text(lockPrice ?? "Buka"),
+                ),
             ],
           ),
-          const SizedBox(height: 15),
-          // Progress Bar (Loading Produksi)
-          if (!isLocked)
+          if (!isLocked) ...[
+            const SizedBox(height: 12),
             LinearPercentIndicator(
-              lineHeight: 8.0,
+              lineHeight: 6.0,
               percent: progress,
               barRadius: const Radius.circular(10),
-              progressColor: Colors.limeAccent,
+              progressColor: AppColors.primaryGreen,
               backgroundColor: Colors.white10,
               padding: EdgeInsets.zero,
             ),
+          ]
         ],
       ),
     );
