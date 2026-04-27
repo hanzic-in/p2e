@@ -30,6 +30,6 @@ class Mission {
     required this.logoUrl,
     required this.bannerUrl,
     required this.totalReward,
-    required this.steps,
+    this.steps = const [],
   });
 }
