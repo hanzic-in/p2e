@@ -145,8 +145,6 @@ class _WalletViewState extends State<WalletView> {
                 ],
               ),
               const SizedBox(height: 30),
-              _buildWdButton(),
-              const SizedBox(height: 10),
               const Center(child: Text("Minimum penarikan: 50.000 B-Coins", style: TextStyle(color: Colors.white24, fontSize: 10))),
               const SizedBox(height: 30),
               _buildAdBanner(),
