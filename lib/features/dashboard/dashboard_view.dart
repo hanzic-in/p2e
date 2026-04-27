@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import './provider/dashboard_provider.dart';
 import './widgets/tycoon_header.dart';
 import './widgets/farm_list_item.dart';
+import './models/farm_item_model.dart';
 import '../../core/constants/app_colors.dart';
+
 
 class DashboardView extends StatelessWidget {
   @override
