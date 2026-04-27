@@ -4,13 +4,14 @@ import '../models/farm_item_model.dart';
 
 class DashboardProvider extends ChangeNotifier {
   double _balanceBCoin = 0.0;
-  double _balanceKey = 0.0;
+  double _balanceKeyCoin = 0.0;
   double _balanceSpecial = 0.0;
+  
   List<FarmItem> _myFarms = initialFarms;
   final Map<int, Timer?> _timers = {};
 
   double get bCoin => _balanceBCoin;
-  double get key => _balanceKey;
+  double get keyCoin => _balanceKeyCoin;
   double get special => _balanceSpecial;
   List<FarmItem> get myFarms => _myFarms;
 
@@ -39,7 +40,7 @@ class DashboardProvider extends ChangeNotifier {
     if (farm.status != ProductionStatus.ready) return;
 
     _balanceBCoin += farm.incomeBCoin;
-    _balanceKey += farm.incomeKey;
+    _balanceKeyCoin += farm.incomeKey;
     farm.status = ProductionStatus.idle;
     notifyListeners();
   }
