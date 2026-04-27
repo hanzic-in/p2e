@@ -6,18 +6,25 @@ import '../../core/constants/app_colors.dart';
 class MissionView extends StatelessWidget {
   final List<Mission> missions = [
     Mission(
-      title: "Solusiku",
-      logoUrl: "https://via.placeholder.com/100",
-      bannerUrl: "https://via.placeholder.com/400x200/2ecc71/ffffff?text=KHUSUS+PENGGUNA+BARU",
-      reward: 161,
+      title: "GOPAY",
+      logoUrl: "https://cdn-icons-png.flaticon.com/512/10061/10061836.png",
+      bannerUrl: "https://images.unsplash.com/photo-1611974714112-9e90098f98b9?q=80&w=800&auto=format&fit=crop",
+      reward: 5000,
     ),
     Mission(
-      title: "Adapundi",
-      logoUrl: "https://via.placeholder.com/100",
-      bannerUrl: "https://via.placeholder.com/400x200/3498db/ffffff?text=PINJAMAN+CEPAT",
-      reward: 150,
+      title: "TOKOPEDIA",
+      logoUrl: "https://cdn-icons-png.flaticon.com/512/825/825590.png",
+      bannerUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop",
+      reward: 3500,
+    ),
+    Mission(
+      title: "MOBILE LEGENDS",
+      logoUrl: "https://cdn-icons-png.flaticon.com/512/8002/8002150.png",
+      bannerUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop",
+      reward: 12000,
     ),
   ];
+
 
   @override
   Widget build(BuildContext context) {
