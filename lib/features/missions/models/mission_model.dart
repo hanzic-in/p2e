@@ -7,11 +7,11 @@ class MissionStep {
   final String? exampleImageUrl;
 
   MissionStep({
-    required this.order,
-    required this.title,
-    required this.description,
-    required this.reward,
-    required this.type,
+    this.order = 1,
+    this.title = "", 
+    this.description = "", 
+    this.reward = 0, 
+    this.type = "info",
     this.exampleImageUrl,
   });
 }
@@ -25,7 +25,7 @@ class Mission {
   final List<MissionStep> steps;
 
   Mission({
-    required this.id,
+    this.id = "0",
     required this.title,
     required this.logoUrl,
     required this.bannerUrl,
