@@ -160,7 +160,7 @@ class FarmListItem extends StatelessWidget {
           if (showSaran) 
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              margin: const EdgeInsets.bottom(8),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.amber.withOpacity(0.5)),
                 borderRadius: BorderRadius.circular(4),
@@ -176,6 +176,7 @@ class FarmListItem extends StatelessWidget {
               ),
             ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, color: color, size: 18),
               const SizedBox(width: 8),
