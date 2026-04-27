@@ -216,6 +216,112 @@ class _WalletViewState extends State<WalletView> {
   Widget _wdMethod(String label, String url) {
     return InkWell(
       onTap: () => _showWithdrawPopup(context, label),
+      void _showWithdrawPopup(BuildContext context, String provider) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true, // Biar nggak kepotong keyboard
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom, // Geser ke atas kalau keyboard muncul
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(25.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Popup
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("TARIK KE $provider", 
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white24),
+                )
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // Input Nomor HP
+            const Text("NOMOR AKUN", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                hintText: "Contoh: 08123456789",
+                hintStyle: const TextStyle(color: Colors.white10),
+                filled: true,
+                fillColor: Colors.black26,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                prefixIcon: const Icon(Icons.phone_android, color: Colors.white24),
+              ),
+            ),
+            
+            const SizedBox(height: 25),
+            
+            // Pilihan Nominal
+            const Text("PILIH NOMINAL", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 15),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _nominalChip("10.000"),
+                _nominalChip("25.000"),
+                _nominalChip("50.000"),
+                _nominalChip("100.000"),
+              ],
+            ),
+
+            const SizedBox(height: 30),
+            
+            // Tombol Submit
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Permintaan penarikan sedang diproses!")),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: const Text("KONFIRMASI PENARIKAN", 
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// Widget buat chip nominal
+Widget _nominalChip(String amount) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.white10),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(amount, 
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+  );
+}
+
       child: Container(
         width: 100,
         padding: const EdgeInsets.symmetric(vertical: 18),
