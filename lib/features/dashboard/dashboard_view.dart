@@ -17,7 +17,7 @@ class DashboardView extends StatelessWidget {
         child: Column(
           children: [
             TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
-            const AdBannerCarousel(),
+            AdBannerCarousel(),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),
