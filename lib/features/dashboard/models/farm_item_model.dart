@@ -36,6 +36,7 @@ class FarmItem {
     this.unlockCost = 500.0,
     this.isUpgrading = false,
     this.remainingSeconds = 0,
+    this.upgradeRemainingSeconds = 0,
   });
 
   int get dynamicProductionTime => (level * 2) - 1;
