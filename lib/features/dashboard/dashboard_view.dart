@@ -155,4 +155,107 @@ class DashboardView extends StatelessWidget {
       ),
     );
   }
+
+void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider prov) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(farm.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white24))
+            ],
+          ),
+          const SizedBox(height: 10),
+          Image.asset(farm.assetPath, height: 70), 
+          const SizedBox(height: 15),
+          Text("TINGKATKAN KE LVL ${farm.level + 1}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text("Tingkatkan level produksi untuk meningkatkan volume pendapatan", 
+            textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 11)),
+          
+          const SizedBox(height: 25),
+          Row(
+            children: [
+              _infoTile("DURASI PENINGK.", "${farm.level * 60}s", Icons.timer_outlined),
+              const SizedBox(width: 15),
+              _infoTile("BIAYA PENINGK.", "${farm.upgradePrice.toInt()}", Icons.monetization_on_outlined),
+            ],
+          ),
+
+          const SizedBox(height: 25),
+          const Text("PRODUKSI TINGKAT LANJUT", style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.access_time_filled, color: Colors.amber, size: 14),
+              const SizedBox(width: 5),
+              Text("${((farm.level + 1) * 2) - 1}s", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              const SizedBox(width: 25),
+              Image.asset(farm.assetPath, height: 14),
+              const SizedBox(width: 5),
+              Text("${(farm.level + 1) * 2}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+            ],
+          ),
+
+          const SizedBox(height: 30),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryGreen,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))
+              ),
+              onPressed: () {
+                prov.startUpgrade(farm.id);
+                Navigator.pop(context);
+              },
+              child: const Text("TINGKATKAN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget _infoTile(String label, String value, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white38, fontSize: 8, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.amber, size: 14),
+                const SizedBox(width: 6),
+                Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
 }
