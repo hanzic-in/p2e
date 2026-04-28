@@ -10,14 +10,17 @@ class FarmItem {
   final int cycleDuration;
   final double baseIncome;
   final double baseIncomeKey;
+  final double unlockCost;
   final FarmSector sector;
   final List<String> unlockRequirements;
   
   int level;
   int stock;
+  bool isUpgrading;
+  int upgradeRemainingSeconds;
   ProductionStatus status;
   int remainingSeconds;
-
+  
   FarmItem({
     required this.id,
     required this.name,
@@ -30,9 +33,14 @@ class FarmItem {
     this.level = 1,
     this.stock = 0,
     this.status = ProductionStatus.locked,
+    this.unlockCost = 500.0,
+    this.isUpgrading = false,
     this.remainingSeconds = 0,
   });
 
+  int get dynamicProductionTime => (level * 2) - 1;
+  int get upgradeDuration => level * 60;
+  int get nextLevelProduction => (level + 1) * 2;
   double get currentIncome => baseIncome * level;
   double get upgradePrice => 150.0 * level;
 }
