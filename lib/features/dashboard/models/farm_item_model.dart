@@ -11,11 +11,14 @@ class FarmItem {
   final double baseIncome;
   final double baseIncomeKey;
   final double unlockCost;
+  final int unlockDuration;
   final FarmSector sector;
   final List<String> unlockRequirements;
   
   int level;
   int stock;
+  bool isUnlocking;
+  int unlockRemainingSeconds;
   bool isUpgrading;
   int upgradeRemainingSeconds;
   ProductionStatus status;
@@ -34,6 +37,7 @@ class FarmItem {
     this.stock = 0,
     this.status = ProductionStatus.locked,
     this.unlockCost = 500.0,
+    this.unlockDuration = 30,
     this.isUpgrading = false,
     this.remainingSeconds = 0,
     this.upgradeRemainingSeconds = 0,
