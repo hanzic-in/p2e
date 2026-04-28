@@ -22,7 +22,7 @@ class DashboardView extends StatelessWidget {
               TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
               const AdBannerCarousel(),
 
-              // 3. TAB NAVIGASI
+              // TAB NAVIGASI
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -30,8 +30,10 @@ class DashboardView extends StatelessWidget {
                 ),
                 child: TabBar(
                   isScrollable: true,
+                  tabAlignment: TabAlignment.center,
                   indicatorColor: AppColors.primaryGreen,
                   indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.label,
                   labelColor: AppColors.primaryGreen,
                   unselectedLabelColor: Colors.white24,
                   labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
@@ -41,7 +43,7 @@ class DashboardView extends StatelessWidget {
                 ),
               ),
 
-              // 4.  (Isi list masing-masing sektor)
+              // (Isi list setiap sektor)
               Expanded(
                 child: TabBarView(
                   children: FarmSector.values.map((sector) {
