@@ -69,7 +69,7 @@ class DashboardView extends StatelessWidget {
                           onTap: () {
                             if (isLocked) {
                               if (canOpen) {
-                                prov.unlockFarm(farm.id);
+                                prov.startUnlock(farm.id);
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -86,7 +86,7 @@ class DashboardView extends StatelessWidget {
                               }
                             }
                           },
-                          onUpgrade: isLocked ? () {} : () => prov.upgradeFarm(farm.id),
+                          onUpgrade: () => _showUpgradePopup(context, farm, prov),
                           onSell: isLocked ? () {} : () => _showSellDialog(context, farm.id, prov),
                         );
                       },
