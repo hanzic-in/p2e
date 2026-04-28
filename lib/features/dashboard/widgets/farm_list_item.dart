@@ -155,18 +155,6 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                         label: "JUAL STOK", 
                         color: isWorking ? Colors.white24 : Colors.blueAccent, 
                         action: isWorking ? () {} : widget.onSell,
-
-                        InkWell(
-                          onTap: isWorking ? null : () => print("Buka Pesanan"),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.deepPurpleAccent.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.local_shipping_outlined, color: Colors.deepPurpleAccent, size: 20),
-                            ),
-                          ),                    
                         ),
                       ],
                     )
