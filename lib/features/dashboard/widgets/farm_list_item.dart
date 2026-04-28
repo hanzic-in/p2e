@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 
 class FarmListItem extends StatefulWidget {
   final FarmItem item;
+  final List<FarmItem> allItems;
   final VoidCallback onTap;
   final VoidCallback onUpgrade;
   final VoidCallback onSell;
@@ -12,6 +13,7 @@ class FarmListItem extends StatefulWidget {
   const FarmListItem({
     super.key,
     required this.item, 
+    required this.allItems,
     required this.onTap, 
     required this.onUpgrade, 
     required this.onSell
@@ -42,6 +44,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     bool isProducing = widget.item.status == ProductionStatus.producing;
+    bool isLocked = widget.item.status == ProductionStatus.locked;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -56,16 +59,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       gradient: SweepGradient(
-                        center: Alignment.center,
-                        startAngle: 0.0,
-                        endAngle: math.pi * 2,
-                        stops: const [0.1, 0.4, 0.6, 0.9],
-                        colors: [
-                          AppColors.cardBg,
-                          Colors.amber.withOpacity(0.8),
-                          AppColors.primaryGreen,
-                          AppColors.cardBg,
-                        ],
+                        colors: [AppColors.cardBg, Colors.amber.withOpacity(0.8), AppColors.primaryGreen, AppColors.cardBg],
                         transform: GradientRotation(_rotationController.value * math.pi * 2),
                       ),
                     ),
@@ -74,7 +68,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
               ),
             ),
 
-          // 2. Konten Utama Card
+          // Konten Utama Card
           Container(
             padding: const EdgeInsets.all(18),
             margin: const EdgeInsets.all(2),
@@ -89,10 +83,10 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
               ),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    // Visual Aset
                     _buildVisualAset(),
                     const SizedBox(width: 16),
                     Expanded(
@@ -101,24 +95,34 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                         children: [
                           Text(
                             widget.item.name.toUpperCase(), 
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white, letterSpacing: 1.2)
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900, 
+                              fontSize: 16, 
+                              color: isLocked ? Colors.white24 : Colors.white, 
+                              letterSpacing: 1.2
+                            )
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "LEVEL ${widget.item.level} | STOCK: ${widget.item.stock}", 
-                            style: const TextStyle(color: AppColors.textGray, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                            style: const TextStyle(color: AppColors.textGray, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
-                          if (widget.item.status == ProductionStatus.idle && widget.item.level < 5)
-                            _buildSaranUpgrade(),
                         ],
                       ),
                     ),
-                    // Tombol Utama
                     _buildMainButton(),
                   ],
                 ),
                 
-                if (widget.item.status != ProductionStatus.locked) ...[
+                if (isLocked && widget.item.unlockRequirements.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  const Text("KETERGANTUNGAN", 
+                    style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                  const SizedBox(height: 12),
+                  _buildRequirementIcons(),
+                ],
+
+                if (!isLocked) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Divider(color: Colors.white10, height: 1),
@@ -149,63 +153,93 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
     );
   }
 
-  // --- Widget Helpers ---
+  // Widget buat nampilin ikon syarat
+  Widget _buildRequirementIcons() {
+    return Wrap(
+      spacing: 15,
+      children: widget.item.unlockRequirements.map((reqName) {
+        final reqItem = widget.allItems.firstWhere(
+          (f) => f.name == reqName,
+          orElse: () => widget.item,
+        );
+        
+        bool isMet = reqItem.status != ProductionStatus.locked;
 
-  Widget _buildVisualAset() {
-    return Container(
-      height: 60, width: 60,
-      decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(16)),
-      child: widget.item.status == ProductionStatus.locked 
-        ? const Icon(Icons.lock_outline, color: Colors.white24, size: 28)
-        : ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(widget.item.assetPath, fit: BoxFit.contain),
-          ),
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isMet ? Colors.white.withOpacity(0.05) : Colors.red.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: isMet ? Colors.white10 : Colors.red.withOpacity(0.2)),
+              ),
+              child: Opacity(
+                opacity: isMet ? 1.0 : 0.3,
+                child: Image.asset(reqItem.assetPath, height: 25, width: 25, 
+                  errorBuilder: (c, e, s) => const Icon(Icons.help_outline, size: 20, color: Colors.white10)),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text("LVL ${reqItem.level}", 
+              style: TextStyle(color: isMet ? Colors.white38 : Colors.redAccent, fontSize: 8, fontWeight: FontWeight.bold)),
+          ],
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildSaranUpgrade() {
+  Widget _buildVisualAset() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      margin: const EdgeInsets.only(top: 6),
+      height: 65, width: 65,
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.05),
-        border: Border.all(color: Colors.amber.withOpacity(0.3), width: 0.5),
-        borderRadius: BorderRadius.circular(4),
+        color: Colors.white.withOpacity(0.03), 
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(0.05))
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.bolt, color: Colors.amber, size: 10),
-          SizedBox(width: 4),
-          Text(
-            "OPTIMALKAN PRODUKSI", 
-            style: TextStyle(color: Colors.amber, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.5)
+      child: widget.item.status == ProductionStatus.locked 
+        ? const Icon(Icons.lock_outline, color: Colors.white10, size: 28)
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Image.asset(widget.item.assetPath, fit: BoxFit.contain,
+              errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported_outlined, color: Colors.white10)),
           ),
-        ],
-      ),
     );
   }
 
   Widget _buildMainButton() {
-    Color btnColor = Colors.white24;
+    Color btnColor = Colors.white10;
     String btnText = "LOCKED";
+    Color textColor = Colors.white24;
     
     switch (widget.item.status) {
-      case ProductionStatus.idle: btnColor = AppColors.primaryGreen; btnText = "MULAI"; break;
-      case ProductionStatus.ready: btnColor = Colors.amber; btnText = "KLAIM"; break;
-      case ProductionStatus.producing: btnColor = Colors.white10; btnText = "${widget.item.remainingSeconds}S"; break;
+      case ProductionStatus.idle: 
+        btnColor = AppColors.primaryGreen; 
+        btnText = "MULAI"; 
+        textColor = Colors.black;
+        break;
+      case ProductionStatus.ready: 
+        btnColor = Colors.amber; 
+        btnText = "KLAIM"; 
+        textColor = Colors.black;
+        break;
+      case ProductionStatus.producing: 
+        btnColor = Colors.white.withOpacity(0.05); 
+        btnText = "${widget.item.remainingSeconds}S"; 
+        textColor = AppColors.primaryGreen;
+        break;
       default: break;
     }
 
     return InkWell(
-      onTap: widget.item.status == ProductionStatus.locked ? null : widget.onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(color: btnColor, borderRadius: BorderRadius.circular(12)),
         child: Text(
           btnText,
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1),
         ),
       ),
     );
@@ -214,12 +248,15 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
   Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback action}) {
     return InkWell(
       onTap: action,
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+          ],
+        ),
       ),
     );
   }
