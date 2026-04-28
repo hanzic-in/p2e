@@ -194,18 +194,32 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
           ),
 
           const SizedBox(height: 25),
-          const Text("PRODUKSI TINGKAT LANJUT", style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold)),
+          const Text("PRODUKSI TINGKAT LANJUT", 
+            style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
           const SizedBox(height: 15),
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.access_time_filled, color: Colors.amber, size: 14),
-              const SizedBox(width: 5),
-              Text("${((farm.level + 1) * 2) - 1}s", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-              const SizedBox(width: 25),
-              Image.asset(farm.assetPath, height: 14),
-              const SizedBox(width: 5),
-              Text("${(farm.level + 1) * 2}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              Column(
+                children: [
+                  const Icon(Icons.access_time_filled, color: Colors.amber, size: 16),
+                  const SizedBox(height: 5),
+                  Text("${farm.nextLevelProductionTime}s",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text("DURASI", style: TextStyle(color: Colors.white24, fontSize: 8)),
+                ],
+              ),
+              const SizedBox(width: 40),
+              Column(
+                children: [
+                  Image.asset(farm.assetPath, height: 16),
+                  const SizedBox(height: 5),
+                  Text("+${farm.nextStockYield}",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text("HASIL", style: TextStyle(color: Colors.white24, fontSize: 8)),
+                ],
+              ),
             ],
           ),
 
