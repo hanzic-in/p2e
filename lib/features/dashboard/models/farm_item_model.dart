@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 enum FarmSector { tanaman, hewan, pabrik, dapur, toko }
 enum ProductionStatus { locked, idle, producing, ready }
@@ -46,11 +47,11 @@ class FarmItem {
   });
 
   int get currentProductionTime => (level * 4) + 1;
-  int get dynamicProductionTime => (level * 2) - 1;
+  int get dynamicProductionTime => ((level + 1) * 4) + 1;
   int get upgradeDuration => level * 60;
   int get nextLevelProductionTime => ((level + 1) * 4) + 1;
-  int get currentStockYield => level * 2;
-  int get nextStockYield => (level + 1) * 2;
+  int get currentStockYield => pow(2, level - 1).toInt();
+  int get nextStockYield => pow(2, level).toInt();
   double get currentIncome => baseIncome * level;
   double get upgradePrice => 150.0 * level;
 }
