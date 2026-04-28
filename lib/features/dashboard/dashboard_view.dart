@@ -77,8 +77,8 @@ class DashboardView extends StatelessWidget {
                                   }
                                 }
                               },
-                              onUpgrade: isLocked ? null : () => prov.upgradeFarm(farm.id),
-                              onSell: isLocked ? null : () => _showSellDialog(context, farm.id, prov),
+                              onUpgrade: isLocked ? () {} : () => prov.upgradeFarm(farm.id),
+                              onSell: isLocked ? () {} : () => _showSellDialog(context, farm.id, prov),
                             );
                           },
                         ),
