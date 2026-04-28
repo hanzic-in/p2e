@@ -15,10 +15,8 @@ class DashboardProvider extends ChangeNotifier {
   double get special => _balanceSpecial;
   List<FarmItem> get myFarms => _myFarms;
 
-  // --- LOGIC ---
   bool canBeUnlocked(FarmItem target) {
     if (target.unlockRequirements.isEmpty) return true;
-
     return target.unlockRequirements.every((reqName) {
       return _myFarms.any((farm) => 
         farm.name == reqName && farm.status != ProductionStatus.locked
@@ -26,30 +24,23 @@ class DashboardProvider extends ChangeNotifier {
     });
   }
 
-  // --- LOGIC BELI / BUKA ITEM ---
   void unlockFarm(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
     if (index == -1) return;
-    
     var farm = _myFarms[index];
-    
     double unlockCost = 500.0; 
 
-    if (farm.status == ProductionStatus.locked && 
-        canBeUnlocked(farm) && 
-        _balanceBCoin >= unlockCost) {
-      
+    if (farm.status == ProductionStatus.locked && canBeUnlocked(farm) && _balanceBCoin >= unlockCost) {
       _balanceBCoin -= unlockCost;
       farm.status = ProductionStatus.idle;
       notifyListeners();
     }
   }
 
-  // --- LOGIC PRODUKSI ---
   void startProduction(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
+    if (index == -1) return;
     var farm = _myFarms[index];
-    
     if (farm.status != ProductionStatus.idle) return;
     
     farm.status = ProductionStatus.producing;
@@ -71,8 +62,8 @@ class DashboardProvider extends ChangeNotifier {
 
   void claimResult(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
+    if (index == -1) return;
     var farm = _myFarms[index];
-    
     if (farm.status != ProductionStatus.ready) return;
     
     farm.stock += (farm.currentIncome).toInt();
@@ -81,13 +72,26 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ... upgradeFarm & sellStock ...
   void upgradeFarm(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
+    if (index == -1) return;
     var farm = _myFarms[index];
     if (_balanceBCoin >= farm.upgradePrice) {
       _balanceBCoin -= farm.upgradePrice;
       farm.level++;
+      notifyListeners();
+    }
+  }
+
+  // --- INI FUNGSI YANG TADI ILANG ---
+  void sellStock(int id, int amount) {
+    final index = _myFarms.indexWhere((f) => f.id == id);
+    if (index == -1) return;
+    var farm = _myFarms[index];
+    
+    if (farm.stock >= amount) {
+      farm.stock -= amount;
+      _balanceBCoin += (amount * 10);
       notifyListeners();
     }
   }
