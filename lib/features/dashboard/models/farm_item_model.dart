@@ -48,7 +48,7 @@ class FarmItem {
   int get currentProductionTime => (level * 4) + 1;
   int get dynamicProductionTime => (level * 2) - 1;
   int get upgradeDuration => level * 60;
-  int get nextLevelProduction => ((level + 1) * 4) + 1;
+  int get nextLevelProductionTime => ((level + 1) * 4) + 1;
   int get currentStockYield => level * 2;
   int get nextStockYield => (level + 1) * 2;
   double get currentIncome => baseIncome * level;
