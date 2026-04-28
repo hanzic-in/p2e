@@ -108,17 +108,18 @@ class DashboardProvider extends ChangeNotifier {
   }
 }
 
-  void claimResult(int id) {
-    final index = _myFarms.indexWhere((f) => f.id == id);
-    if (index == -1) return;
-    var farm = _myFarms[index];
-    if (farm.status != ProductionStatus.ready) return;
-    
-    farm.stock += (farm.currentIncome).toInt();
-    _balanceKeyCoin += farm.baseIncomeKey;
-    farm.status = ProductionStatus.idle;
-    notifyListeners();
-  }
+void claimResult(int id) {
+  final index = _myFarms.indexWhere((f) => f.id == id);
+  if (index == -1) return;  
+  var farm = _myFarms[index];
+  if (farm.status != ProductionStatus.ready) return;
+  
+  farm.stock += farm.currentStockYield; 
+  _balanceKeyCoin += farm.baseIncomeKey;  
+  farm.status = ProductionStatus.idle;
+  notifyListeners();
+}
+
 
   void upgradeFarm(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
