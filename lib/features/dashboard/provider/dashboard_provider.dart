@@ -60,6 +60,30 @@ class DashboardProvider extends ChangeNotifier {
     });
   }
 
+  void startUpgrade(int id) {
+    final index = _myFarms.indexWhere((f) => f.id == id);
+    var farm = _myFarms[index];
+
+    if (_balanceBCoin >= farm.upgradePrice && !farm.isUpgrading) {
+      _balanceBCoin -= farm.upgradePrice;
+      farm.isUpgrading = true;
+      farm.upgradeRemainingSeconds = farm.upgradeDuration;
+      notifyListeners();
+
+      Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (farm.upgradeRemainingSeconds > 0) {
+          farm.upgradeRemainingSeconds--;
+          notifyListeners();
+        } else {
+          farm.level++;
+          farm.isUpgrading = false;
+          timer.cancel();
+          notifyListeners();
+        }
+      });
+    }
+  }
+
   void claimResult(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
     if (index == -1) return;
