@@ -45,12 +45,13 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     bool isProducing = widget.item.status == ProductionStatus.producing;
     bool isLocked = widget.item.status == ProductionStatus.locked;
+    bool isWorking = isProducing || widget.item.isUpgrading || widget.item.isUnlocking;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Stack(
         children: [
-          if (isProducing)
+          if (isWorking)
             Positioned.fill(
               child: AnimatedBuilder(
                 animation: _rotationController,
@@ -59,7 +60,11 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
                       gradient: SweepGradient(
-                        colors: [AppColors.cardBg, Colors.amber.withOpacity(0.8), AppColors.primaryGreen, AppColors.cardBg],
+                        colors: [
+                          AppColors.cardBg, 
+                          widget.item.isUpgrading ? Colors.amber : AppColors.primaryGreen, 
+                          AppColors.cardBg
+                        ],
                         transform: GradientRotation(_rotationController.value * math.pi * 2),
                       ),
                     ),
@@ -68,7 +73,6 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
               ),
             ),
 
-          // Konten Utama Card
           Container(
             padding: const EdgeInsets.all(18),
             margin: const EdgeInsets.all(2),
@@ -78,7 +82,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
               border: Border.all(
                 color: widget.item.status == ProductionStatus.ready 
                   ? AppColors.primaryGreen 
-                  : Colors.white.withOpacity(0.05),
+                  : (isWorking ? Colors.white24 : Colors.white.withOpacity(0.05)),
                 width: widget.item.status == ProductionStatus.ready ? 2 : 1,
               ),
             ),
@@ -104,8 +108,14 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "LEVEL ${widget.item.level} | STOCK: ${widget.item.stock}", 
-                            style: const TextStyle(color: AppColors.textGray, fontSize: 10, fontWeight: FontWeight.bold),
+                            widget.item.isUpgrading 
+                              ? "MENINGKATKAN KE LVL ${widget.item.level + 1}..." 
+                              : "LEVEL ${widget.item.level} | STOCK: ${widget.item.stock}", 
+                            style: TextStyle(
+                              color: widget.item.isUpgrading ? Colors.amber : AppColors.textGray, 
+                              fontSize: 10, 
+                              fontWeight: FontWeight.bold
+                            ),
                           ),
                         ],
                       ),
@@ -114,6 +124,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                   ],
                 ),
                 
+                // Syarat Item (Dependency)
                 if (isLocked && widget.item.unlockRequirements.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   const Text("KETERGANTUNGAN", 
@@ -122,6 +133,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                   _buildRequirementIcons(),
                 ],
 
+                // Action Buttons (Upgrade & Jual)
                 if (!isLocked) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -131,16 +143,19 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _actionButton(
-                        icon: Icons.arrow_circle_up_rounded, 
-                        label: "UPGRADE (${widget.item.upgradePrice.toInt()})", 
-                        color: Colors.amber, 
-                        action: widget.onUpgrade,
+                        icon: widget.item.isUpgrading ? Icons.hourglass_top_rounded : Icons.arrow_circle_up_rounded, 
+                        label: widget.item.isUpgrading 
+                          ? "UPGRADING..." 
+                          : "UPGRADE (${widget.item.upgradePrice.toInt()})", 
+                        color: widget.item.isUpgrading ? Colors.white24 : Colors.amber, 
+                        // Jangan kasih klik kalau lagi upgrade
+                        action: widget.item.isUpgrading ? () {} : widget.onUpgrade,
                       ),
                       _actionButton(
                         icon: Icons.monetization_on_rounded, 
                         label: "JUAL STOK", 
-                        color: Colors.blueAccent, 
-                        action: widget.onSell,
+                        color: isWorking ? Colors.white24 : Colors.blueAccent, 
+                        action: isWorking ? () {} : widget.onSell,
                       ),
                     ],
                   )
@@ -153,7 +168,8 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
     );
   }
 
-  // Widget buat nampilin ikon syarat
+  // --- WIDGET HELPERS ---
+
   Widget _buildRequirementIcons() {
     return Wrap(
       spacing: 15,
@@ -162,9 +178,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
           (f) => f.name == reqName,
           orElse: () => widget.item,
         );
-        
         bool isMet = reqItem.status != ProductionStatus.locked;
-
         return Column(
           children: [
             Container(
@@ -207,55 +221,63 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
     );
   }
 
-Widget _buildMainButton() {
-  Color btnColor = Colors.white10;
-  String btnText = "LOCKED";
-  Color textColor = Colors.white24;
-  
-  switch (widget.item.status) {
-    case ProductionStatus.locked:
-      btnText = "BUKA (500)"; 
-      btnColor = Colors.white.withOpacity(0.08);
+  Widget _buildMainButton() {
+    Color btnColor = Colors.white10;
+    String btnText = "LOCKED";
+    Color textColor = Colors.white24;
+    
+    if (widget.item.isUnlocking) {
+      btnText = "${widget.item.unlockRemainingSeconds}S";
+      btnColor = Colors.white10;
       textColor = AppColors.primaryGreen;
-      break;
-    case ProductionStatus.idle: 
-      btnColor = AppColors.primaryGreen; 
-      btnText = "MULAI"; 
-      textColor = Colors.black;
-      break;
-    case ProductionStatus.ready: 
-      btnColor = Colors.amber; 
-      btnText = "KLAIM"; 
-      textColor = Colors.black;
-      break;
-    case ProductionStatus.producing: 
-      btnColor = Colors.white.withOpacity(0.05); 
-      btnText = "${widget.item.remainingSeconds}S"; 
-      textColor = AppColors.primaryGreen;
-      break;
+    } else if (widget.item.isUpgrading) {
+      btnText = "${widget.item.upgradeRemainingSeconds}S";
+      btnColor = Colors.white.withOpacity(0.05);
+      textColor = Colors.amber;
+    } else {
+      switch (widget.item.status) {
+        case ProductionStatus.locked:
+          btnText = "BUKA (${widget.item.unlockCost.toInt()})"; 
+          btnColor = Colors.white.withOpacity(0.08);
+          textColor = AppColors.primaryGreen;
+          break;
+        case ProductionStatus.idle: 
+          btnColor = AppColors.primaryGreen; 
+          btnText = "MULAI"; 
+          textColor = Colors.black;
+          break;
+        case ProductionStatus.ready: 
+          btnColor = Colors.amber; 
+          btnText = "KLAIM"; 
+          textColor = Colors.black;
+          break;
+        case ProductionStatus.producing: 
+          btnColor = Colors.white.withOpacity(0.05); 
+          btnText = "${widget.item.remainingSeconds}S"; 
+          textColor = AppColors.primaryGreen;
+          break;
+      }
+    }
+
+    return InkWell(
+      onTap: (widget.item.isUpgrading || widget.item.isUnlocking) ? null : widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: btnColor, 
+          borderRadius: BorderRadius.circular(12),
+          border: (widget.item.status == ProductionStatus.locked || widget.item.isUpgrading)
+              ? Border.all(color: textColor.withOpacity(0.3)) 
+              : null,
+        ),
+        child: Text(
+          btnText,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
+        ),
+      ),
+    );
   }
-
-  return InkWell(
-    onTap: widget.onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: btnColor, 
-        borderRadius: BorderRadius.circular(12),
-        
-        border: widget.item.status == ProductionStatus.locked 
-            ? Border.all(color: AppColors.primaryGreen.withOpacity(0.3)) 
-            : null,
-      ),
-      child: Text(
-        btnText,
-        style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
-      ),
-    ),
-  );
-}
-
 
   Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback action}) {
     return InkWell(
