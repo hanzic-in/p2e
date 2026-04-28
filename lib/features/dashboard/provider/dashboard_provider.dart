@@ -44,7 +44,7 @@ class DashboardProvider extends ChangeNotifier {
     if (farm.status != ProductionStatus.idle) return;
     
     farm.status = ProductionStatus.producing;
-    farm.remainingSeconds = farm.cycleDuration;
+    farm.remainingSeconds = farm.currentProductionTime;
     notifyListeners();
 
     _timers[farm.id]?.cancel();
