@@ -11,84 +11,89 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<DashboardProvider>(context);
+    
+    return DefaultTabController(
+      length: FarmSector.values.length,
+      child: Scaffold(
+        backgroundColor: AppColors.darkBg,
+        body: SafeArea(
+          child: Column(
+            children: [
+              TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
+              const AdBannerCarousel(),
 
-    return Scaffold(
-      backgroundColor: AppColors.darkBg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
-            const AdBannerCarousel(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Column(
+              // 3. TAB NAVIGASI
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.white10, width: 1)),
+                ),
+                child: TabBar(
+                  isScrollable: true,
+                  indicatorColor: AppColors.primaryGreen,
+                  indicatorWeight: 3,
+                  labelColor: AppColors.primaryGreen,
+                  unselectedLabelColor: Colors.white24,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                  tabs: FarmSector.values.map((sector) {
+                    return Tab(text: sector.name.toUpperCase());
+                  }).toList(),
+                ),
+              ),
+
+              // 4.  (Isi list masing-masing sektor)
+              Expanded(
+                child: TabBarView(
                   children: FarmSector.values.map((sector) {
-                    // Filter item
                     final sectorItems = prov.myFarms.where((f) => f.sector == sector).toList();
-                    if (sectorItems.isEmpty) return const SizedBox();
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Judul Sektor
-                        Padding(
-                          padding: const EdgeInsets.only(top: 25, bottom: 15, left: 5),
-                          child: Text(
-                            sector.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: AppColors.primaryGreen, 
-                              fontWeight: FontWeight.w900, 
-                              fontSize: 14, 
-                              letterSpacing: 3
-                            ),
-                          ),
-                        ),
-                        
-                        // List Item dalam sektor
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: sectorItems.length,
-                          itemBuilder: (context, index) {
-                            final farm = sectorItems[index];
-                            final canOpen = prov.canBeUnlocked(farm);
-                            final isLocked = farm.status == ProductionStatus.locked;
+                    if (sectorItems.isEmpty) {
+                      return const Center(
+                        child: Text("Belum ada aset di sektor ini", style: TextStyle(color: Colors.white24)),
+                      );
+                    }
 
-                            return FarmListItem(
-                              item: farm,
-                              onTap: () {
-                                if (isLocked) {
-                                  if (canOpen) {
-                                    prov.unlockFarm(farm.id);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        backgroundColor: Colors.redAccent,
-                                        content: Text("Syarat belum terpenuhi: ${farm.unlockRequirements.join(', ')}"),
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  if (farm.status == ProductionStatus.idle) {
-                                    prov.startProduction(farm.id);
-                                  } else if (farm.status == ProductionStatus.ready) {
-                                    prov.claimResult(farm.id);
-                                  }
-                                }
-                              },
-                              onUpgrade: isLocked ? () {} : () => prov.upgradeFarm(farm.id),
-                              onSell: isLocked ? () {} : () => _showSellDialog(context, farm.id, prov),
-                            );
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      itemCount: sectorItems.length,
+                      itemBuilder: (context, index) {
+                        final farm = sectorItems[index];
+                        final canOpen = prov.canBeUnlocked(farm);
+                        final isLocked = farm.status == ProductionStatus.locked;
+
+                        return FarmListItem(
+                          item: farm,
+                          allItems: prov.myFarms, 
+                          onTap: () {
+                            if (isLocked) {
+                              if (canOpen) {
+                                prov.unlockFarm(farm.id);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: Colors.redAccent,
+                                    content: Text("Syarat belum terpenuhi: ${farm.unlockRequirements.join(', ')}"),
+                                  ),
+                                );
+                              }
+                            } else {
+                              if (farm.status == ProductionStatus.idle) {
+                                prov.startProduction(farm.id);
+                              } else if (farm.status == ProductionStatus.ready) {
+                                prov.claimResult(farm.id);
+                              }
+                            }
                           },
-                        ),
-                      ],
+                          onUpgrade: isLocked ? () {} : () => prov.upgradeFarm(farm.id),
+                          onSell: isLocked ? () {} : () => _showSellDialog(context, farm.id, prov),
+                        );
+                      },
                     );
                   }).toList(),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -97,7 +102,6 @@ class DashboardView extends StatelessWidget {
   // --- MODAL JUAL ---
   void _showSellDialog(BuildContext context, int farmId, DashboardProvider prov) {
     int amountToSell = 1;
-    
     var farm = prov.myFarms.firstWhere((f) => f.id == farmId);
     if (farm.stock == 0) return;
 
