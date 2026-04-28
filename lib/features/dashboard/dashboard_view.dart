@@ -215,7 +215,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                 children: [
                   Image.asset(farm.assetPath, height: 16),
                   const SizedBox(height: 5),
-                  Text("+${farm.nextStockYield}",
+                  Text("${farm.nextStockYield}",
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                   const Text("HASIL", style: TextStyle(color: Colors.white24, fontSize: 8)),
                 ],
