@@ -84,6 +84,30 @@ class DashboardProvider extends ChangeNotifier {
     }
   }
 
+  void startUnlock(int id) {
+  final index = _myFarms.indexWhere((f) => f.id == id);
+  var farm = _myFarms[index];
+
+  if (_balanceBCoin >= farm.unlockCost && farm.status == ProductionStatus.locked && !farm.isUnlocking) {
+    _balanceBCoin -= farm.unlockCost;
+    farm.isUnlocking = true;
+    farm.unlockRemainingSeconds = farm.unlockDuration;
+    notifyListeners();
+
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (farm.unlockRemainingSeconds > 0) {
+        farm.unlockRemainingSeconds--;
+        notifyListeners();
+      } else {
+        farm.isUnlocking = false;
+        farm.status = ProductionStatus.idle;
+        timer.cancel();
+        notifyListeners();
+      }
+    });
+  }
+}
+
   void claimResult(int id) {
     final index = _myFarms.indexWhere((f) => f.id == id);
     if (index == -1) return;
