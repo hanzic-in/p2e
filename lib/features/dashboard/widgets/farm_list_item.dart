@@ -207,43 +207,55 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildMainButton() {
-    Color btnColor = Colors.white10;
-    String btnText = "LOCKED";
-    Color textColor = Colors.white24;
-    
-    switch (widget.item.status) {
-      case ProductionStatus.idle: 
-        btnColor = AppColors.primaryGreen; 
-        btnText = "MULAI"; 
-        textColor = Colors.black;
-        break;
-      case ProductionStatus.ready: 
-        btnColor = Colors.amber; 
-        btnText = "KLAIM"; 
-        textColor = Colors.black;
-        break;
-      case ProductionStatus.producing: 
-        btnColor = Colors.white.withOpacity(0.05); 
-        btnText = "${widget.item.remainingSeconds}S"; 
-        textColor = AppColors.primaryGreen;
-        break;
-      default: break;
-    }
-
-    return InkWell(
-      onTap: widget.onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(color: btnColor, borderRadius: BorderRadius.circular(12)),
-        child: Text(
-          btnText,
-          style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1),
-        ),
-      ),
-    );
+Widget _buildMainButton() {
+  Color btnColor = Colors.white10;
+  String btnText = "LOCKED";
+  Color textColor = Colors.white24;
+  
+  switch (widget.item.status) {
+    case ProductionStatus.locked:
+      btnText = "BUKA (500)"; 
+      btnColor = Colors.white.withOpacity(0.08);
+      textColor = AppColors.primaryGreen;
+      break;
+    case ProductionStatus.idle: 
+      btnColor = AppColors.primaryGreen; 
+      btnText = "MULAI"; 
+      textColor = Colors.black;
+      break;
+    case ProductionStatus.ready: 
+      btnColor = Colors.amber; 
+      btnText = "KLAIM"; 
+      textColor = Colors.black;
+      break;
+    case ProductionStatus.producing: 
+      btnColor = Colors.white.withOpacity(0.05); 
+      btnText = "${widget.item.remainingSeconds}S"; 
+      textColor = AppColors.primaryGreen;
+      break;
   }
+
+  return InkWell(
+    onTap: widget.onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: btnColor, 
+        borderRadius: BorderRadius.circular(12),
+        
+        border: widget.item.status == ProductionStatus.locked 
+            ? Border.all(color: AppColors.primaryGreen.withOpacity(0.3)) 
+            : null,
+      ),
+      child: Text(
+        btnText,
+        style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
+      ),
+    ),
+  );
+}
+
 
   Widget _actionButton({required IconData icon, required String label, required Color color, required VoidCallback action}) {
     return InkWell(
