@@ -164,11 +164,24 @@ class _WalletViewState extends State<WalletView> {
   // --- WIDGET HELPER ---
   Widget _wdMethod(String label, String url) {
     Color brandColor;
+    List<Color> gradColor;
+
     switch (label) {
-      case "DANA": brandColor = const Color(0xFF118EEA); break;
-      case "GOPAY": brandColor = const Color(0xFF00AED6); break;
-      case "OVO": brandColor = const Color(0xFF4C3494); break;
-      default: brandColor = AppColors.primaryGreen;
+      case "DANA": 
+        brandColor = const Color(0xFF00B4FF);
+        gradColor = [const Color(0xFF00B4FF), const Color(0xFF0074E4)];
+        break;
+      case "GOPAY": 
+        brandColor = const Color(0xFF00D2FF);
+        gradColor = [const Color(0xFF00D2FF), const Color(0xFF00D084)];
+        break;
+      case "OVO": 
+        brandColor = const Color(0xFF9C2CF3); 
+        gradColor = [const Color(0xFF9C2CF3), const Color(0xFF3A47D5)];
+        break;
+      default: 
+        brandColor = AppColors.primaryGreen;
+        gradColor = [AppColors.primaryGreen, Colors.black];
     }
 
     return InkWell(
@@ -176,49 +189,52 @@ class _WalletViewState extends State<WalletView> {
       borderRadius: BorderRadius.circular(22),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.28,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.all(1.5),
         decoration: BoxDecoration(
-          color: AppColors.cardBg,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: brandColor.withOpacity(0.3), width: 1.5),
+          gradient: LinearGradient(colors: gradColor),
           boxShadow: [
             BoxShadow(
-              color: brandColor.withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: brandColor.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: -2,
+              offset: const Offset(0, 8),
             )
           ],
         ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: brandColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Image.network(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF121212),
+            borderRadius: BorderRadius.circular(21),
+          ),
+          child: Column(
+            children: [
+              Image.network(
                 url,
-                height: 24,
-                width: 24,
-                errorBuilder: (c, e, s) => Icon(Icons.account_balance_wallet, color: brandColor, size: 20),
+                height: 26,
+                errorBuilder: (c, e, s) => Icon(Icons.account_balance_wallet, color: brandColor, size: 24),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: brandColor.withOpacity(0.9),
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  color: brandColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
+                  shadows: [
+                    Shadow(color: brandColor.withOpacity(0.5), blurRadius: 10)
+                  ]
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
 
 
 
