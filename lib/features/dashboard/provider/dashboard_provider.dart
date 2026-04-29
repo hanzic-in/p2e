@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/farm_item_model.dart';
+import '../models/order_model.dart';
 
 class DashboardProvider extends ChangeNotifier {
   double _balanceBCoin = 5000.0;
