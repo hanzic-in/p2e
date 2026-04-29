@@ -155,6 +155,98 @@ class DashboardView extends StatelessWidget {
     );
   }
 
+    // --- KARTU EDDIE (URGENT) ---
+  Widget _buildUrgentCard(DashboardProvider prov) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: AppColors.cardBg, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(height: 80, width: 80, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(15)), child: const Icon(Icons.face, color: Colors.amber, size: 40)),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Eagle Eye Eddie", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text("Eddie berangkat dalam", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                    const Text("7h 15m", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white12, minimumSize: const Size(double.infinity, 35)),
+                      onPressed: () {},
+                      child: const Text("Muat dan Kirim", style: TextStyle(color: Colors.white, fontSize: 11)),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 15), child: Divider(color: Colors.white10)),
+          const Text("Eddie membeli", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+          const SizedBox(height: 15),
+          
+          // --- WRAP BUAT ROMBONGAN ITEM ---
+          Wrap(
+            spacing: 15,
+            runSpacing: 15,
+            children: [
+              // Nanti ini di-loop dari Provider, sekarang dummy dulu
+              _orderItem("🌾", "543", true),
+              _orderItem("🥕", "541", false),
+              _orderItem("🍎", "1.3K", true),
+              _orderItem("🌽", "200", false),
+              _orderItem("🥚", "50", true),
+            ],
+          ),
+          
+          const SizedBox(height: 25),
+          const Text("Hadiah dari Eddie", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.monetization_on, color: Colors.amber, size: 18),
+              const SizedBox(width: 5),
+              const Text("495K", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              const SizedBox(width: 20),
+              const Icon(Icons.vpn_key, color: Colors.amber, size: 18),
+              const SizedBox(width: 5),
+              const Text("1", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _orderItem(String emoji, String amount, bool isEnough) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+          child: Text(emoji, style: const TextStyle(fontSize: 20)),
+        ),
+        const SizedBox(height: 4),
+        Text(amount, style: TextStyle(color: isEnough ? Colors.white : Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+      ],
+    );
+  }
+
+  // --- HELPER FUNCTIONS ---
+  void _handleTap(FarmItem farm, DashboardProvider prov, BuildContext context) {
+    if (farm.status == ProductionStatus.locked) {
+      if (prov.canBeUnlocked(farm)) prov.startUnlock(farm.id);
+      else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Syarat belum terpenuhi")));
+    } else {
+      if (farm.status == ProductionStatus.idle) prov.startProduction(farm.id);
+      else if (farm.status == ProductionStatus.ready) prov.claimResult(farm.id);
+    }
+  }
+
   // --- MODAL JUAL ---
   void _showSellDialog(BuildContext context, int farmId, DashboardProvider prov) {
     int amountToSell = 1;
