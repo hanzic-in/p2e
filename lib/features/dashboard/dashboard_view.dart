@@ -13,7 +13,7 @@ class DashboardView extends StatelessWidget {
     final prov = Provider.of<DashboardProvider>(context);
     
     return DefaultTabController(
-      length: FarmSector.values.length,
+      length: FarmSector.values.length + 1,
       child: Scaffold(
         backgroundColor: AppColors.darkBg,
         body: SafeArea(
@@ -37,9 +37,14 @@ class DashboardView extends StatelessWidget {
                   labelColor: AppColors.primaryGreen,
                   unselectedLabelColor: Colors.white24,
                   labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
-                  tabs: FarmSector.values.map((sector) {
-                    return Tab(text: sector.name.toUpperCase());
-                  }).toList(),
+                  tabs: [
+                    ...FarmSector.values.map((sector) {
+                      return Tab(text: sector.name.toUpperCase());
+                    }).toList(),
+                    const Tab(
+                      icon: Icon(Icons.local_shipping_rounded, size: 20),
+                    ),
+                  ],
                 ),
               ),
 
