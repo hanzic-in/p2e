@@ -1,3 +1,5 @@
+import './order_model.dart';
+
 enum Continent { afrika, asia, eropa, as }
 
 class CountryOrder {
