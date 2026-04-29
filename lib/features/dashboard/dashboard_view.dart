@@ -192,12 +192,12 @@ class DashboardView extends StatelessWidget {
           const Text("Eddie membeli", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
           const SizedBox(height: 15),
           
-          // --- WRAP BUAT ROMBONGAN ITEM ---
+          // --- WRAP ---
           Wrap(
             spacing: 15,
             runSpacing: 15,
             children: [
-              // Nanti ini di-loop dari Provider, sekarang dummy dulu
+              // dummy
               _orderItem("🌾", "543", true),
               _orderItem("🥕", "541", false),
               _orderItem("🍎", "1.3K", true),
