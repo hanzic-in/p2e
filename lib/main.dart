@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import './features/dashboard/provider/dashboard_provider.dart';
+import 'features/mining/provider/mining_provider.dart';
 import './core/constants/app_colors.dart';
 import './app.dart';
 
@@ -9,6 +10,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => MiningProvider()),
       ],
       child: MyApp(),
     ),
