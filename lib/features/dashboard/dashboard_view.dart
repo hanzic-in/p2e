@@ -524,23 +524,6 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                   style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(width: 10),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber.withOpacity(0.1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              ),
-              onPressed: () {
-              },
-              child: Row(
-                children: [
-                  const Icon(Icons.upgrade, color: Colors.amber, size: 16),
-                  Text(" ${negara.upgradeCost.toInt()}", 
-                    style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
           ],
         ),
       ],
