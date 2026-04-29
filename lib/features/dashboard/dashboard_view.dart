@@ -466,6 +466,29 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
+    // --- FUNGSI HALAMAN NEGARA (LIST NEGARA) ---
+  Widget _buildCountryPage(DashboardProvider prov, Continent continent) {
+    final listNegara = prov.countries.where((c) => c.continent == continent).toList();
+
+    if (listNegara.isEmpty) {
+      return const Center(
+        child: Text(
+          "Belum ada negara di benua ini", 
+          style: TextStyle(color: Colors.white10, fontSize: 12)
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: listNegara.length,
+      itemBuilder: (context, index) {
+        final negara = listNegara[index];
+        return _buildCountryCard(negara, prov);
+      },
+    );
+  }
+
   // --- FUNGSI DETAIL PESANAN NEGARA ---
   Widget _buildCountryOrderDetails(CountryOrder negara, DashboardProvider prov) {
     return Column(
@@ -523,7 +546,6 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
       ],
     );
   }
-
 
   // --- FUNGSI KARTU NEGARA ---
   Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
