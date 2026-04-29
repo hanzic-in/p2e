@@ -134,7 +134,6 @@ void claimResult(int id) {
     }
   }
 
-  // --- INI FUNGSI YANG TADI ILANG ---
   void sellStock(int id, int amount) {
     final index = _myFarms.indexWhere((f) => f.id == id);
     if (index == -1) return;
