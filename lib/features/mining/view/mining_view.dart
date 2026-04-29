@@ -196,51 +196,45 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 }
 
 // --- FUNGSI WIDGET VGA ANIMASI ---
-Widget _buildAnimatedVga(AnimationController controller) {
+Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
   return Container(
-    height: 140,
+    height: 220,
     width: double.infinity,
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.white10),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    child: Stack(
+      alignment: Alignment.center,
       children: [
-        // --- CHIP/KIPAS KIRI (MUTER) ---
-        AnimatedBuilder(
-          animation: controller,
-          builder: (context, child) {
-            return Transform.rotate(
-              angle: controller.value * 2 * 3.14159,
-              child: child,
-            );
-          },
-          child: const Icon(
-            Icons.prowler_rounded, 
-            color: Colors.white24,
-            size: 90,
+        CustomPaint(
+          size: const Size(220, 220),
+          painter: MiningGaugePainter(
+            value: prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0,
           ),
         ),
-
-        // --- CHIP/KIPAS KANAN (MUTER) ---
-        AnimatedBuilder(
-          animation: controller,
-          builder: (context, child) {
-            return Transform.rotate(
-              angle: controller.value * 2 * 3.14159,
-              child: child,
-            );
-          },
-          child: const Icon(
-            Icons.prowler_rounded,
-            color: Colors.white24,
-            size: 90,
+        
+        Positioned(
+          bottom: 20,
+          child: Column(
+            children: [
+              const Text("MINING SPEED", 
+                style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    prov.isMining ? (prov.isBoostActive ? "15.9" : "8.2") : "0", 
+                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 6, left: 4),
+                    child: Text("Gh/s", style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ],
     ),
   );
 }
+
 
