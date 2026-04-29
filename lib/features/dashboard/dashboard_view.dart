@@ -217,11 +217,11 @@ Widget _buildUrgentCard(DashboardProvider prov) {
           spacing: 15,
           runSpacing: 15,
           children: order.requiredItems.map((item) {
-            final farm = prov.myFarms.firstWhere((f) => f.name == item.itemName);
+            final farm = prov.myFarms.firstWhere((f) => f.name == item.itemName);    
             return _orderItem(
               item.assetPath, 
               item.amount.toString(), 
-              farm.stock >= item.amount
+              farm.stock
             );
           }).toList(),
         ),
@@ -245,19 +245,42 @@ Widget _buildUrgentCard(DashboardProvider prov) {
   );
 }
 
-Widget _orderItem(String assetPath, String amount, bool isEnough) {
+Widget _orderItem(String assetPath, String amountNeeded, int currentStock) {
+  bool isEnough = currentStock >= int.parse(amountNeeded.replaceAll(RegExp(r'[^0-9]'), ''));
+
   return Column(
     children: [
       Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
-        child: Image.asset(assetPath, height: 30, width: 30, errorBuilder: (c,e,s) => const Icon(Icons.help)),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05), 
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isEnough ? Colors.white10 : Colors.redAccent.withOpacity(0.3)
+          ),
+        ),
+        child: Image.asset(assetPath, height: 32, width: 32),
       ),
-      const SizedBox(height: 4),
-      Text(amount, style: TextStyle(color: isEnough ? Colors.white : Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+      const SizedBox(height: 6),
+      Text(
+        amountNeeded, 
+        style: TextStyle(
+          color: isEnough ? Colors.white : Colors.redAccent, 
+          fontWeight: FontWeight.bold, 
+          fontSize: 11
+        )
+      ),
+      Text(
+        "Stok: $currentStock", 
+        style: TextStyle(
+          color: isEnough ? Colors.white24 : Colors.redAccent.withOpacity(0.5), 
+          fontSize: 9
+        )
+      ),
     ],
   );
 }
+
 
 
   // --- HELPER FUNCTIONS ---
