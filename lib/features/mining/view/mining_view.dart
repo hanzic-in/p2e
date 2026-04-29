@@ -197,35 +197,40 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 // --- FUNGSI WIDGET VGA ANIMASI ---
 Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
+  final double targetValue = prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0;
+  
   return Container(
-    height: 220,
+    height: 240,
     width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 20),
     child: Stack(
       alignment: Alignment.center,
       children: [
         CustomPaint(
           size: const Size(220, 220),
           painter: MiningGaugePainter(
-            value: prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0,
+            value: targetValue, 
+            isBoost: prov.isBoostActive,
           ),
         ),
-        
+      
         Positioned(
-          bottom: 20,
+          bottom: 25,
           child: Column(
             children: [
               const Text("MINING SPEED", 
-                style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+              const SizedBox(height: 5),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     prov.isMining ? (prov.isBoostActive ? "15.9" : "8.2") : "0", 
-                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)
+                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace') // Pake Monospace biar rata
                   ),
                   const Padding(
-                    padding: EdgeInsets.only(bottom: 6, left: 4),
-                    child: Text("Gh/s", style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.bold)),
+                    padding: EdgeInsets.only(bottom: 6, left: 5),
+                    child: Text("Gh/s", style: TextStyle(color: Colors.white60, fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -236,6 +241,7 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
     ),
   );
 }
+
 
 class MiningGaugePainter extends CustomPainter {
   final double value;
