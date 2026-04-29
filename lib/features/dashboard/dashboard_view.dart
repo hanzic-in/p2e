@@ -465,4 +465,71 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
+  Widget _buildCountryPage(DashboardProvider prov, Continent continent) {
+  final listNegara = prov.countries.where((c) => c.continent == continent).toList();
+
+  return ListView.builder(
+    padding: const EdgeInsets.all(20),
+    itemCount: listNegara.length,
+    itemBuilder: (context, index) {
+      final negara = listNegara[index];
+      return _buildCountryCard(negara, prov);
+    },
+  );
+}
+
+Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 20),
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: AppColors.cardBg,
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Column(
+      children: [
+        // Header: Bendera & Nama
+        Row(
+          children: [
+            CircleAvatar(backgroundImage: AssetImage(negara.flagAsset), radius: 30),
+            const SizedBox(width: 15),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("${negara.level} LVL", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                Text(negara.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+              ],
+            )
+          ],
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Status: Locked vs Unlocked
+        if (!negara.isUnlocked)
+          ElevatedButton(
+            onPressed: () => prov.unlockCountry(negara.id),
+            child: Text("BUKA 🔓 ${negara.unlockCost.toInt()}"),
+          )
+        else
+          Column(
+            children: [
+              Wrap(
+                children: negara.requiredItems.map((item) {
+                  final farm = prov.myFarms.firstWhere((f) => f.name == item.itemName);
+                  return _orderItem(item.assetPath, item.amount.toString(), farm.stock);
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {}, 
+                child: Text("Tingkatkan 🚀 ${negara.upgradeCost.toInt()}")
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
 }
