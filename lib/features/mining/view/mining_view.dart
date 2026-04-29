@@ -1,116 +1,110 @@
+// lib/features/mining/view/mining_view.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../provider/mining_provider.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_assets.dart';
 
 class MiningView extends StatefulWidget {
+  const MiningView({super.key});
+
   @override
   _MiningViewState createState() => _MiningViewState();
 }
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
-  late AnimationController _fanController;
+  late AnimationController _jitterController;
 
   @override
   void initState() {
     super.initState();
-    _fanController = AnimationController(
+    _jitterController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500), 
-    );
+      duration: const Duration(seconds: 1),
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _fanController.dispose();
+    _jitterController.dispose();
     super.dispose();
-  }
-
-  void _showRewardedAd(BuildContext context, Function onAdWatched) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBg,
-        title: const Text("Menonton Iklan...", style: TextStyle(color: Colors.white)),
-        content: const Text("Halah, ceritanya ini iklan video 30 detik.", style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onAdWatched();
-            },
-            child: const Text("REWARD DITERIMA"),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final miningProv = Provider.of<MiningProvider>(context);
-    if (miningProv.isMining) {
-      _fanController.duration = miningProv.isBoostActive 
-          ? const Duration(milliseconds: 250) 
-          : const Duration(milliseconds: 500);
-      _fanController.repeat();
-    } else {
-      _fanController.stop();
-    }
+
+    double targetValue = miningProv.isMining ? (miningProv.isBoostActive ? 0.85 : 0.45) : 0.0;
 
     return Scaffold(
-      backgroundColor: AppColors.darkBg,
+      backgroundColor: const Color(0xFF0A0C16),
       appBar: AppBar(
-        title: const Text("B-COIN MINING PANEL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("B-COIN MINER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 2)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(25),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 15),
               decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white10),
+                color: const Color(0xFF111422),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))
+                ],
               ),
               child: Column(
                 children: [
+                  AnimatedBuilder(
+                    animation: _jitterController,
+                    builder: (context, child) {
+                      double jitter = 0.0;
+                      if (miningProv.isMining) {
+                        jitter = math.sin(_jitterController.value * math.pi * 2) * 0.015;
+                      }
+
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: (targetValue + jitter).clamp(0.0, 1.0)),
+                        duration: Duration(milliseconds: miningProv.isMining ? 150 : 1500),
+                        curve: miningProv.isMining ? Curves.linear : Curves.easeOutBack,
+                        builder: (context, animValue, child) {
+                          return CustomPaint(
+                            size: const Size(220, 180),
+                            painter: _ModernMiningGaugePainter(
+                              value: animValue,
+                              isMining: miningProv.isMining,
+                              isBoost: miningProv.isBoostActive,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+
+                  const Text("CURRENT HASH RATE", style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Icon(Icons.monetization_on, color: Colors.amber, size: 28),
-                      const SizedBox(width: 10),
-                      Text(
-                        miningProv.minedCoinBalance.toStringAsFixed(4),
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: miningProv.isMining ? (miningProv.isBoostActive ? 15.9 : 8.2) : 0),
+                        duration: const Duration(milliseconds: 1500),
+                        builder: (context, val, child) {
+                          return Text(
+                            val.toStringAsFixed(1),
+                            style: const TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+                          );
+                        },
                       ),
-                      const Text(" B-COIN", style: TextStyle(color: Colors.white38, fontSize: 14)),
-                    ],
-                  ),
-                  const SizedBox(height: 25),
-
-                  _buildAnimatedVga(_fanController, miningProv),
-
-                  const SizedBox(height: 25),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "${miningProv.currentHashRate.toStringAsFixed(1)} B-Coin/jam",
-                        style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        miningProv.isMining ? miningProv.remainingMiningTimeStr : "STANDBY",
-                        style: TextStyle(
-                          color: miningProv.isMining ? AppColors.primaryGreen : Colors.white24,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 8, left: 6),
+                        child: Text("Gh/s", style: TextStyle(color: Colors.white60, fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -119,231 +113,193 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
             ),
 
             const SizedBox(height: 30),
-            if (!miningProv.isMining)
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  onPressed: () {
-                    _showRewardedAd(context, () {
-                      miningProv.startMiningSession();
-                    });
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.ondemand_video_rounded, color: Colors.black, size: 20),
-                      SizedBox(width: 10),
-                      Text("Tonton Iklan & Mulai Mining (30m)", 
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-                    ],
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 30),
-
-            // --- PANEL FREE REWARD SPEED BOOST ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.03),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.flash_on_rounded, color: Colors.amber, size: 30),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("FREE SPEED BOOST! (2x)", 
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                        const SizedBox(height: 4),
-                        const Text("Tonton iklan buat dapet kecepatan ganda selama 2 menit.", 
-                          style: TextStyle(color: Colors.white38, fontSize: 10)),
-                      ],
-                    ),
-                  ),
-                  if (miningProv.isBoostActive)
-                    Text(miningProv.remainingBoostTimeStr, 
-                      style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold))
-                  else if (!miningProv.canClaimBoost())
-                    const Icon(Icons.history_toggle_off_rounded, color: Colors.white12)
-                  else
-                    IconButton(
-                      icon: const Icon(Icons.gif_box_rounded, color: AppColors.primaryGreen),
-                      onPressed: () {
-                        _showRewardedAd(context, () {
-                          miningProv.startBoostSession();
-                        });
-                      },
-                    ),
-                ],
-              ),
-            ),
+            _buildAdGatePanel(context, miningProv),
           ],
         ),
       ),
     );
   }
-}
 
-// --- FUNGSI WIDGET VGA ANIMASI ---
-Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
-  double jitter = 0.0;
-  if (prov.isMining) {
-    jitter = (math.sin(DateTime.now().millisecondsSinceEpoch / 150) * 0.012);
-  }
+  Widget _buildAdGatePanel(BuildContext context, MiningProvider miningProv) {
+    final themeColor = miningProv.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
 
-  double baseTarget = prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0;
-  final double targetValue = (baseTarget + jitter).clamp(0.0, 1.0);
-  
-  return Container(
-    height: 260,
-    width: double.infinity,
-    alignment: Alignment.center,
-    child: Stack(
-      alignment: Alignment.center,
+    return Column(
       children: [
-        TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: targetValue),
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.linear,
-          builder: (context, animValue, child) {
-            return CustomPaint(
-              size: const Size(200, 200),
-              painter: MiningGaugePainter(
-                value: animValue, 
-                isBoost: prov.isBoostActive
+        if (!miningProv.isMining)
+          SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor.withOpacity(0.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: BorderSide(color: themeColor.withOpacity(0.5)),
+                ),
+                elevation: 0,
               ),
-            );
-          },
-        ),
-        
-        Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            const Text("MINING SPEED", 
-              style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              onPressed: () {
+                miningProv.startMiningSession();
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.play_circle_fill_rounded, color: themeColor),
+                  const SizedBox(width: 12),
+                  Text("START MINING SESSION (30m)", style: TextStyle(color: themeColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                ],
+              ),
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(15)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
-                  duration: const Duration(milliseconds: 1500),
-                  builder: (context, val, child) {
-                    return Text(
-                      val.toStringAsFixed(1), 
-                      style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace')
-                    );
-                  },
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 6, left: 4),
-                  child: Text("Gh/s", style: TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.bold)),
-                ),
+                Icon(Icons.timer_outlined, color: themeColor, size: 16),
+                const SizedBox(width: 8),
+                Text("Time Remaining: ${miningProv.remainingMiningTimeStr}", style: TextStyle(color: themeColor, fontWeight: FontWeight.bold)),
               ],
             ),
-            const SizedBox(height: 35),
-          ],
-        ),
+          ),
+
+        const SizedBox(height: 25),
+        _buildSpeedBoostCard(context, miningProv),
       ],
-    ),
-  );
+    );
+  }
+
+  Widget _buildSpeedBoostCard(BuildContext context, MiningProvider prov) {
+    const boostColor = Color(0xFFC154F7);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111422),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: boostColor.withOpacity(0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.bolt_rounded, color: boostColor, size: 36),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("AD-GAINED SPEED BOOST (2x)", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 3),
+                Text(prov.isBoostActive ? "Boost Active!" : "Watch Ad to double speed (2m)", style: TextStyle(color: Colors.white38, fontSize: 10)),
+              ],
+            ),
+          ),
+          
+          if (prov.isBoostActive)
+            Text(prov.remainingBoostTimeStr, style: const TextStyle(color: boostColor, fontWeight: FontWeight.bold))
+          else if (!prov.canClaimBoost())
+            const Icon(Icons.history_toggle_off_rounded, color: Colors.white12)
+          else
+            IconButton(
+              icon: const Icon(Icons.rocket_launch_rounded, color: Color(0xFF00FFD1)),
+              onPressed: () {
+                prov.startBoostSession();
+              },
+            ),
+        ],
+      ),
+    );
+  }
 }
 
-
-
-
-class MiningGaugePainter extends CustomPainter {
+class _ModernMiningGaugePainter extends CustomPainter {
   final double value;
+  final bool isMining;
   final bool isBoost;
-  
-  MiningGaugePainter({required this.value, required this.isBoost});
+
+  _ModernMiningGaugePainter({required this.value, required this.isMining, required this.isBoost});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
+    final center = Offset(size.width / 2, size.height);
     final radius = size.width / 2;
-    final math.Random random = math.Random();
-    final bgPaint = Paint()
-      ..color = const Color(0xFF1A1D2E)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 20
-      ..strokeCap = StrokeCap.butt;
+    const double startAngle = math.pi;
+    const double sweepAngle = math.pi;
 
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), math.pi * 0.8, math.pi * 1.4, false, bgPaint);
+    final themeColor = isBoost ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
+
+    final trackPaint = Paint()
+      ..color = Colors.white.withOpacity(0.03)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 22
+      ..strokeCap = StrokeCap.butt;
+    
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle, false, trackPaint);
 
     final tickPaint = Paint()..color = Colors.white10..strokeWidth = 1.5;
-    const int totalTicks = 30;
-    for (int i = 0; i <= totalTicks; i++) {
-      final double tickAngle = (math.pi * 0.8) + (math.pi * 1.4 * (i / totalTicks));
-      final double innerRadius = radius - 15;
-      final double outerRadius = (i % 5 == 0) ? radius : radius - 8;
-      tickPaint.color = (i % 5 == 0) ? Colors.white30 : Colors.white10;
+    for (int i = 0; i <= 20; i++) {
+      final angle = startAngle + (sweepAngle * (i / 20));
+      final isMajor = i % 5 == 0;
+      final len = isMajor ? 18.0 : 8.0;
+      tickPaint.color = isMajor ? Colors.white30 : Colors.white10;
 
       canvas.drawLine(
-        Offset(center.dx + math.cos(tickAngle) * innerRadius, center.dy + math.sin(tickAngle) * innerRadius),
-        Offset(center.dx + math.cos(tickAngle) * outerRadius, center.dy + math.sin(tickAngle) * outerRadius),
+        Offset(center.dx + math.cos(angle) * (radius - 5), center.dy + math.sin(angle) * (radius - 5)),
+        Offset(center.dx + math.cos(angle) * (radius - 5 - len), center.dy + math.sin(angle) * (radius - 5 - len)),
         tickPaint,
       );
     }
 
     if (value > 0) {
       final progressPaint = Paint()
-        ..color = isBoost ? const Color(0xFFC154F7) : const Color(0xFF00FFD1)
+        ..color = themeColor.withOpacity(isMining ? 0.8 : 0.2)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 20
+        ..strokeWidth = 22
         ..strokeCap = StrokeCap.butt;
       
-      progressPaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 3);
+      if (isMining) {
+        progressPaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 4);
+      }
 
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        math.pi * 0.8,
-        math.pi * 1.4 * value,
-        false,
-        progressPaint,
-      );
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle * value, false, progressPaint);
     }
 
+    final needleAngle = startAngle + (sweepAngle * value);
     final needlePaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
+    if (isMining) {
+      needlePaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 8);
+    }
 
-    final double angle = (math.pi * 0.8) + (math.pi * 1.4 * value);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(needleAngle);
+
+    const double needleW = 5.0;
+    const double needleL = 100.0;
     
-    final needlePath = Path();
-    final double needleLength = radius - 10;
-    final double needleWidth = 6.0;
-    
-    needlePath.moveTo(center.dx + math.cos(angle - 0.05) * needleWidth, center.dy + math.sin(angle - 0.05) * needleWidth);
-    needlePath.lineTo(center.dx + math.cos(angle + 0.05) * needleWidth, center.dy + math.sin(angle + 0.05) * needleWidth);
-    
-    needlePath.lineTo(
-      center.dx + math.cos(angle) * needleLength,
-      center.dy + math.sin(angle) * needleLength,
+    final needleRect = RRect.fromLTRBAndCorners(
+      -5,
+      -needleW / 2, 
+      needleL, 
+      needleW / 2, 
+      topLeft: const Radius.circular(1),
+      bottomLeft: const Radius.circular(1),
+      topRight: const Radius.circular(5),
+      bottomRight: const Radius.circular(5),
     );
-    needlePath.close();
-    
-    needlePaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 5);
-    canvas.drawPath(needlePath, needlePaint);
-    
-    canvas.drawCircle(center, 12, Paint()..color = const Color(0xFF121420));
-    canvas.drawCircle(center, 5, Paint()..color = Colors.white);
+    canvas.drawRRect(needleRect, needlePaint);
+    canvas.restore();
+
+    canvas.drawCircle(center, 15, Paint()..color = const Color(0xFF0A0C16));
+    canvas.drawCircle(center, 8, Paint()..color = themeColor.withOpacity(0.5));
+    canvas.drawCircle(center, 4, Paint()..color = Colors.white);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _ModernMiningGaugePainter oldDelegate) {
+    return oldDelegate.value != value || oldDelegate.isBoost != isBoost || oldDelegate.isMining != isMining;
+  }
 }
-
-
