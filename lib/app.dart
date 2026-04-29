@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'features/dashboard/dashboard_view.dart';
 import 'features/missions/mission_view.dart';
+import 'features/mining/view/mining_view.dart';
 import 'features/wallet/wallet_view.dart';
 import 'core/constants/app_colors.dart';
 
@@ -15,6 +16,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     DashboardView(),
     MissionView(),
+    MiningView(),
     WalletView(),
   ];
 
