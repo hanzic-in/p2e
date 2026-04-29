@@ -245,34 +245,53 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
 
 class MiningGaugePainter extends CustomPainter {
   final double value;
-  MiningGaugePainter({required this.value});
+  final bool isBoost;
+  
+  MiningGaugePainter({required this.value, required this.isBoost});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final paint = Paint()
+    final math.Random random = math.Random();
+    final bgPaint = Paint()
+      ..color = const Color(0xFF1A1D2E)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 20
+      ..strokeCap = StrokeCap.butt;
 
-    paint.color = Colors.white10;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      math.pi * 0.8,
-      math.pi * 1.4,
-      false,
-      paint,
-    );
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), math.pi * 0.8, math.pi * 1.4, false, bgPaint);
+
+    final tickPaint = Paint()..color = Colors.white10..strokeWidth = 1.5;
+    const int totalTicks = 30;
+    for (int i = 0; i <= totalTicks; i++) {
+      final double tickAngle = (math.pi * 0.8) + (math.pi * 1.4 * (i / totalTicks));
+      final double innerRadius = radius - 15;
+      final double outerRadius = (i % 5 == 0) ? radius : radius - 8;
+      tickPaint.color = (i % 5 == 0) ? Colors.white30 : Colors.white10;
+
+      canvas.drawLine(
+        Offset(center.dx + math.cos(tickAngle) * innerRadius, center.dy + math.sin(tickAngle) * innerRadius),
+        Offset(center.dx + math.cos(tickAngle) * outerRadius, center.dy + math.sin(tickAngle) * outerRadius),
+        tickPaint,
+      );
+    }
 
     if (value > 0) {
-      paint.color = Colors.greenAccent.withOpacity(0.5);
+      final progressPaint = Paint()
+        ..color = isBoost ? const Color(0xFFC154F7) : const Color(0xFF00FFD1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 20
+        ..strokeCap = StrokeCap.butt;
+      
+      progressPaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 3);
+
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         math.pi * 0.8,
         math.pi * 1.4 * value,
         false,
-        paint,
+        progressPaint,
       );
     }
 
@@ -283,26 +302,27 @@ class MiningGaugePainter extends CustomPainter {
     final double angle = (math.pi * 0.8) + (math.pi * 1.4 * value);
     
     final needlePath = Path();
-    final needleLen = radius - 20;
-    final tailLen = 10.0;
+    final double needleLength = radius - 10;
+    final double needleWidth = 6.0;
     
-    needlePath.moveTo(
-      center.dx + math.cos(angle) * needleLen,
-      center.dy + math.sin(angle) * needleLen,
-    );
+    needlePath.moveTo(center.dx + math.cos(angle - 0.05) * needleWidth, center.dy + math.sin(angle - 0.05) * needleWidth);
+    needlePath.lineTo(center.dx + math.cos(angle + 0.05) * needleWidth, center.dy + math.sin(angle + 0.05) * needleWidth);
+    
     needlePath.lineTo(
-      center.dx + math.cos(angle + 0.1) * tailLen,
-      center.dy + math.sin(angle + 0.1) * tailLen,
+      center.dx + math.cos(angle) * needleLength,
+      center.dy + math.sin(angle) * needleLength,
     );
-    needlePath.lineTo(
-      center.dx + math.cos(angle - 0.1) * tailLen,
-      center.dy + math.sin(angle - 0.1) * tailLen,
-    );
-    needlePath.close();    
+    needlePath.close();
+    
+    needlePaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 5);
     canvas.drawPath(needlePath, needlePaint);
-    canvas.drawCircle(center, 5, needlePaint);
+    
+    canvas.drawCircle(center, 12, Paint()..color = const Color(0xFF121420));
+    canvas.drawCircle(center, 5, Paint()..color = Colors.white);
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
 
