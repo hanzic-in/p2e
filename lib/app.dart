@@ -32,9 +32,10 @@ class _MainNavigationState extends State<MainNavigation> {
         unselectedItemColor: AppColors.textGray,
         type: BottomNavigationBarType.fixed,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.agriculture), label: "Farm"),
-          BottomNavigationBarItem(icon: Icon(Icons.paid), label: "Dapatkan"),
-          BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Dompet"),
+          const BottomNavigationBarItem(icon: Icon(Icons.agriculture), label: "Farm"),
+          const BottomNavigationBarItem(icon: Icon(Icons.paid), label: "Dapatkan"),
+          const BottomNavigationBarItem(icon: Icon(Icons.memory_rounded), label: "Mining"), 
+          const BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Dompet"),
         ],
       ),
     );
