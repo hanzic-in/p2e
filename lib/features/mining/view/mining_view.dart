@@ -198,53 +198,49 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 // --- FUNGSI WIDGET VGA ANIMASI ---
 Widget _buildAnimatedVga(AnimationController controller) {
   return Container(
-    height: 120,
+    height: 140,
     width: double.infinity,
     decoration: BoxDecoration(
       color: Colors.black,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(16),
       border: Border.all(color: Colors.white10),
-      // Contoh background grid atau texture VGA
-      image: const DecorationImage(
-        image: AssetImage('assets/images/vga_body.png'),
-        fit: BoxFit.cover,
-      ),
     ),
-    child: Stack(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Kipas Kiri
-        Positioned(
-          top: 30, left: 50,
-          child: AnimatedBuilder(
-            animation: controller,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: controller.value * 2 * math.pi,
-                child: child,
-              );
-            },
-            child: Image.asset('assets/images/vga_fan.png', height: 60),
+        // --- CHIP/KIPAS KIRI (MUTER) ---
+        AnimatedBuilder(
+          animation: controller,
+          builder: (context, child) {
+            return Transform.rotate(
+              angle: controller.value * 2 * 3.14159,
+              child: child,
+            );
+          },
+          child: const Icon(
+            Icons.prowler_rounded, 
+            color: Colors.white24,
+            size: 90,
           ),
         ),
-        // Kipas Kanan
-        Positioned(
-          top: 30, right: 50,
-          child: AnimatedBuilder(
-            animation: controller,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: controller.value * 2 * math.pi,
-                child: child,
-              );
-            },
-            child: Image.asset('assets/images/vga_fan.png', height: 60),
+
+        // --- CHIP/KIPAS KANAN (MUTER) ---
+        AnimatedBuilder(
+          animation: controller,
+          builder: (context, child) {
+            return Transform.rotate(
+              angle: controller.value * 2 * 3.14159,
+              child: child,
+            );
+          },
+          child: const Icon(
+            Icons.prowler_rounded,
+            color: Colors.white24,
+            size: 90,
           ),
-        ),
-        const Positioned(
-          bottom: 10, left: 15,
-          child: Text("B-COIN MINER v1.0", style: TextStyle(color: Colors.amber, fontSize: 8, fontFamily: 'Courier')),
         ),
       ],
     ),
   );
 }
+
