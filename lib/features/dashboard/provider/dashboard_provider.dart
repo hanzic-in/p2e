@@ -155,28 +155,30 @@ void claimResult(int id) {
     super.dispose();
   }
 
-  void generateRandomOrder() {
+void generateRandomOrder() {
   final random = Random();
-  List<Map<String, String>> buyers = [
-    {'name': 'Eagle Eye Eddie', 'img': 'assets/images/eddie.png'},
-    {'name': 'Captain Roger', 'img': 'assets/images/roger.png'},
-    {'name': 'Uncle Bob', 'img': 'assets/images/bob.png'},
-  ];
+  List<OrderItem> listPesanan = []; 
+  var farmsTerbuka = _myFarms.where((f) => f.status != ProductionStatus.locked).toList();
+  farmsTerbuka.shuffle();
 
-  var selectedBuyer = buyers[random.nextInt(buyers.length)];
-  int itemCount = 3 + random.nextInt(3);
-  int totalQuantity = 0;
-  int hours = (rewardCoin / 100000).floor() + 2 + random.nextInt(3);
-
+  for (var i = 0; i < min(3, farmsTerbuka.length); i++) {
+    listPesanan.add(OrderItem(
+      itemName: farmsTerbuka[i].name,
+      assetPath: farmsTerbuka[i].assetPath,
+      amount: 100 + random.nextInt(900),
+    ));
+  }
+  double totalHadiah = (listPesanan.length * 50000).toDouble();
+  int hours = (totalHadiah / 100000).floor() + 2 + random.nextInt(3);
   _currentUrgentOrder = UrgentOrder(
     id: DateTime.now().millisecondsSinceEpoch.toString(),
-    buyerName: selectedBuyer['name']!,
-    buyerImage: selectedBuyer['img']!,
-    rewardCoin: (totalQuantity * 1000).toDouble(),
-    rewardKey: totalQuantity > 1000 ? 1 : 0,
+    buyerName: "Eagle Eye Eddie",
+    buyerImage: "assets/images/eddie.png",
+    requiredItems: listPesanan,
+    rewardCoin: totalHadiah,
+    rewardKey: totalHadiah > 100000 ? 1 : 0,
     deliveryDuration: Duration(hours: hours),
-    requiredItems: generatedItems,
-  );  
+  );
     notifyListeners();
   }
 
