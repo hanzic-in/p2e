@@ -206,14 +206,21 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
     child: Stack(
       alignment: Alignment.center,
       children: [
-        CustomPaint(
-          size: const Size(220, 220),
-          painter: MiningGaugePainter(
-            value: targetValue, 
-            isBoost: prov.isBoostActive,
-          ),
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: targetValue),
+          duration: const Duration(milliseconds: 1500),
+          curve: Curves.easeOutBack,
+          builder: (context, animValue, child) {
+            return CustomPaint(
+              size: const Size(220, 220),
+              painter: MiningGaugePainter(
+                value: animValue,
+                isBoost: prov.isBoostActive,
+              ),
+            );
+          },
         ),
-      
+        
         Positioned(
           bottom: 25,
           child: Column(
@@ -224,9 +231,15 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    prov.isMining ? (prov.isBoostActive ? "15.9" : "8.2") : "0", 
-                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace') // Pake Monospace biar rata
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
+                    duration: const Duration(milliseconds: 1500),
+                    builder: (context, val, child) {
+                      return Text(
+                        val.toStringAsFixed(1), 
+                        style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace')
+                      );
+                    },
                   ),
                   const Padding(
                     padding: EdgeInsets.only(bottom: 6, left: 5),
@@ -241,6 +254,7 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
     ),
   );
 }
+
 
 
 class MiningGaugePainter extends CustomPainter {
