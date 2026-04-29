@@ -5,6 +5,42 @@ import '../models/farm_item_model.dart';
 import '../models/order_model.dart';
 
 class DashboardProvider extends ChangeNotifier {
+
+    List<CountryOrder> _countries = [
+    CountryOrder(id: '1', name: 'Burundi', flagAsset: 'flags/burundi.png', continent: Continent.afrika, unlockCost: 50000, upgradeCost: 20000, deliveryTime: const Duration(minutes: 10), rewardKeyMin: 1, rewardKeyMax: 10),
+    CountryOrder(id: '2', name: 'Uganda', flagAsset: 'flags/uganda.png', continent: Continent.afrika, unlockCost: 50000, upgradeCost: 25000, deliveryTime: const Duration(minutes: 5), rewardKeyMin: 3, rewardKeyMax: 9),
+  ];
+
+    List<CountryOrder> get countries => _countries;
+
+  void unlockCountry(String id) {
+    final index = _countries.indexWhere((c) => c.id == id);
+    if (index != -1 && _balanceBCoin >= _countries[index].unlockCost) {
+      _balanceBCoin -= _countries[index].unlockCost;
+      _countries[index].isUnlocked = true;
+      refreshCountryOrder(id);
+      notifyListeners();
+    }
+  }
+
+  void refreshCountryOrder(String id) {
+    final index = _countries.indexWhere((c) => c.id == id);
+    final random = Random();
+    
+    List<OrderItem> newItems = [];
+    var pool = List<FarmItem>.from(_myFarms)..shuffle();
+    
+    for (var i = 0; i < 3; i++) {
+      newItems.add(OrderItem(
+        itemName: pool[i].name,
+        assetPath: pool[i].assetPath,
+        amount: 5 + random.nextInt(26),
+      ));
+    }
+    _countries[index].requiredItems = newItems;
+    notifyListeners();
+  }
+  
   double _balanceBCoin = 5000.0;
   double _balanceKeyCoin = 0.0;
   double _balanceSpecial = 0.0;
