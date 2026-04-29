@@ -117,9 +117,9 @@ class DashboardView extends StatelessWidget {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.airplanemode_active_rounded, color: Colors.amber, size: 22),
+                                      Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 22),
                                        SizedBox(height: 4),
-                                      Text("MENDESAK"),
+                                      Text("URGENT"),
                                     ],
                                   ),
                                 ),
