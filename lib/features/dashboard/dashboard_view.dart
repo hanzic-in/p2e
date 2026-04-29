@@ -102,33 +102,25 @@ class DashboardView extends StatelessWidget {
                       length: 5,
                       child: Column(
                         children: [
-                 // SUB-TAB BAR LOGISTIK
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(top: 15, bottom: 5),
-                            decoration: const BoxDecoration(
-                              border: Border(bottom: BorderSide(color: Colors.white10, width: 1)),
-                            ),
+                          SizedBox(
+                            height: 80,
                             child: TabBar(
                               isScrollable: true,
                               tabAlignment: TabAlignment.center,
-                              indicatorColor: AppColors.primaryGreen,
-                              indicatorWeight: 3,
+                              indicatorColor: Colors.transparent,
+                              dividerColor: Colors.transparent,
                               labelColor: Colors.white,
                               unselectedLabelColor: Colors.white24,
-                              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
-                              tabs: [
+                              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2),
+                              tabs: [            
                                 const Tab(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 12),              
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 20),  
-                                        SizedBox(height: 5),
-                                        Text("MENDESAK"),
-                                      ],
-                                    ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.airplanemode_active_rounded, color: Colors.amber, size: 22),
+                                       SizedBox(height: 4),
+                                      Text("MENDESAK"),
+                                    ],
                                   ),
                                 ),
                                 const Tab(text: "AFRIKA"),
@@ -138,15 +130,15 @@ class DashboardView extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // ISI HALAMAN PESANAN (Coming Soon)
+                          // ISI HALAMAN
                           const Expanded(
                             child: TabBarView(
                               children: [
-                                Center(child: Text("Daftar Pesanan Mendesak (Coming Soon)", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("Kontrak Afrika (Coming Soon)", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("Kontrak Asia (Coming Soon)", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("Kontrak Eropa (Coming Soon)", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("Kontrak AS (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("MENDESAK", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("AFRIKA", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("ASIA", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("EROPA", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("AS", style: TextStyle(color: Colors.white10))),
                               ],
                             ),
                           ),
