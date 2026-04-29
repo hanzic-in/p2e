@@ -98,9 +98,61 @@ class DashboardView extends StatelessWidget {
                       },
                     );
                   }).toList(),
-                      const Center(
-                        child: Text("MENU LOGISTIK\nCOMING SOON", textAlign: TextAlign.center, style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+                    DefaultTabController(
+                      length: 5,
+                      child: Column(
+                        children: [
+                 // SUB-TAB BAR LOGISTIK
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(top: 15, bottom: 5),
+                            decoration: const BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.white10, width: 1)),
+                            ),
+                            child: TabBar(
+                              isScrollable: true,
+                              tabAlignment: TabAlignment.center,
+                              indicatorColor: AppColors.primaryGreen,
+                              indicatorWeight: 3,
+                              labelColor: Colors.white,
+                              unselectedLabelColor: Colors.white24,
+                              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                              tabs: [
+                                const Tab(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12),              
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 20),  
+                                        SizedBox(height: 5),
+                                        Text("MENDESAK"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const Tab(text: "AFRIKA"),
+                                const Tab(text: "ASIA"),
+                                const Tab(text: "EROPA"),
+                                const Tab(text: "AS"),
+                              ],
+                            ),
+                          ),
+                          // ISI HALAMAN PESANAN (Coming Soon)
+                          const Expanded(
+                            child: TabBarView(
+                              children: [
+                                Center(child: Text("Daftar Pesanan Mendesak (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("Kontrak Afrika (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("Kontrak Asia (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("Kontrak Eropa (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                                Center(child: Text("Kontrak AS (Coming Soon)", style: TextStyle(color: Colors.white10))),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
