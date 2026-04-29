@@ -481,52 +481,69 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
 
 Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
   return Container(
-    margin: const EdgeInsets.only(bottom: 20),
+    margin: const EdgeInsets.only(bottom: 15),
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       color: AppColors.cardBg,
       borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: Colors.white10),
     ),
     child: Column(
       children: [
-        // Header: Bendera & Nama
         Row(
           children: [
-            CircleAvatar(backgroundImage: AssetImage(negara.flagAsset), radius: 30),
+            Container(
+              height: 60, width: 60,
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white10, width: 2),
+              ),
+              child: ClipOval(child: Image.asset(negara.flagAsset, fit: BoxFit.cover, errorBuilder: (c,e,s) => Icon(Icons.flag, color: Colors.white24))),
+            ),
             const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("${negara.level} LVL", style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(negara.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                ],
+              ),
+            ),
             Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("${negara.level} LVL", style: TextStyle(color: Colors.white38, fontSize: 10)),
-                Text(negara.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+                const Icon(Icons.vpn_key, color: Colors.amber, size: 16),
+                Text("${negara.rewardKeyMin}-${negara.rewardKeyMax}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ],
             )
           ],
         ),
         
-        const SizedBox(height: 20),
-        
+        const SizedBox(height: 25),
+
         if (!negara.isUnlocked)
-          ElevatedButton(
-            onPressed: () => prov.unlockCountry(negara.id),
-            child: Text("BUKA 🔓 ${negara.unlockCost.toInt()}"),
+          SizedBox(
+            width: double.infinity,
+            height: 45,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withOpacity(0.05),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.white10)),
+              ),
+              onPressed: () => prov.unlockCountry(negara.id),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock, color: Colors.amber, size: 14),
+                  const SizedBox(width: 10),
+                  Text("BUKA 💰 ${negara.unlockCost.toInt()}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
           )
         else
-          Column(
-            children: [
-              Wrap(
-                children: negara.requiredItems.map((item) {
-                  final farm = prov.myFarms.firstWhere((f) => f.name == item.itemName);
-                  return _orderItem(item.assetPath, item.amount.toString(), farm.stock);
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {}, 
-                child: Text("Tingkatkan 🚀 ${negara.upgradeCost.toInt()}")
-              ),
-            ],
-          ),
+          _buildCountryOrderDetails(negara, prov),
         ],
       ),
     );
