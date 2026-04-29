@@ -94,7 +94,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   ),
                   const SizedBox(height: 25),
 
-                  _buildAnimatedVga(_fanController),
+                  _buildAnimatedVga(_fanController, miningProv),
 
                   const SizedBox(height: 25),
                   Row(
