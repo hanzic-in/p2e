@@ -505,7 +505,6 @@ Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
         
         const SizedBox(height: 20),
         
-        // Status: Locked vs Unlocked
         if (!negara.isUnlocked)
           ElevatedButton(
             onPressed: () => prov.unlockCountry(negara.id),
