@@ -42,7 +42,7 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  double _balanceBCoin = 5000.0;
+  double _balanceBCoin = 5000000.0;
   double _balanceKeyCoin = 0.0;
   double _balanceSpecial = 0.0;
   
