@@ -237,4 +237,66 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
   );
 }
 
+class MiningGaugePainter extends CustomPainter {
+  final double value;
+  MiningGaugePainter({required this.value});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+
+    paint.color = Colors.white10;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      math.pi * 0.8,
+      math.pi * 1.4,
+      false,
+      paint,
+    );
+
+    if (value > 0) {
+      paint.color = Colors.greenAccent.withOpacity(0.5);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        math.pi * 0.8,
+        math.pi * 1.4 * value,
+        false,
+        paint,
+      );
+    }
+
+    final needlePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final double angle = (math.pi * 0.8) + (math.pi * 1.4 * value);
+    
+    final needlePath = Path();
+    final needleLen = radius - 20;
+    final tailLen = 10.0;
+    
+    needlePath.moveTo(
+      center.dx + math.cos(angle) * needleLen,
+      center.dy + math.sin(angle) * needleLen,
+    );
+    needlePath.lineTo(
+      center.dx + math.cos(angle + 0.1) * tailLen,
+      center.dy + math.sin(angle + 0.1) * tailLen,
+    );
+    needlePath.lineTo(
+      center.dx + math.cos(angle - 0.1) * tailLen,
+      center.dy + math.sin(angle - 0.1) * tailLen,
+    );
+    needlePath.close();    
+    canvas.drawPath(needlePath, needlePaint);
+    canvas.drawCircle(center, 5, needlePaint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
 
