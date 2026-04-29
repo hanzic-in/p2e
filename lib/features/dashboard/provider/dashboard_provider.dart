@@ -160,18 +160,20 @@ void claimResult(int id) {
 void generateRandomOrder() {
   final random = Random();
   List<OrderItem> listPesanan = []; 
-  var farmsTerbuka = _myFarms.where((f) => f.status != ProductionStatus.locked).toList();
-  farmsTerbuka.shuffle();
+  var semuaFarm = List<FarmItem>.from(_myFarms);
+  semuaFarm.shuffle();
 
-  for (var i = 0; i < min(3, farmsTerbuka.length); i++) {
+  int jumlahJenis = 3 + random.nextInt(4); 
+
+  for (var i = 0; i < jumlahJenis; i++) {
     listPesanan.add(OrderItem(
-      itemName: farmsTerbuka[i].name,
-      assetPath: farmsTerbuka[i].assetPath,
-      amount: 100 + random.nextInt(900),
+      itemName: semuaFarm[i].name,
+      assetPath: semuaFarm[i].assetPath,
+      amount: 50 + random.nextInt(450),
     ));
   }
-  double totalHadiah = (listPesanan.length * 50000).toDouble();
-  int hours = (totalHadiah / 100000).floor() + 2 + random.nextInt(3);
+  double totalHadiah = (listPesanan.length * 20000).toDouble() + random.nextInt(10000);
+
   _currentUrgentOrder = UrgentOrder(
     id: DateTime.now().millisecondsSinceEpoch.toString(),
     buyerName: "Eagle Eye Eddie",
@@ -179,9 +181,10 @@ void generateRandomOrder() {
     requiredItems: listPesanan,
     rewardCoin: totalHadiah,
     rewardKey: totalHadiah > 100000 ? 1 : 0,
-    deliveryDuration: Duration(hours: hours),
+    deliveryDuration: Duration(hours: 2 + random.nextInt(6)),
   );
     notifyListeners();
   }
+
 
 }
