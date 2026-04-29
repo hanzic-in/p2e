@@ -197,70 +197,70 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 // --- FUNGSI WIDGET VGA ANIMASI ---
 Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
-    double jitter = 0.0;
+  double jitter = 0.0;
   if (prov.isMining) {
-    jitter = (math.sin(DateTime.now().millisecondsSinceEpoch / 200) * 0.015);
+    jitter = (math.sin(DateTime.now().millisecondsSinceEpoch / 150) * 0.012);
   }
 
   double baseTarget = prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0;
   final double targetValue = (baseTarget + jitter).clamp(0.0, 1.0);
   
   return Container(
-    height: 240,
+    height: 260,
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 20),
+    alignment: Alignment.center,
     child: Stack(
       alignment: Alignment.center,
       children: [
         TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0, end: targetValue),
-          duration: const Duration(milliseconds: 1500),
-          curve: Curves.easeOutBack,
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.linear,
           builder: (context, animValue, child) {
             return CustomPaint(
-              size: const Size(220, 220),
+              size: const Size(200, 200),
               painter: MiningGaugePainter(
-                value: animValue,
-                isBoost: prov.isBoostActive,
+                value: animValue, 
+                isBoost: prov.isBoostActive
               ),
             );
           },
         ),
         
-        Positioned(
-          bottom: 25,
-          child: Column(
-            children: [
-              const Text("MINING SPEED", 
-                style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-              const SizedBox(height: 5),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
-                    duration: const Duration(milliseconds: 150),
-                    curve: Curves.linear,
-                    builder: (context, animValue, child) {
-                      return CustomPaint(
-                        size: const Size(220, 220),
-                        painter: MiningGaugePainter(value: animValue, isBoost: prov.isBoostActive),
-                      );
-                    },
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 6, left: 5),
-                    child: Text("Gh/s", style: TextStyle(color: Colors.white60, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const Text("MINING SPEED", 
+              style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            const SizedBox(height: 5),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
+                  duration: const Duration(milliseconds: 1500),
+                  builder: (context, val, child) {
+                    return Text(
+                      val.toStringAsFixed(1), 
+                      style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace')
+                    );
+                  },
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 6, left: 4),
+                  child: Text("Gh/s", style: TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 35),
+          ],
         ),
       ],
     ),
   );
 }
+
 
 
 
