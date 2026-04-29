@@ -246,6 +246,7 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
                         size: const Size(220, 220),
                         painter: MiningGaugePainter(value: animValue, isBoost: prov.isBoostActive),
                       );
+                    },
                     builder: (context, val, child) {
                       return Text(
                         val.toStringAsFixed(1), 
