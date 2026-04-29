@@ -12,6 +12,9 @@ class DashboardProvider extends ChangeNotifier {
   List<FarmItem> _myFarms = initialFarms;
   final Map<int, Timer?> _timers = {};
 
+  UrgentOrder? _currentUrgentOrder;
+  UrgentOrder? get currentUrgentOrder => _currentUrgentOrder;
+
   double get bCoin => _balanceBCoin;
   double get keyCoin => _balanceKeyCoin;
   double get special => _balanceSpecial;
