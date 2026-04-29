@@ -197,7 +197,13 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 // --- FUNGSI WIDGET VGA ANIMASI ---
 Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
-  final double targetValue = prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0;
+    double jitter = 0.0;
+  if (prov.isMining) {
+    jitter = (math.sin(DateTime.now().millisecondsSinceEpoch / 200) * 0.015);
+  }
+
+  double baseTarget = prov.isMining ? (prov.isBoostActive ? 0.8 : 0.4) : 0.0;
+  final double targetValue = (baseTarget + jitter).clamp(0.0, 1.0);
   
   return Container(
     height: 240,
@@ -233,7 +239,13 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
                 children: [
                   TweenAnimationBuilder<double>(
                     tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
-                    duration: const Duration(milliseconds: 1500),
+                    duration: const Duration(milliseconds: 150),
+                    curve: Curves.linear,
+                    builder: (context, animValue, child) {
+                      return CustomPaint(
+                        size: const Size(220, 220),
+                        painter: MiningGaugePainter(value: animValue, isBoost: prov.isBoostActive),
+                      );
                     builder: (context, val, child) {
                       return Text(
                         val.toStringAsFixed(1), 
