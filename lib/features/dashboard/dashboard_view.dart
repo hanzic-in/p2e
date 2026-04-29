@@ -514,14 +514,18 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.05),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
+                  
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: AppColors.primaryGreen.withOpacity(0.5))
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
                 onPressed: () {
+                  // Logic kirim barang
                 },
-                child: const Text("Muat dan Kirim", 
-                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                child: const Text("MUAT DAN KIRIM KE NEGARA", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
