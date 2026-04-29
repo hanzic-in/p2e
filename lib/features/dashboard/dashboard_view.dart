@@ -6,6 +6,7 @@ import './widgets/farm_list_item.dart';
 import './models/farm_item_model.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/ad_banner_carousel.dart';
+import '../models/country_model.dart';
 
 class DashboardView extends StatelessWidget {
   @override
