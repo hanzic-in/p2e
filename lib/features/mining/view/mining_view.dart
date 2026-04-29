@@ -247,12 +247,6 @@ Widget _buildAnimatedVga(AnimationController controller, MiningProvider prov) {
                         painter: MiningGaugePainter(value: animValue, isBoost: prov.isBoostActive),
                       );
                     },
-                    builder: (context, val, child) {
-                      return Text(
-                        val.toStringAsFixed(1), 
-                        style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'monospace')
-                      );
-                    },
                   ),
                   const Padding(
                     padding: EdgeInsets.only(bottom: 6, left: 5),
