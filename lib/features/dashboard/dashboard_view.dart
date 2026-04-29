@@ -135,14 +135,14 @@ class DashboardView extends StatelessWidget {
                           Expanded(
                             child: TabBarView(
                               children: [
-                                      SingleChildScrollView(
-                                        padding: const EdgeInsets.all(20),
-                                        child: _buildUrgentCard(prov),
-                                      ),
-                                Center(child: Text("AFRIKA", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("ASIA", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("EROPA", style: TextStyle(color: Colors.white10))),
-                                Center(child: Text("AS", style: TextStyle(color: Colors.white10))),
+                                SingleChildScrollView(
+                                  padding: const EdgeInsets.all(20),
+                                  child: _buildUrgentCard(prov),
+                                ),
+                                _buildCountryPage(prov, Continent.afrika),
+                                _buildCountryPage(prov, Continent.asia),
+                                _buildCountryPage(prov, Continent.eropa),
+                                _buildCountryPage(prov, Continent.as),
                               ],
                             ),
                           ),
