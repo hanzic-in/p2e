@@ -51,7 +51,8 @@ class DashboardView extends StatelessWidget {
               // (Isi list setiap sektor)
               Expanded(
                 child: TabBarView(
-                  children: FarmSector.values.map((sector) {
+                  children: [
+                    ...FarmSector.values.map((sector) {
                     final sectorItems = prov.myFarms.where((f) => f.sector == sector).toList();
 
                     if (sectorItems.isEmpty) {
@@ -97,6 +98,10 @@ class DashboardView extends StatelessWidget {
                       },
                     );
                   }).toList(),
+                      const Center(
+                        child: Text("MENU LOGISTIK\nCOMING SOON", textAlign: TextAlign.center, style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold)),
+                      ),
+                  ],
                 ),
               ),
             ],
