@@ -120,6 +120,42 @@ class DashboardView extends StatelessWidget {
                                       Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 22),
                                        SizedBox(height: 4),
                                       Text("URGENT"),
+                                      // Di dalem TabBarView Mendesak
+Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.05),
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Column(
+    children: [
+      Row(
+        children: [
+          Image.asset(order.buyerImage, height: 100),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(order.buyerName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text("Berangkat dalam ${order.deliveryDuration.inHours}h"),
+              ElevatedButton(onPressed: () {}, child: Text("Muat dan Kirim"))
+            ],
+          )
+        ],
+      ),
+      const Divider(color: Colors.white10),
+      Row(
+        children: order.requiredItems.map((item) => _buildItemIcon(item)).toList(),
+      ),
+      Row(
+        children: [
+          _rewardTile(Icons.monetization_on, order.rewardCoin.toString()),
+          _rewardTile(Icons.vpn_key, order.rewardKey.toString()),
+        ],
+      )
+    ],
+  ),
+)
+
                                     ],
                                   ),
                                 ),
