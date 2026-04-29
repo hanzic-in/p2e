@@ -466,25 +466,64 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
-  // --- FUNGSI HALAMAN NEGARA ---
-  Widget _buildCountryPage(DashboardProvider prov, Continent continent) {
-    final listNegara = prov.countries.where((c) => c.continent == continent).toList();
+  // --- FUNGSI DETAIL PESANAN NEGARA ---
+  Widget _buildCountryOrderDetails(CountryOrder negara, DashboardProvider prov) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(color: Colors.white10, height: 30),
+        const Text("Pesanan Negara", 
+          style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+        const SizedBox(height: 15),
+        
+        Wrap(
+          spacing: 15,
+          runSpacing: 15,
+          children: negara.requiredItems.map((item) {
+            final farm = prov.myFarms.firstWhere((f) => f.name == item.itemName);
+            return _orderItem(item.assetPath, item.amount.toString(), farm.stock);
+          }).toList(),
+        ),
 
-    if (listNegara.isEmpty) {
-      return const Center(
-        child: Text("Belum ada negara di benua ini", style: TextStyle(color: Colors.white10)),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: listNegara.length,
-      itemBuilder: (context, index) {
-        final negara = listNegara[index];
-        return _buildCountryCard(negara, prov);
-      },
+        const SizedBox(height: 25),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.05),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () {
+                },
+                child: const Text("Muat dan Kirim", 
+                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber.withOpacity(0.1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              ),
+              onPressed: () {
+              },
+              child: Row(
+                children: [
+                  const Icon(Icons.upgrade, color: Colors.amber, size: 16),
+                  Text(" ${negara.upgradeCost.toInt()}", 
+                    style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
+
 
   // --- FUNGSI KARTU NEGARA ---
   Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
