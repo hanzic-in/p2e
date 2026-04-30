@@ -11,103 +11,22 @@ class MiningView extends StatefulWidget {
   _MiningViewState createState() => _MiningViewState();
 }
 
-class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
-  late AnimationController _rotationController;
-
-  @override
-  void initState() {
-    super.initState();
-    // Controller utama yang jalan terus tanpa henti
-    _rotationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 10),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _rotationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final prov = Provider.of<MiningProvider>(context);
-    final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00D1FF); // Biru cyan kayak referensi
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF020408),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
-            const Text("ENERGY CORE STATUS: ACTIVE", style: TextStyle(color: Colors.white10, letterSpacing: 4, fontSize: 10, fontWeight: FontWeight.bold)),
-            
-            const Expanded(
-              child: Center(
-                child: ParticleCoreVisualizer(),
-              ),
-            ),
-
-            // --- INFO DISPLAY ---
-            _buildStatsAndAction(prov, themeColor),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsAndAction(MiningProvider prov, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
-            duration: const Duration(milliseconds: 1500),
-            builder: (context, val, child) {
-              return Text(
-                "${val.toStringAsFixed(1)} GH/S",
-                style: const TextStyle(color: Colors.white, fontSize: 44, fontWeight: FontWeight.w100, fontFamily: 'monospace'),
-              );
-            },
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: prov.isMining ? Colors.white.withOpacity(0.05) : color,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                elevation: 0,
-              ),
-              onPressed: () => prov.isMining ? null : prov.startMiningSession(),
-              child: Text(prov.isMining ? "CORE STABILIZED" : "IGNITE CORE",
-                style: TextStyle(color: prov.isMining ? Colors.white24 : Colors.black, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ParticleCoreVisualizer extends StatefulWidget {
-  const ParticleCoreVisualizer({super.key});
-
-  @override
-  State<ParticleCoreVisualizer> createState() => _ParticleCoreVisualizerState();
-}
-
-class _ParticleCoreVisualizerState extends State<ParticleCoreVisualizer> with SingleTickerProviderStateMixin {
+class _MiningViewState extends State<MiningView> with TickerProviderStateMixin {
   late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    // Controller untuk efek detak jantung (Pulse)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -119,18 +38,177 @@ class _ParticleCoreVisualizerState extends State<ParticleCoreVisualizer> with Si
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
-    final color = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00D1FF);
+    final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
 
+    return Scaffold(
+      backgroundColor: const Color(0xFF060812),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            // --- HEADER ---
+            _buildHeader(),
+            
+            const Spacer(),
+
+            // --- CENTRAL UNIT (MULAI -> CORE) ---
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  if (!prov.isMining) {
+                    prov.startMiningSession();
+                  }
+                },
+                child: AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    // Hanya berdetak kalau belum mining
+                    double scale = prov.isMining ? 1.0 : _pulseAnimation.value;
+                    
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 1. Glow Detak Jantung (Background Pulse)
+                        if (!prov.isMining)
+                          Container(
+                            width: 220 * scale,
+                            height: 220 * scale,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: themeColor.withOpacity(0.15),
+                                  blurRadius: 40,
+                                  spreadRadius: 10,
+                                )
+                              ],
+                            ),
+                          ),
+
+                        // 2. Lingkaran Utama / Core Container
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.elasticOut,
+                          height: prov.isMining ? 300 : 220,
+                          width: prov.isMining ? 300 : 220,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: prov.isMining ? Colors.transparent : themeColor.withOpacity(0.8),
+                              width: 2,
+                            ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Visual Partikel (Muncul pas mining)
+                              if (prov.isMining)
+                                ParticleCoreVisualizer(color: themeColor),
+
+                              // Teks MULAI (Fade Out pas mining)
+                              AnimatedOpacity(
+                                opacity: prov.isMining ? 0.0 : 1.0,
+                                duration: const Duration(milliseconds: 400),
+                                child: Text(
+                                  "MULAI",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 32 * (prov.isMining ? 0.5 : 1.0),
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const Spacer(),
+
+            // --- STATS BAR (Slide up pas mining) ---
+            _buildStatsFooter(prov, themeColor),
+            
+            const SizedBox(height: 50),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return const Column(
+      children: [
+        Text("B-COIN PROTOCOL", style: TextStyle(color: Colors.white10, fontSize: 10, letterSpacing: 5, fontWeight: FontWeight.bold)),
+        SizedBox(height: 5),
+        Text("NODE ID: 0xFF229", style: TextStyle(color: Colors.white24, fontSize: 8, letterSpacing: 2)),
+      ],
+    );
+  }
+
+  Widget _buildStatsFooter(MiningProvider prov, Color color) {
+    return AnimatedOpacity(
+      opacity: prov.isMining ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 800),
+      child: Column(
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
+            duration: const Duration(seconds: 2),
+            curve: Curves.easeOutExpo,
+            builder: (context, val, child) {
+              return Text("${val.toStringAsFixed(1)} Gh/s", 
+                style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w200, fontFamily: 'monospace'));
+            },
+          ),
+          const SizedBox(height: 10),
+          Text("TIME REMAINING: ${prov.remainingMiningTimeStr}", 
+            style: TextStyle(color: color.withOpacity(0.5), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        ],
+      ),
+    );
+  }
+}
+
+// --- VISUAL PARTICLE CORE (SMOOTH & ORGANIC) ---
+class ParticleCoreVisualizer extends StatefulWidget {
+  final Color color;
+  const ParticleCoreVisualizer({super.key, required this.color});
+
+  @override
+  State<ParticleCoreVisualizer> createState() => _ParticleCoreVisualizerState();
+}
+
+class _ParticleCoreVisualizerState extends State<ParticleCoreVisualizer> with SingleTickerProviderStateMixin {
+  late AnimationController _rotationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _pulseController,
+      animation: _rotationController,
       builder: (context, child) {
         return CustomPaint(
           size: const Size(300, 300),
           painter: CorePainter(
             time: DateTime.now().millisecondsSinceEpoch / 1000,
-            color: color,
-            isMining: prov.isMining,
-            pulse: _pulseController.value,
+            color: widget.color,
           ),
         );
       },
@@ -141,75 +219,48 @@ class _ParticleCoreVisualizerState extends State<ParticleCoreVisualizer> with Si
 class CorePainter extends CustomPainter {
   final double time;
   final Color color;
-  final bool isMining;
-  final double pulse;
 
-  CorePainter({required this.time, required this.color, required this.isMining, required this.pulse});
+  CorePainter({required this.time, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 3;
+    final radius = size.width / 3.5;
 
-    // 1. Layer Glow Belakang (Pendaran Cahaya)
-    final glowPaint = Paint()
-      ..color = color.withOpacity(isMining ? 0.15 * pulse : 0.05)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
-    canvas.drawCircle(center, radius, glowPaint);
-
-    // 2. Main Sphere Core (Bola Kaca Transparan)
-    final spherePaint = Paint()
-      ..shader = RadialGradient(
-        colors: [color.withOpacity(0.0), color.withOpacity(0.2)],
-        stops: const [0.7, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-    canvas.drawCircle(center, radius, spherePaint);
-
-    // 3. Garis Orbit Bergelombang (Inner Waves)
-    if (isMining) {
-      final wavePaint = Paint()
-        ..color = color.withOpacity(0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0;
-      
-      for (int i = 0; i < 3; i++) {
-        final path = Path();
-        for (double angle = 0; angle <= math.pi * 2; angle += 0.1) {
-          double r = radius - 5 - (i * 10);
-          double distortion = math.sin(angle * 3 + time * (i + 1)) * 5;
-          double x = center.dx + (r + distortion) * math.cos(angle);
-          double y = center.dy + (r + distortion) * math.sin(angle);
-          if (angle == 0) path.moveTo(x, y); else path.lineTo(x, y);
-        }
-        path.close();
-        canvas.drawPath(path, wavePaint);
+    // 1. Inner Energy Waves
+    final wavePaint = Paint()
+      ..color = color.withOpacity(0.2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    
+    for (int i = 0; i < 3; i++) {
+      final path = Path();
+      for (double a = 0; a <= math.pi * 2; a += 0.1) {
+        double r = radius - (i * 15);
+        double dist = math.sin(a * 4 + time * (i + 2)) * 8;
+        double x = center.dx + (r + dist) * math.cos(a);
+        double y = center.dy + (r + dist) * math.sin(a);
+        if (a == 0) path.moveTo(x, y); else path.lineTo(x, y);
       }
+      path.close();
+      canvas.drawPath(path, wavePaint);
     }
 
-    // 4. THE PARTICLE RING (Cincin Debu Cahaya - Rahasia Biar Gak Kayak GIF)
-    final random = math.Random(42); // Seed dikunci biar partikel nggak loncat-loncat liar
-    final particlePaint = Paint()..style = PaintingStyle.fill;
+    // 2. Particle Dust Ring (Banyak & Kecil)
+    final random = math.Random(88);
+    for (int i = 0; i < 150; i++) {
+      double speed = random.nextDouble() * 0.4 + 0.1;
+      double orbit = radius + 5 + (random.nextDouble() * 35);
+      double angle = (time * speed) + (i * (math.pi * 2 / 150));
+      
+      double px = center.dx + orbit * math.cos(angle);
+      double py = center.dy + orbit * math.sin(angle);
 
-    int particleCount = isMining ? 150 : 30;
-    for (int i = 0; i < particleCount; i++) {
-      // Logic pergerakan partikel: Setiap partikel punya orbit unik
-      double speed = random.nextDouble() * 0.5 + 0.2;
-      double orbitRadius = radius + 20 + (random.nextDouble() * 30);
-      double angle = (time * speed) + (i * (math.pi * 2 / particleCount));
-      
-      // Kasih sedikit goyangan vertikal/horizontal
-      double offset = math.sin(time + i) * 10;
-      
-      double px = center.dx + (orbitRadius + offset) * math.cos(angle);
-      double py = center.dy + (orbitRadius + offset) * math.sin(angle);
-
-      double pSize = random.nextDouble() * 2.0;
-      particlePaint.color = color.withOpacity(random.nextDouble() * 0.8);
-      
-      // Partikel makin terang kalau deket "kamera" (simulasi 3D)
-      if (math.sin(angle) > 0) {
-         canvas.drawCircle(Offset(px, py), pSize, particlePaint);
-      }
+      canvas.drawCircle(
+        Offset(px, py), 
+        random.nextDouble() * 1.5, 
+        Paint()..color = color.withOpacity(random.nextDouble() * 0.5)
+      );
     }
   }
 
