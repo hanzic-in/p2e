@@ -12,20 +12,21 @@ class MiningView extends StatefulWidget {
 }
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
-  late AnimationController _rotationController;
+  late AnimationController _waveController;
 
   @override
   void initState() {
     super.initState();
-    _rotationController = AnimationController(
+    // Controller untuk menggerakkan gelombang cairan
+    _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
-    )..repeat(); // Buat muter teks kinetik di background
+      duration: const Duration(seconds: 2),
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _rotationController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
 
@@ -35,141 +36,64 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050505),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 60),
-            
-            // --- KINETIC VISUALIZER AREA ---
-            Expanded(
-              child: Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // 1. Decorative Kinetic Circles (Muter Pelan)
-                    AnimatedBuilder(
-                      animation: _rotationController,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotationController.value * 2 * math.pi,
-                          child: CustomPaint(
-                            size: const Size(300, 300),
-                            painter: KineticTextPainter(color: themeColor.withOpacity(0.1)),
-                          ),
-                        );
-                      },
-                    ),
+      backgroundColor: const Color(0xFF080910),
+      body: Stack(
+        children: [
+          // --- LAYER 1: FLUID BACKGROUND (Cairan yang memenuhi layar bawah) ---
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _waveController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: FluidWavePainter(
+                    waveValue: _waveController.value,
+                    color: themeColor,
+                    // Tinggi cairan naik berdasarkan status mining
+                    fillLevel: prov.isMining ? (prov.isBoostActive ? 0.45 : 0.35) : 0.2,
+                    isMining: prov.isMining,
+                  ),
+                );
+              },
+            ),
+          ),
 
-                    // 2. Main Hash Counter (Typography Fokus)
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
+          // --- LAYER 2: UI CONTENT ---
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("SYSTEM FLUIDITY", style: TextStyle(color: Colors.white24, letterSpacing: 4, fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Text(prov.isMining ? "STREAMS STABLE" : "PUMP IDLE", style: TextStyle(color: themeColor, fontWeight: FontWeight.w900, fontSize: 18)),
+                  
+                  const Spacer(),
+
+                  // Hash Rate Display (Floating in the middle of fluid)
+                  Center(
+                    child: Column(
                       children: [
-                        const Text("STREAMS ACTIVE", 
-                          style: TextStyle(color: Colors.white24, fontSize: 10, letterSpacing: 5, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 10),
-                        
-                        // Angka Utama dengan Animasi Rolling
-                        _buildRollingNumber(
-                          prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0.0,
-                          themeColor,
+                        TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
+                          duration: const Duration(seconds: 1),
+                          builder: (context, val, child) {
+                            return Text(
+                              val.toStringAsFixed(1),
+                              style: const TextStyle(color: Colors.white, fontSize: 80, fontWeight: FontWeight.w100, fontFamily: 'monospace'),
+                            );
+                          },
                         ),
-                        
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                          decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(4)),
-                          child: const Text("GH/S", style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w900)),
-                        ),
+                        const Text("GH/S OUTPUT", style: TextStyle(color: Colors.white38, fontSize: 12, letterSpacing: 5)),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // --- BOTTOM CONTROL INTERFACE ---
-            _buildKineticControls(prov, themeColor),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRollingNumber(double value, Color color) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: value),
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.elasticOut,
-      builder: (context, val, child) {
-        return Text(
-          val.toStringAsFixed(1),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 80,
-            fontWeight: FontWeight.w900,
-            fontFamily: 'monospace',
-            letterSpacing: -4,
-            shadows: [
-              Shadow(color: color.withOpacity(0.5), blurRadius: 20),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildKineticControls(MiningProvider prov, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        children: [
-          // Elegant Timer
-          if (prov.isMining)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: Text(
-                "SESSION EXPIRES IN: ${prov.remainingMiningTimeStr}",
-                style: const TextStyle(color: Colors.white38, fontSize: 11, fontFamily: 'monospace', letterSpacing: 1),
-              ),
-            ),
-          
-          // Action Button - Minimalist Kinetic Style
-          GestureDetector(
-            onTap: () => prov.isMining ? null : prov.startMiningSession(),
-            child: Container(
-              width: double.infinity,
-              height: 70,
-              decoration: BoxDecoration(
-                border: Border.all(color: prov.isMining ? Colors.white10 : color, width: 2),
-                borderRadius: BorderRadius.circular(0), // Kotak kaku khas Kinetic UI
-              ),
-              child: Center(
-                child: Text(
-                  prov.isMining ? "SYSTEM RUNNING" : "ENGAGE MINING UNIT",
-                  style: TextStyle(
-                    color: prov.isMining ? Colors.white24 : color,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
                   ),
-                ),
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Boost Action
-          InkWell(
-            onTap: () => prov.canClaimBoost() ? prov.startBoostSession() : null,
-            child: Text(
-              prov.isBoostActive ? "OVERCLOCK ON // ${prov.remainingBoostTimeStr}" : "INITIATE 2X BOOST",
-              style: TextStyle(
-                color: prov.isBoostActive ? const Color(0xFFC154F7) : Colors.white10,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+
+                  const Spacer(),
+
+                  // --- ACTION INTERFACE ---
+                  _buildFluidControls(prov, themeColor),
+                ],
               ),
             ),
           ),
@@ -177,40 +101,100 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       ),
     );
   }
+
+  Widget _buildFluidControls(MiningProvider prov, Color color) {
+    return Column(
+      children: [
+        if (prov.isMining)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.timer_outlined, color: Colors.white24, size: 14),
+                const SizedBox(width: 8),
+                Text(prov.remainingMiningTimeStr, style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        
+        SizedBox(
+          width: double.infinity,
+          height: 60,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: prov.isMining ? Colors.white.withOpacity(0.05) : color,
+              foregroundColor: prov.isMining ? Colors.white : Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 0,
+            ),
+            onPressed: () => prov.isMining ? null : prov.startMiningSession(),
+            child: Text(prov.isMining ? "CORE ACTIVE" : "INITIALIZE PUMP", style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+        
+        const SizedBox(height: 20),
+        
+        GestureDetector(
+          onTap: () => prov.canClaimBoost() ? prov.startBoostSession() : null,
+          child: Text(
+            prov.isBoostActive ? "OVERCLOCK ACTIVE: ${prov.remainingBoostTimeStr}" : "WATCH AD FOR 2X TURBULENCE",
+            style: TextStyle(color: prov.isBoostActive ? const Color(0xFFC154F7) : Colors.white10, fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-// --- PAINTER UNTUK TEKS DEKORATIF YANG MUTER ---
-class KineticTextPainter extends CustomPainter {
+// --- PAINTER UNTUK SIMULASI CAIRAN (FLUID DYNAMICS) ---
+class FluidWavePainter extends CustomPainter {
+  final double waveValue;
   final Color color;
-  KineticTextPainter({required this.color});
+  final double fillLevel; // 0.0 - 1.0
+  final bool isMining;
+
+  FluidWavePainter({required this.waveValue, required this.color, required this.fillLevel, required this.isMining});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    const text = " • NEXUS PROTOCOL • DATA MINING • BLOCKCHAIN STREAM • ";
-    const textStyle = TextStyle(color: Colors.white10, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 4);
-    
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    
-    // Gambar teks dalam lingkaran
-    for (int i = 0; i < text.length; i++) {
-      double angle = (i * (360 / text.length)) * (math.pi / 180);
-      canvas.save();
-      canvas.translate(center.dx + 130 * math.cos(angle), center.dy + 130 * math.sin(angle));
-      canvas.rotate(angle + (math.pi / 2));
+    final paint = Paint()..style = PaintingStyle.fill;
+    final double baseHeight = size.height * (1 - fillLevel);
+
+    // Kita gambar 3 lapisan gelombang dengan kecepatan dan opacity berbeda
+    _drawWave(canvas, size, paint, color.withOpacity(0.1), waveValue, 20, 1.0); // Gelombang belakang
+    _drawWave(canvas, size, paint, color.withOpacity(0.2), waveValue + 0.5, 15, 1.5); // Gelombang tengah
+    _drawWave(canvas, size, paint, color.withOpacity(0.4), waveValue + 0.2, 10, 2.0); // Gelombang depan
+  }
+
+  void _drawWave(Canvas canvas, Size size, Paint paint, Color waveColor, double animValue, double amplitude, double speed) {
+    paint.color = waveColor;
+    final path = Path();
+    final double baseHeight = size.height * (1 - fillLevel);
+
+    path.moveTo(0, baseHeight);
+
+    // Gambar gelombang menggunakan Sine Wave
+    for (double i = 0; i <= size.width; i++) {
+      // Logic gejolak: kalau mining, amplitudo gelombang makin berantakan/aktif
+      double activeAmplitude = isMining ? (amplitude + math.sin(animValue * 5) * 5) : amplitude;
       
-      textPainter.text = TextSpan(text: text[i], style: textStyle);
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
-      canvas.restore();
+      double y = baseHeight + math.sin((i / size.width * 2 * math.pi) + (animValue * 2 * math.pi * speed)) * activeAmplitude;
+      path.lineTo(i, y);
     }
 
-    // Tambah garis crosshair tipis
-    final linePaint = Paint()..color = Colors.white.withOpacity(0.02)..strokeWidth = 1;
-    canvas.drawLine(Offset(0, center.dy), Offset(size.width, center.dy), linePaint);
-    canvas.drawLine(Offset(center.dx, 0), Offset(center.dx, size.height), linePaint);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    // Beri efek glow tipis di permukaan air
+    if (isMining) {
+      paint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 10);
+    }
+
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(FluidWavePainter oldDelegate) => true;
 }
