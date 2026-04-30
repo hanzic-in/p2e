@@ -269,17 +269,24 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
 
 }
 
-  class _SingleDigitRolling extends StatelessWidget {
+class _SingleDigitRolling extends StatelessWidget {
   final String char;
   const _SingleDigitRolling({required this.char});
 
   @override
   Widget build(BuildContext context) {
+    bool isNumber = int.tryParse(char) != null;
+
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 150), 
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
       transitionBuilder: (Widget child, Animation<double> animation) {
         return SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(animation),
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.5),
+            end: Offset.zero,
+          ).animate(animation),
           child: FadeTransition(opacity: animation, child: child),
         );
       },
@@ -290,7 +297,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
           color: Colors.white, 
           fontSize: 24, 
           fontWeight: FontWeight.w900, 
-          fontFamily: 'monospace'
+          fontFamily: 'monospace',
         ),
       ),
     );
