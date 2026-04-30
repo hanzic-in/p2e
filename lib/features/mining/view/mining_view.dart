@@ -150,3 +150,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
             letterSpacing: 2,
           ),
         ),
+      ),
+    );
+  }
+}
