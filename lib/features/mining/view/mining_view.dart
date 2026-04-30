@@ -79,7 +79,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                           decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(4)),
-                          child: const Text("GH/S", style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.black)),
+                          child: const Text("GH/S", style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w900)),
                         ),
                       ],
                     ),
@@ -150,7 +150,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   prov.isMining ? "SYSTEM RUNNING" : "ENGAGE MINING UNIT",
                   style: TextStyle(
                     color: prov.isMining ? Colors.white24 : color,
-                    fontWeight: FontWeight.black,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 2,
                   ),
                 ),
