@@ -266,4 +266,33 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
       ),
     );
   }
+
+  class _SingleDigitRolling extends StatelessWidget {
+  final String char;
+  const _SingleDigitRolling({required this.char});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(animation),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      child: Text(
+        char,
+        key: ValueKey<String>(char),
+        style: const TextStyle(
+          color: Colors.white, 
+          fontSize: 24, 
+          fontWeight: FontWeight.w900, 
+          fontFamily: 'monospace'
+        ),
+      ),
+    );
+  }
+}
+
 }
