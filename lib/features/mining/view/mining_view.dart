@@ -36,6 +36,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   void dispose() {
     _shimmerController.dispose();
+    _balanceTimer?.cancel();
     super.dispose();
   }
 
@@ -140,12 +141,13 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   }
 
   Widget _buildTokenBalance(MiningProvider prov, Color color) {
+    String formatted = _currentBalance.toStringAsFixed(13);
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Custom Logo Token (D)
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
@@ -156,9 +158,25 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
             ),
             const SizedBox(width: 12),
-            Text(
-              prov.isMining ? "1,240.55" : "0.00",
-              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return SlideTransition(
+                  position: Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(animation),
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: Text(
+                formatted,
+                key: ValueKey<String>(formatted),
+                style: const TextStyle(
+                  color: Colors.white, 
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900, 
+                  fontFamily: 'monospace',
+                  letterSpacing: 0.5
+                ),
+              ),
             ),
           ],
         ),
@@ -167,6 +185,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       ],
     );
   }
+
 
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
