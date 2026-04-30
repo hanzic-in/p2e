@@ -10,149 +10,174 @@ class MiningView extends StatefulWidget {
   _MiningViewState createState() => _MiningViewState();
 }
 
-class _MiningViewState extends State<MiningView> {
+class _MiningViewState extends State<MiningView> with TickerProviderStateMixin {
+  // Controller buat animasi "cahaya lari" di dalem bar
+  late AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
+    final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9), // Putih keabu-abuan bersih kayak referensi
-      appBar: AppBar(
-        title: const Text("MINING DASHBOARD", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // --- HEADER INFO (ICON + HASHRATE) ---
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
-              ),
-              child: Row(
+      backgroundColor: const Color(0xFF05060B), // Back to Black sangar
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("OPERATIONAL DASHBOARD", style: TextStyle(color: Colors.white10, fontSize: 10, letterSpacing: 3, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 30),
+
+              // --- HEADER STATS ---
+              Row(
                 children: [
-                  // Icon Speedometer Biru (Kayak screenshot)
-                  _buildSpeedIcon(),
+                  Icon(Icons.bolt_rounded, color: themeColor, size: 40),
                   const SizedBox(width: 15),
-                  
-                  // Angka Hashrate
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15900 : 8200) : 0),
-                          duration: const Duration(seconds: 1),
-                          builder: (context, val, child) {
-                            return Text(
-                              "${val.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} H/s",
-                              style: const TextStyle(color: Colors.black, fontSize: 28, fontWeight: FontWeight.w900),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15900 : 8200) : 0),
+                        duration: const Duration(seconds: 1),
+                        builder: (context, val, child) {
+                          return Text(
+                            "${val.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} H/s",
+                            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+                          );
+                        },
+                      ),
+                      const Text("CURRENT NETWORK LOAD", style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold)),
+                    ],
                   ),
                 ],
               ),
-            ),
 
-            // --- PROGRESS BARS SECTION ---
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              child: Column(
-                children: [
-                  // 1. Progress Bar Orange (Mining Session)
-                  _buildLinearProgress(
-                    label: "SESSION PROGRESS",
-                    value: prov.isMining ? 0.75 : 0.0, // Ganti pake logic sisa waktu lu Han
-                    color: Colors.orangeAccent,
-                  ),
-                  
-                  const SizedBox(height: 20),
+              const SizedBox(height: 40),
 
-                  // 2. Progress Bar Biru (Stability/Network)
-                  _buildLinearProgress(
-                    label: "NETWORK STABILITY",
-                    value: prov.isMining ? 0.45 : 0.0,
-                    color: Colors.blueAccent,
-                  ),
-                ],
+              // --- DYNAMIC PROGRESS BARS (Sesuai mau lu Han) ---
+              _buildRunningProgressBar(
+                label: "SESSION PROCESS",
+                color: Colors.orangeAccent,
+                isMining: prov.isMining,
+                progress: 0.8, // Misal sesi udah jalan 80%
               ),
-            ),
+              
+              const SizedBox(height: 25),
 
-            const SizedBox(height: 40),
+              _buildRunningProgressBar(
+                label: "MINING STABILITY",
+                color: themeColor,
+                isMining: prov.isMining,
+                progress: 0.6,
+              ),
 
-            // --- ACTION BUTTON ---
-            _buildActionButton(prov),
-          ],
+              const SizedBox(height: 50),
+
+              // --- ACTION BUTTON ---
+              _buildMainButton(prov, themeColor),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSpeedIcon() {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        const Icon(Icons.speed_rounded, color: Colors.blueAccent, size: 45),
-        Row(
-          children: [
-            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
-            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle)),
-          ],
-        )
-      ],
-    );
-  }
-
-  Widget _buildLinearProgress({required String label, required double value, required Color color}) {
+  Widget _buildRunningProgressBar({required String label, required Color color, required bool isMining, required double progress}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black26, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
-        const SizedBox(height: 8),
-        Stack(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              height: 10,
-              width: double.infinity,
-              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-            ),
-            AnimatedContainer(
-              duration: const Duration(seconds: 1),
-              height: 10,
-              width: MediaQuery.of(context).size.width * value,
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
-            ),
+            Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+            if (isMining) 
+              Text("${(progress * 100).toInt()}%", style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
           ],
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: Stack(
+            children: [
+              // Background Bar Kosong
+              Container(height: 8, width: double.infinity, color: Colors.white.withOpacity(0.03)),
+              
+              // Bar Progress Utama
+              AnimatedContainer(
+                duration: const Duration(seconds: 1),
+                height: 8,
+                width: MediaQuery.of(context).size.width * (isMining ? progress : 0.05),
+                decoration: BoxDecoration(
+                  color: isMining ? color.withOpacity(0.3) : Colors.white10,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+
+              // CAHAYA LARI (The "Loading" effect)
+              if (isMining)
+                AnimatedBuilder(
+                  animation: _shimmerController,
+                  builder: (context, child) {
+                    return Positioned(
+                      left: (MediaQuery.of(context).size.width * _shimmerController.value) - 100,
+                      child: Container(
+                        height: 8,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.transparent, color.withOpacity(0.8), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildActionButton(MiningProvider prov) {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: prov.isMining ? Colors.redAccent.withOpacity(0.1) : Colors.blueAccent,
-          foregroundColor: prov.isMining ? Colors.redAccent : Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildMainButton(MiningProvider prov, Color themeColor) {
+    return InkWell(
+      onTap: () => prov.isMining ? null : prov.startMiningSession(),
+      borderRadius: BorderRadius.circular(15),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 65,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: prov.isMining ? Colors.transparent : themeColor,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: prov.isMining ? Colors.redAccent.withOpacity(0.5) : Colors.transparent),
         ),
-        onPressed: () => prov.isMining ? null : prov.startMiningSession(),
-        child: Text(
-          prov.isMining ? "STOP MINING SESSION" : "START MINING",
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        child: Center(
+          child: Text(
+            prov.isMining ? "ABORT SESSION" : "INITIATE SYSTEM",
+            style: TextStyle(
+              color: prov.isMining ? Colors.redAccent : Colors.black,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+          ),
         ),
       ),
     );
