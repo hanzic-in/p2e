@@ -269,66 +269,50 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
 
 }
 
-
 class _SingleDigitRolling extends StatelessWidget {
   final String char;
   const _SingleDigitRolling({required this.char});
 
   @override
   Widget build(BuildContext context) {
-    const double digitHeight = 30.0; 
-    
-    final isNumber = int.tryParse(char) != null;
-
-    if (!isNumber) {
-      return Text(char, style: _digitStyle(digitHeight));
+    const double fontSize = 24.0;
+    const double digitHeight = fontSize * 1.2; 
+    if (int.tryParse(char) == null) {
+      return Text(char, style: _textStyle(fontSize));
     }
-
-    final double targetDigit = double.parse(char);
 
     return Container(
       height: digitHeight,
+      width: fontSize * 0.65,
+      alignment: Alignment.center,
       child: ClipRect(
-        child: TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 150), 
-          curve: Curves.easeOutCubic,
-          tween: Tween<double>(begin: targetDigit, end: targetDigit),
-          builder: (context, value, child) {
-            final double offset = value % 10;
-            
-            return Stack(
-              children: [
-                Positioned(
-                  top: -offset * digitHeight,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(10, (i) {
-                      return Text("$i", style: _digitStyle(digitHeight));
-                    }),
-                  ),
-                ),
-                Positioned(
-                  top: (10 - offset) * digitHeight,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(10, (i) {
-                      return Text("$i", style: _digitStyle(digitHeight));
-                    }),
-                  ),
-                ),
-              ],
-            );
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(animation);
+            final outAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(animation);
+
+            if (child.key == ValueKey<String>(char)) {
+              return SlideTransition(position: inAnimation, child: child);
+            } else {
+              return SlideTransition(position: outAnimation, child: child);
+            }
           },
+          child: Text(
+            char,
+            key: ValueKey<String>(char),
+            style: _textStyle(fontSize),
+          ),
         ),
       ),
     );
   }
 
-  TextStyle _digitStyle(double height) {
+  TextStyle _textStyle(double size) {
     return TextStyle(
       color: Colors.white,
-      fontSize: 22,
-      fontWeight: FontWeight.w900, 
+      fontSize: size,
+      fontWeight: FontWeight.w900,
       fontFamily: 'monospace',
       height: 1.0,
     );
