@@ -233,7 +233,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         ),
         onPressed: () {
           if (!prov.isMining) {
-            prov.startMiningSession(); // Pastiin di provider durasinya 30 menit
+            prov.startMiningSession();
           }
         },
         child: Row(
