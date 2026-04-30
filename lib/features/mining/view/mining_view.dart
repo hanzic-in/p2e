@@ -24,11 +24,11 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat();
-        _balanceTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _balanceTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       final prov = Provider.of<MiningProvider>(context, listen: false);
       if (prov.isMining) {
         setState(() {
-          _currentBalance += prov.isBoostActive ? 0.0000000000159 : 0.0000000000082;
+          _currentBalance += prov.isBoostActive ? 0.0000000000025 : 0.0000000000012;
         });
       }
     });
