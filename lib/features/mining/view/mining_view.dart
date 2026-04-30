@@ -291,7 +291,7 @@ class _SingleDigitRolling extends StatelessWidget {
           transitionBuilder: (Widget child, Animation<double> animation) {
             final snappyAnimation = CurvedAnimation( 
               parent: animation, 
-              curve: Curves.backOut 
+              curve: Curves.easeOutBack 
             );
             final inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(animation);
             final outAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(animation);
