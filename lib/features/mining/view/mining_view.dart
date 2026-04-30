@@ -269,27 +269,45 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
 
 }
 
+
 class _SingleDigitRolling extends StatelessWidget {
   final String char;
   const _SingleDigitRolling({required this.char});
 
   @override
   Widget build(BuildContext context) {
-    bool isNumber = int.tryParse(char) != null;
-
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 150), 
-      switchInCurve: Curves.easeOut,
-      switchOutCurve: Curves.easeIn,
+      duration: const Duration(milliseconds: 300), 
+      switchInCurve: Curves.easeInCubic,
+      switchOutCurve: Curves.easeOutCubic,
+      
       transitionBuilder: (Widget child, Animation<double> animation) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.5),
-            end: Offset.zero,
-          ).animate(animation),
-          child: FadeTransition(opacity: animation, child: child),
+        final isIncoming = child.key == key;
+        
+        if (isIncoming) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        } 
+        else {
+          return FadeTransition(
+            opacity: animation.drive(Tween(begin: 1.0, end: 0.0)),
+            child: child,
+          );
+        }
+      },
+      
+      layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+        return Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            ...previousChildren.map((e) => Positioned(top: 0, child: e)), 
+            if (currentChild != null) currentChild,
+          ],
         );
       },
+      
       child: Text(
         char,
         key: ValueKey<String>(char),
@@ -298,6 +316,7 @@ class _SingleDigitRolling extends StatelessWidget {
           fontSize: 24, 
           fontWeight: FontWeight.w900, 
           fontFamily: 'monospace',
+          letterSpacing: 0.5,
         ),
       ),
     );
