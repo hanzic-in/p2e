@@ -24,11 +24,11 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat();
-    _balanceTimer = Timer.periodic(const Duration(milliseconds: 250), (timer) {
+    _balanceTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       final prov = Provider.of<MiningProvider>(context, listen: false);
       if (prov.isMining) {
         setState(() {
-          _currentBalance += prov.isBoostActive ? 0.0000000000065 : 0.0000000000032;
+          _currentBalance += prov.isBoostActive ? 0.0000000000125 : 0.0000000000062;
         });
       }
     });
@@ -291,7 +291,7 @@ class _SingleDigitRolling extends StatelessWidget {
           transitionBuilder: (Widget child, Animation<double> animation) {
             final snappyAnimation = CurvedAnimation( 
               parent: animation, 
-              curve: Curves.easeOutBack 
+              curve: Curves.easeInOutBack 
             );
             final inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(animation);
             final outAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(animation);
