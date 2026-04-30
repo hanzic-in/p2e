@@ -18,7 +18,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1800),
     )..repeat();
   }
 
@@ -31,7 +31,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
-    final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF6366F1); // Warna ungu/biru modern
+    // Token in-game color: Electric Cyan
+    final tokenColor = const Color(0xFF00E5FF); 
+    final boostColor = const Color(0xFFC154F7);
+    final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
@@ -44,32 +47,32 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               // --- 1. MAIN MINING PANEL (TOP SECTION) ---
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1C1F26),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.white.withOpacity(0.05)),
                 ),
                 child: Column(
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Mining Panel", style: TextStyle(color: Colors.white60, fontSize: 14)),
-                        Icon(Icons.info_outline, color: Colors.white30, size: 20),
+                        Text("D-COIN CLOUD MINING", style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                        Icon(Icons.bolt_rounded, color: Colors.orangeAccent, size: 18),
                       ],
                     ),
-                    const SizedBox(height: 25),
-                    
-                    // Balance Section dengan Icon B
-                    _buildBalance(prov),
-                    
                     const SizedBox(height: 30),
+                    
+                    // In-Game Token Balance Section
+                    _buildTokenBalance(prov, tokenColor),
+                    
+                    const SizedBox(height: 35),
 
-                    // --- THE LOADING STREAMS (LARI ASINKRON) ---
+                    // --- LOADING STREAMS (LARI ASINKRON) ---
                     _buildStreamBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
                     const SizedBox(height: 12),
-                    _buildStreamBar(color: themeColor, isMining: prov.isMining, offset: 0.4),
+                    _buildStreamBar(color: activeThemeColor, isMining: prov.isMining, offset: 0.5),
 
                     const SizedBox(height: 25),
 
@@ -79,7 +82,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       children: [
                         Text(
                           prov.isMining ? (prov.isBoostActive ? "15.90 Gh/s" : "8.20 Gh/s") : "0.00 Gh/s",
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9), 
+                            fontSize: 18, 
+                            fontWeight: FontWeight.bold, 
+                            fontFamily: 'monospace'
+                          ),
                         ),
                       ],
                     ),
@@ -87,38 +95,32 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
+
+              // --- 2. TIMER ACTION BUTTON (30 MINS LOGIC) ---
+              _buildTimerButton(prov, activeThemeColor),
+
+              const SizedBox(height: 15),
               const Center(
                 child: Text(
-                  "Mining will stop when the timer stops. You need to restart it manually to continue mining.",
+                  "Session length: 30m. System will auto-suspend after timeout.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white38, fontSize: 11),
+                  style: TextStyle(color: Colors.white24, fontSize: 10),
                 ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // --- 2. START BUTTON ---
-              _buildMainAction(prov, themeColor),
-
-              const SizedBox(height: 20),
-
-              // --- 3. DAILY REWARD CARDS ---
-              Row(
-                children: [
-                  Expanded(child: _buildRewardCard("Daily Reward", "10.6 Gh/s", themeColor)),
-                  const SizedBox(width: 15),
-                  Expanded(child: _buildRewardCard("Daily Reward", "20.2 Gh/s", themeColor)),
-                ],
               ),
 
               const SizedBox(height: 30),
 
-              // --- 4. FAQS SECTION ---
-              const Text("FAQs", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 15),
-              _buildFaqItem("What is B-Coin Cloud Mining?"),
-              _buildFaqItem("How is computing power connected?"),
+              // --- 3. REWARD CARDS (NO FAQ) ---
+              Row(
+                children: [
+                  Expanded(child: _buildRewardCard("Daily Check-in", "5.0 Gh/s", activeThemeColor)),
+                  const SizedBox(width: 15),
+                  Expanded(child: _buildRewardCard("Ad-Boost", "12.5 Gh/s", activeThemeColor)),
+                ],
+              ),
+              
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -126,22 +128,31 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildBalance(MiningProvider prov) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildTokenBalance(MiningProvider prov, Color color) {
+    return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: const BoxDecoration(color: Colors.orangeAccent, shape: BoxShape.circle),
-          child: const Icon(Icons.currency_bitcoin, color: Colors.black, size: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Custom Logo Token (D)
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+              ),
+              child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              prov.isMining ? "1,240.55" : "0.00",
+              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Text(
-          prov.isMining ? "0.0000011498000" : "0.0000000000000",
-          style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 0.5),
-        ),
-        const SizedBox(width: 8),
-        const Text("BTC", style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text("TOTAL D-COIN EARNED", style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
       ],
     );
   }
@@ -164,7 +175,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                     width: 150,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.transparent, color.withOpacity(0.6), color.withOpacity(0.9), Colors.transparent],
+                        colors: [Colors.transparent, color.withOpacity(0.5), color.withOpacity(0.9), Colors.transparent],
                       ),
                     ),
                   ),
@@ -176,20 +187,35 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildMainAction(MiningProvider prov, Color color) {
+  Widget _buildTimerButton(MiningProvider prov, Color color) {
     return SizedBox(
       width: double.infinity,
-      height: 55,
+      height: 60,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: prov.isMining ? Colors.transparent : color,
+          foregroundColor: prov.isMining ? Colors.white : Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: prov.isMining ? BorderSide(color: Colors.white.withOpacity(0.1)) : BorderSide.none,
+          ),
           elevation: 0,
         ),
-        onPressed: () => prov.isMining ? null : prov.startMiningSession(),
-        child: Text(
-          prov.isMining ? "Mining in Progress" : "Start Mining",
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        onPressed: () {
+          if (!prov.isMining) {
+            prov.startMiningSession(); // Pastiin di provider durasinya 30 menit
+          }
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(prov.isMining ? Icons.timer_outlined : Icons.play_arrow_rounded, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              prov.isMining ? prov.remainingMiningTimeStr : "START MINING SESSION",
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1),
+            ),
+          ],
         ),
       ),
     );
@@ -197,56 +223,28 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
   Widget _buildRewardCard(String title, String val, Color color) {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFF1C1F26),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: Colors.white38, fontSize: 12)),
+          Text(title, style: const TextStyle(color: Colors.white24, fontSize: 11, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.card_giftcard, color: Colors.orangeAccent, size: 18),
-              const SizedBox(width: 8),
-              Text(val, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-            ],
-          ),
+          Text(val, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
           const SizedBox(height: 15),
-          SizedBox(
+          Container(
             width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color.withOpacity(0.15),
-                foregroundColor: color,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: () {},
-              child: const Text("Boost", style: TextStyle(fontWeight: FontWeight.bold)),
+            height: 35,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8)
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFaqItem(String question) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1F26),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(question, style: const TextStyle(color: Colors.white70, fontSize: 13)),
-          const Icon(Icons.keyboard_arrow_down, color: Colors.white24),
+            child: Center(child: Text("CLAIM", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold))),
+          )
         ],
       ),
     );
