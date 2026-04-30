@@ -12,88 +12,170 @@ class MiningView extends StatefulWidget {
 }
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
-  late AnimationController _waveController;
+  late AnimationController _morphController;
 
   @override
   void initState() {
     super.initState();
-    // Controller untuk menggerakkan gelombang cairan
-    _waveController = AnimationController(
+    // Controller buat ngacak-ngacak permukaan bola (morphing)
+    _morphController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 4),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _waveController.dispose();
+    _morphController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
+    // Skema warna: Ijo Neon (Normal) -> Ungu Neon (Boost)
     final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080910),
-      body: Stack(
-        children: [
-          // --- LAYER 1: FLUID BACKGROUND (Cairan yang memenuhi layar bawah) ---
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _waveController,
-              builder: (context, child) {
-                return CustomPaint(
-                  painter: FluidWavePainter(
-                    waveValue: _waveController.value,
-                    color: themeColor,
-                    // Tinggi cairan naik berdasarkan status mining
-                    fillLevel: prov.isMining ? (prov.isBoostActive ? 0.45 : 0.35) : 0.2,
-                    isMining: prov.isMining,
+      backgroundColor: const Color(0xFF040508), // Hitam Deep Blue (OLED friendly)
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            // --- HEADER (Style Neural) ---
+            const Text("NEURAL HASH STREAM", style: TextStyle(color: Colors.white10, letterSpacing: 5, fontSize: 10, fontWeight: FontWeight.bold)),
+            
+            const Spacer(),
+
+            // --- THE NEURAL SPHERE (VISUAL UTAMA - GAYA SIRI) ---
+            Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Layer Glow di belakang
+                  AnimatedBuilder(
+                    animation: _morphController,
+                    builder: (context, child) {
+                      // Efek napas (pulse) pendaran cahaya
+                      double pulse = 0.5 + (math.sin(_morphController.value * math.pi * 2) * 0.1);
+                      return Container(
+                        width: 220, height: 220,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: themeColor.withOpacity(prov.isMining ? 0.15 * pulse : 0.02),
+                              blurRadius: 60, spreadRadius: 10,
+                            )
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                  
+                  // Custom Paint buat Bola yang Morphing
+                  AnimatedBuilder(
+                    animation: _morphController,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        size: const Size(280, 280),
+                        painter: NeuralSpherePainter(
+                          morphValue: _morphController.value,
+                          color: themeColor,
+                          isMining: prov.isMining,
+                          // Turbulensi makin tinggi kalau Boost aktif
+                          turbulence: prov.isBoostActive ? 2.5 : 1.0,
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Angka Gh/s (Floating in the middle)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
+                        duration: const Duration(milliseconds: 1500),
+                        curve: Curves.easeOutExpo,
+                        builder: (context, val, child) {
+                          return Text(
+                            val.toStringAsFixed(1),
+                            style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.w100, fontFamily: 'monospace', letterSpacing: -2),
+                          );
+                        },
+                      ),
+                      Text("GH/S DATA RATE", style: TextStyle(color: Colors.white.withOpacity(0.15), fontSize: 9, letterSpacing: 2, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const Spacer(),
+
+            // --- INFO & CONTROL INTERFACE ---
+            _buildNeuralControls(prov, themeColor),
+            const SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNeuralControls(MiningProvider prov, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          // Elegant Session Timer
+          if (prov.isMining)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 25),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.02), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  "ACTIVE STREAM // ${prov.remainingMiningTimeStr}",
+                  style: TextStyle(color: color.withOpacity(0.8), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                ),
+              ),
+            ),
+          
+          // Action Button (Style Glassmorphism tipis)
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: prov.isMining ? Colors.transparent : color,
+                foregroundColor: prov.isMining ? color : Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  side: BorderSide(color: prov.isMining ? color.withOpacity(0.3) : Colors.transparent),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () => prov.isMining ? null : prov.startMiningSession(),
+              child: Text(
+                prov.isMining ? "NEURAL NETWORK ONLINE" : "ENGAGE NEURAL CORE",
+                style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1),
+              ),
             ),
           ),
-
-          // --- LAYER 2: UI CONTENT ---
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("SYSTEM FLUIDITY", style: TextStyle(color: Colors.white24, letterSpacing: 4, fontSize: 10, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  Text(prov.isMining ? "STREAMS STABLE" : "PUMP IDLE", style: TextStyle(color: themeColor, fontWeight: FontWeight.w900, fontSize: 18)),
-                  
-                  const Spacer(),
-
-                  // Hash Rate Display (Floating in the middle of fluid)
-                  Center(
-                    child: Column(
-                      children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
-                          duration: const Duration(seconds: 1),
-                          builder: (context, val, child) {
-                            return Text(
-                              val.toStringAsFixed(1),
-                              style: const TextStyle(color: Colors.white, fontSize: 80, fontWeight: FontWeight.w100, fontFamily: 'monospace'),
-                            );
-                          },
-                        ),
-                        const Text("GH/S OUTPUT", style: TextStyle(color: Colors.white38, fontSize: 12, letterSpacing: 5)),
-                      ],
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // --- ACTION INTERFACE ---
-                  _buildFluidControls(prov, themeColor),
-                ],
+          
+          const SizedBox(height: 15),
+          
+          // Overclock Action
+          InkWell(
+            onTap: () => prov.canClaimBoost() ? prov.startBoostSession() : null,
+            child: Text(
+              prov.isBoostActive ? "OVERCLOCK ACTIVE: ${prov.remainingBoostTimeStr}" : "INITIATE 2X OVERCLOCK // WATCH AD",
+              style: TextStyle(
+                color: prov.isBoostActive ? const Color(0xFFC154F7) : Colors.white.withOpacity(0.05),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
               ),
             ),
           ),
@@ -101,93 +183,69 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       ),
     );
   }
-
-  Widget _buildFluidControls(MiningProvider prov, Color color) {
-    return Column(
-      children: [
-        if (prov.isMining)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.timer_outlined, color: Colors.white24, size: 14),
-                const SizedBox(width: 8),
-                Text(prov.remainingMiningTimeStr, style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-        
-        SizedBox(
-          width: double.infinity,
-          height: 60,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: prov.isMining ? Colors.white.withOpacity(0.05) : color,
-              foregroundColor: prov.isMining ? Colors.white : Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              elevation: 0,
-            ),
-            onPressed: () => prov.isMining ? null : prov.startMiningSession(),
-            child: Text(prov.isMining ? "CORE ACTIVE" : "INITIALIZE PUMP", style: const TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ),
-        
-        const SizedBox(height: 20),
-        
-        GestureDetector(
-          onTap: () => prov.canClaimBoost() ? prov.startBoostSession() : null,
-          child: Text(
-            prov.isBoostActive ? "OVERCLOCK ACTIVE: ${prov.remainingBoostTimeStr}" : "WATCH AD FOR 2X TURBULENCE",
-            style: TextStyle(color: prov.isBoostActive ? const Color(0xFFC154F7) : Colors.white10, fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
-// --- PAINTER UNTUK SIMULASI CAIRAN (FLUID DYNAMICS) ---
-class FluidWavePainter extends CustomPainter {
-  final double waveValue;
+// --- PAINTER UNTUK BOLA SIRI (NEURAL SPHERE) ---
+class NeuralSpherePainter extends CustomPainter {
+  final double morphValue;
   final Color color;
-  final double fillLevel; // 0.0 - 1.0
   final bool isMining;
+  final double turbulence; // Tingkat keacakan permukaan
 
-  FluidWavePainter({required this.waveValue, required this.color, required this.fillLevel, required this.isMining});
+  NeuralSpherePainter({required this.morphValue, required this.color, required this.isMining, required this.turbulence});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-    final double baseHeight = size.height * (1 - fillLevel);
+    final center = Offset(size.width / 2, size.height / 2);
+    final baseRadius = size.width / 2.8;
+    
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..strokeCap = StrokeCap.round;
 
-    // Kita gambar 3 lapisan gelombang dengan kecepatan dan opacity berbeda
-    _drawWave(canvas, size, paint, color.withOpacity(0.1), waveValue, 20, 1.0); // Gelombang belakang
-    _drawWave(canvas, size, paint, color.withOpacity(0.2), waveValue + 0.5, 15, 1.5); // Gelombang tengah
-    _drawWave(canvas, size, paint, color.withOpacity(0.4), waveValue + 0.2, 10, 2.0); // Gelombang depan
-  }
-
-  void _drawWave(Canvas canvas, Size size, Paint paint, Color waveColor, double animValue, double amplitude, double speed) {
-    paint.color = waveColor;
-    final path = Path();
-    final double baseHeight = size.height * (1 - fillLevel);
-
-    path.moveTo(0, baseHeight);
-
-    // Gambar gelombang menggunakan Sine Wave
-    for (double i = 0; i <= size.width; i++) {
-      // Logic gejolak: kalau mining, amplitudo gelombang makin berantakan/aktif
-      double activeAmplitude = isMining ? (amplitude + math.sin(animValue * 5) * 5) : amplitude;
-      
-      double y = baseHeight + math.sin((i / size.width * 2 * math.pi) + (animValue * 2 * math.pi * speed)) * activeAmplitude;
-      path.lineTo(i, y);
+    // Kalau mati, cuma ada pendaran cahaya tipis di tengah
+    if (!isMining) {
+      canvas.drawCircle(center, baseRadius, paint..color = Colors.white.withOpacity(0.01));
+      return;
     }
 
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
+    // Kita gambar 3 layer bola transparan biar dapet efek Siri yang mewah
+    _drawMorphingSphere(canvas, center, baseRadius, paint, color.withOpacity(0.05), 1.0); // Base layer redup
+    _drawMorphingSphere(canvas, center, baseRadius - 10, paint, color.withOpacity(0.15), 1.5); // Middle layer
+    _drawMorphingSphere(canvas, center, baseRadius - 20, paint, color.withOpacity(0.4), 2.0); // Inner core tajam
+  }
+
+  void _drawMorphingSphere(Canvas canvas, Offset center, double radius, Paint paint, Color sphereColor, double speedMultiplier) {
+    paint.color = sphereColor;
+    final path = Path();
+    const int totalPoints = 90; // Jumlah titik koordinat di sekeliling lingkaran
+
+    // Ini kuncinya: Ngerubah radius di tiap titik pake matematika acak (Morphing)
+    for (int i = 0; i <= totalPoints; i++) {
+      double angle = (i * (360 / totalPoints)) * (math.pi / 180);
+      
+      // Rumus Morphing Acak (Abstract Wave): Combine multiple Sin/Cos with time
+      double time = morphValue * 2 * math.pi * speedMultiplier;
+      
+      // Kita campur beberapa frekuensi biar dapet bentuk gak beraturan (anti-GIF kaku)
+      double morphEffect = 0.0;
+      if (isMining) {
+        morphEffect = (math.sin(angle * 3 + time) * 8 * turbulence) + 
+                     (math.cos(angle * 5 - time * 1.5) * 5 * turbulence) +
+                     (math.sin(angle * 2 + time * 2) * 3);
+      }
+
+      double finalRadius = radius + morphEffect;
+
+      double x = center.dx + math.cos(angle) * finalRadius;
+      double y = center.dy + math.sin(angle) * finalRadius;
+
+      if (i == 0) path.moveTo(x, y);
+      else path.lineTo(x, y);
+    }
     path.close();
 
-    // Beri efek glow tipis di permukaan air
+    // Kasih efek glow solid (Siri style)
     if (isMining) {
       paint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 10);
     }
@@ -196,5 +254,5 @@ class FluidWavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(FluidWavePainter oldDelegate) => true;
+  bool shouldRepaint(NeuralSpherePainter oldDelegate) => true;
 }
