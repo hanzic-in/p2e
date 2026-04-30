@@ -1,7 +1,6 @@
 // lib/features/mining/view/mining_view.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as math;
 import '../provider/mining_provider.dart';
 
 class MiningView extends StatefulWidget {
@@ -40,46 +39,37 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Pindah ke tengah
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 3),
 
-              // --- MINIMALIST PROGRESS BARS (ASYNC LARI) ---
+              // --- ROLLING BALANCE (Inspirasi dari Screenshot Lu) ---
+              _buildRollingBalance(prov),
+              
+              const SizedBox(height: 50),
+
+              // --- ASYNC RUNNING BARS (Garis Cahaya Lari) ---
               _buildCleanRunningBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
               const SizedBox(height: 12),
-              _buildCleanRunningBar(color: themeColor, isMining: prov.isMining, offset: 0.4), // Beda timing lari
+              _buildCleanRunningBar(color: themeColor, isMining: prov.isMining, offset: 0.4),
               
               const SizedBox(height: 40),
 
-              // --- SMALLER HASH RATE INFO (GAK KEGEDEAN) ---
-              TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15900 : 8200) : 0),
-                duration: const Duration(seconds: 1),
-                builder: (context, val, child) {
-                  return Text(
-                    "${val.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} H/s",
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9), 
-                      fontSize: 22, // Ukuran pas, gak lebay
-                      fontWeight: FontWeight.w200, 
-                      fontFamily: 'monospace',
-                      letterSpacing: 1
-                    ),
-                  );
-                },
-              ),
-              
-              if (prov.isMining) ...[
-                const SizedBox(height: 10),
-                Text(
-                  prov.remainingMiningTimeStr,
-                  style: const TextStyle(color: Colors.white10, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 2),
+              // --- HASH RATE (Minimalist) ---
+              Text(
+                prov.isMining ? (prov.isBoostActive ? "15.90 Gh/s" : "8.20 Gh/s") : "0.00 Gh/s",
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9), 
+                  fontSize: 20, 
+                  fontWeight: FontWeight.w200, 
+                  fontFamily: 'monospace',
+                  letterSpacing: 1
                 ),
-              ],
+              ),
 
               const Spacer(flex: 2),
 
-              // --- ABORT/START BUTTON ---
+              // --- ACTION BUTTON ---
               _buildActionArea(prov, themeColor),
               const SizedBox(height: 40),
             ],
@@ -89,22 +79,43 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
+  // Widget buat bikin angka nambah secara Rolling/Tumpuk
+  Widget _buildRollingBalance(MiningProvider prov) {
+    // Simulasi angka saldo yang nambah (Ganti sesuai field saldo lu nanti)
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("B ", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold, fontSize: 18)),
+        // Pake AnimatedSwitcher biar angkanya tumpuk pas ganti
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(animation),
+              child: FadeTransition(opacity: animation, child: child),
+            );
+          },
+          child: Text(
+            prov.isMining ? "0.00000431" : "0.00000000",
+            key: ValueKey<String>(prov.isMining ? "active" : "idle"), // Key penting buat trigger animasi
+            style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, fontFamily: 'monospace'),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCleanRunningBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Stack(
         children: [
-          // Background Bar Full Redup
           Container(height: 4, width: double.infinity, color: color.withOpacity(0.05)),
-          
-          // Cahaya Lari (Logic Asinkron pake Offset)
           if (isMining)
             AnimatedBuilder(
               animation: _shimmerController,
               builder: (context, child) {
-                // Modifikasi progress biar tiap bar punya posisi beda
                 double progress = (_shimmerController.value + offset) % 1.0;
-                
                 return Positioned(
                   left: (MediaQuery.of(context).size.width * progress) - 120,
                   child: Container(
@@ -112,12 +123,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                     width: 120,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent, 
-                          color.withOpacity(0.5), 
-                          color.withOpacity(0.8), // Inti cahaya
-                          Colors.transparent
-                        ],
+                        colors: [Colors.transparent, color.withOpacity(0.5), color.withOpacity(0.8), Colors.transparent],
                       ),
                     ),
                   ),
