@@ -276,49 +276,61 @@ class _SingleDigitRolling extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300), 
-      switchInCurve: Curves.easeInCubic,
-      switchOutCurve: Curves.easeOutCubic,
-      
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        final isIncoming = child.key == key;
-        
-        if (isIncoming) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        } 
-        else {
-          return FadeTransition(
-            opacity: animation.drive(Tween(begin: 1.0, end: 0.0)),
-            child: child,
-          );
-        }
-      },
-      
-      layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-        return Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            ...previousChildren.map((e) => Positioned(top: 0, child: e)), 
-            if (currentChild != null) currentChild,
-          ],
-        );
-      },
-      
-      child: Text(
-        char,
-        key: ValueKey<String>(char),
-        style: const TextStyle(
-          color: Colors.white, 
-          fontSize: 24, 
-          fontWeight: FontWeight.w900, 
-          fontFamily: 'monospace',
-          letterSpacing: 0.5,
+    const double digitHeight = 30.0; 
+    
+    final isNumber = int.tryParse(char) != null;
+
+    if (!isNumber) {
+      return Text(char, style: _digitStyle(digitHeight));
+    }
+
+    final double targetDigit = double.parse(char);
+
+    return Container(
+      height: digitHeight,
+      child: ClipRect(
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 150), 
+          curve: Curves.easeOutCubic,
+          tween: Tween<double>(begin: targetDigit, end: targetDigit),
+          builder: (context, value, child) {
+            final double offset = value % 10;
+            
+            return Stack(
+              children: [
+                Positioned(
+                  top: -offset * digitHeight,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(10, (i) {
+                      return Text("$i", style: _digitStyle(digitHeight));
+                    }),
+                  ),
+                ),
+                Positioned(
+                  top: (10 - offset) * digitHeight,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(10, (i) {
+                      return Text("$i", style: _digitStyle(digitHeight));
+                    }),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
+
+  TextStyle _digitStyle(double height) {
+    return TextStyle(
+      color: Colors.white,
+      fontSize: 22,
+      fontWeight: FontWeight.w900, 
+      fontFamily: 'monospace',
+      height: 1.0,
     );
   }
 }
