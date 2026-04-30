@@ -12,54 +12,70 @@ class MiningView extends StatefulWidget {
 }
 
 class _MiningViewState extends State<MiningView> with TickerProviderStateMixin {
-  late AnimationController _shockwaveController;
+  late AnimationController _morphController;
 
   @override
   void initState() {
     super.initState();
-    // Controller untuk dentuman (shockwave) yang keluar terus menerus
-    _shockwaveController = AnimationController(
+    // Controller buat ngacak-ngacak permukaan bola
+    _morphController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(seconds: 3),
     )..repeat();
   }
 
   @override
   void dispose() {
-    _shockwaveController.dispose();
+    _morphController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
-    final themeColor = prov.isBoostActive ? const Color(0xFFC154F7) : const Color(0xFF00FFD1);
+    // Skema warna pekat: Biru Cyan (Normal) -> Ungu Pekat (Boost)
+    final themeColor = prov.isBoostActive ? const Color(0xFF9400D3) : const Color(0xFF00FFFF);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF04060F),
+      backgroundColor: const Color(0xFF030408),
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 40),
-            const Text("SYSTEM STATUS: ONLINE", style: TextStyle(color: Colors.white10, fontSize: 10, letterSpacing: 4)),
-            
+            const SizedBox(height: 30),
+            _buildHeader(),
             const Spacer(),
 
-            // --- THE CORE UNIT ---
+            // --- THE CORE INTERFACE ---
             Center(
               child: GestureDetector(
                 onTap: () => prov.isMining ? null : prov.startMiningSession(),
                 child: AnimatedBuilder(
-                  animation: _shockwaveController,
+                  animation: _morphController,
                   builder: (context, child) {
-                    return CustomPaint(
-                      size: const Size(320, 320),
-                      painter: ShockwaveCorePainter(
-                        waveValue: _shockwaveController.value,
-                        color: themeColor,
-                        isMining: prov.isMining,
-                        time: DateTime.now().millisecondsSinceEpoch / 1000,
-                      ),
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Layer 1: Glow Pendaran Luar (Biar Neon)
+                        if (prov.isMining)
+                          CustomPaint(
+                            size: const Size(300, 300),
+                            painter: NeonGlowPainter(color: themeColor),
+                          ),
+                        
+                        // Layer 2: Bola Energi Bergejolak (Solid Morphing Core)
+                        CustomPaint(
+                          size: const Size(280, 280),
+                          painter: SolidNeuralCorePainter(
+                            morphValue: _morphController.value,
+                            color: themeColor,
+                            isMining: prov.isMining,
+                          ),
+                        ),
+
+                        // Layer 3: Teks & Info (Terapung)
+                        if (!prov.isMining)
+                          const Text("MULAI", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 5)),
+                      ],
                     );
                   },
                 ),
@@ -67,111 +83,116 @@ class _MiningViewState extends State<MiningView> with TickerProviderStateMixin {
             ),
 
             const Spacer(),
-
-            // --- SPEED INFO ---
-            _buildSpeedSection(prov, themeColor),
-            const SizedBox(height: 50),
+            _buildStatsAndAction(prov, themeColor),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSpeedSection(MiningProvider prov, Color color) {
+  Widget _buildHeader() {
+    return const Column(
+      children: [
+        Text("NEURAL NETWORK", style: TextStyle(color: Colors.white12, fontSize: 10, letterSpacing: 4, fontWeight: FontWeight.bold)),
+        Text("CORE V3.0", style: TextStyle(color: Colors.white24, fontSize: 8)),
+      ],
+    );
+  }
+
+  Widget _buildStatsAndAction(MiningProvider prov, Color color) {
     return AnimatedOpacity(
-      opacity: prov.isMining ? 1.0 : 0.5,
+      opacity: prov.isMining ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 500),
       child: Column(
         children: [
-          if (!prov.isMining) 
-            const Text("TAP TO INITIALIZE", style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, letterSpacing: 2)),
-          
           TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0, end: prov.isMining ? (prov.isBoostActive ? 15.9 : 8.2) : 0),
             duration: const Duration(seconds: 1),
             builder: (context, val, child) {
-              return Text("${val.toStringAsFixed(1)} Gh/s", 
-                style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w100, fontFamily: 'monospace'));
+              return Text("${val.toStringAsFixed(1)} Gh/s", style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w100, fontFamily: 'monospace'));
             },
           ),
-          if (prov.isMining)
-             Text(prov.remainingMiningTimeStr, style: TextStyle(color: color.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Text(prov.remainingMiningTimeStr, style: TextStyle(color: color.withOpacity(0.5), fontSize: 12, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 }
 
-class ShockwaveCorePainter extends CustomPainter {
-  final double waveValue; // 0.0 to 1.0 dari controller
+// --- PAINTER 1: PEMDARAN CAHAYA NEON LUAR ---
+class NeonGlowPainter extends CustomPainter {
   final Color color;
-  final bool isMining;
-  final double time;
-
-  ShockwaveCorePainter({required this.waveValue, required this.color, required this.isMining, required this.time});
+  NeonGlowPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final baseRadius = size.width / 4;
+    final radius = size.width / 3.2;
 
-    // 1. EFEK DENTUMAN (Shockwaves yang memancar keluar)
-    if (isMining) {
-      final wavePaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
+    // Pake Outer blur biar cahayanya memancar keluar bola
+    canvas.drawCircle(center, radius, Paint()
+      ..color = color.withOpacity(0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 30));
+  }
+  @override
+  bool shouldRepaint(NeonGlowPainter oldDelegate) => true;
+}
 
-      for (int i = 0; i < 3; i++) {
-        // Offset tiap gelombang biar gantian
-        double currentWave = (waveValue + (i * 0.33)) % 1.0;
-        double radius = baseRadius + (currentWave * 100);
-        double opacity = (1.0 - currentWave).clamp(0.0, 1.0);
+// --- PAINTER 2: BOLA ENERGI BERGEJOLAK (SOLID) ---
+class SolidNeuralCorePainter extends CustomPainter {
+  final double morphValue;
+  final Color color;
+  final bool isMining;
 
-        wavePaint.color = color.withOpacity(opacity * 0.4);
-        canvas.drawCircle(center, radius, wavePaint);
+  SolidNeuralCorePainter({required this.morphValue, required this.color, required this.isMining});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 3.2;
+
+    final path = Path();
+    const int totalPoints = 120; // Lebih banyak titik biar gejolaknya alus
+
+    for (int i = 0; i <= totalPoints; i++) {
+      double angle = (i * (360 / totalPoints)) * (math.pi / 180);
+      
+      double morphEffect = 0.0;
+      if (isMining) {
+        // Rumus Acak Bergejolak (Noise): Gabungan beberapa Sin/Cos dengan waktu
+        double time = morphValue * 2 * math.pi;
+        morphEffect = (math.sin(angle * 4 + time) * 12) + 
+                     (math.cos(angle * 6 - time * 1.5) * 8) +
+                     (math.sin(angle * 2 + time * 2) * 5);
       }
-    } else {
-      // Efek standby (detak halus)
-      double standbyPulse = 1.0 + (math.sin(time * 3) * 0.05);
-      canvas.drawCircle(center, baseRadius * standbyPulse, Paint()
-        ..color = color.withOpacity(0.1)
-        ..style = PaintingStyle.stroke..strokeWidth = 1);
-        
-      // Teks MULAI di dalem (Manual Draw biar presisi tengah)
-      const textStyle = TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900);
-      final textPainter = TextPainter(text: const TextSpan(text: "MULAI", style: textStyle), textDirection: TextDirection.ltr);
-      textPainter.layout();
-      textPainter.paint(canvas, center - Offset(textPainter.width / 2, textPainter.height / 2));
-    }
 
-    // 2. THE 3D SPHERE (Biar bulet berisi)
+      double finalRadius = radius + morphEffect;
+      double x = center.dx + math.cos(angle) * finalRadius;
+      double y = center.dy + math.sin(angle) * finalRadius;
+
+      if (i == 0) path.moveTo(x, y);
+      else path.lineTo(x, y);
+    }
+    path.close();
+
+    // 2. THE PAINT (Pekat & 3D)
     final spherePaint = Paint()
+      ..style = PaintingStyle.fill
+      // Pake RadialGradient yang tumpuk-tumpuk biar pekat
       ..shader = RadialGradient(
         colors: [
-          Colors.white.withOpacity(0.8), // Kilauan cahaya di tengah (highlight)
-          color.withOpacity(0.5),        // Warna inti
-          color.withOpacity(0.1),        // Bayangan luar
+          Colors.white,              // Putih terang di tengah (core)
+          color.withOpacity(0.9),     // Warna pekat (pekat)
+          color.withOpacity(0.2),     // Bayangan luar
         ],
-        stops: const [0.0, 0.4, 1.0],
-        center: const Alignment(-0.3, -0.3), // Cahaya datang dari pojok kiri atas biar 3D
-      ).createShader(Rect.fromCircle(center: center, radius: baseRadius));
+        stops: const [0.0, 0.6, 1.0], // Stop-nya digeser biar pekatnya luas
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
 
-    canvas.drawCircle(center, baseRadius, spherePaint);
-
-    // 3. PARTICLE DUST (Muter-muter di dalem dan sekitar bola)
-    if (isMining) {
-      final random = math.Random(123);
-      for (int i = 0; i < 60; i++) {
-        double angle = (time * (random.nextDouble() * 2)) + i;
-        double dist = baseRadius + (random.nextDouble() * 40 - 20);
-        double px = center.dx + math.cos(angle) * dist;
-        double py = center.dy + math.sin(angle) * dist;
-        
-        canvas.drawCircle(Offset(px, py), random.nextDouble() * 2, Paint()..color = color.withOpacity(random.nextDouble()));
-      }
-    }
+    canvas.drawPath(path, spherePaint);
   }
 
   @override
-  bool shouldRepaint(ShockwaveCorePainter oldDelegate) => true;
+  bool shouldRepaint(SolidNeuralCorePainter oldDelegate) => true;
 }
