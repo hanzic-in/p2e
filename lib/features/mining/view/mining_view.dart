@@ -13,6 +13,9 @@ class MiningView extends StatefulWidget {
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
 
+  double _currentBalance = 0.0;
+  Timer? _balanceTimer; 
+  
   @override
   void initState() {
     super.initState();
@@ -20,6 +23,14 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat();
+        _balanceTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      final prov = Provider.of<MiningProvider>(context, listen: false);
+      if (prov.isMining) {
+        setState(() {
+          _currentBalance += prov.isBoostActive ? 0.0000000000159 : 0.0000000000082;
+        });
+      }
+    });
   }
 
   @override
