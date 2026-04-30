@@ -162,7 +162,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
           const SizedBox(width: 12),
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: formatted.split('').map((char) {
+            children: formatted.split('').map<Widget>((char) {
               return _SingleDigitRolling(char: char);
             }).toList(),
           ),
@@ -267,6 +267,8 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
     );
   }
 
+}
+
   class _SingleDigitRolling extends StatelessWidget {
   final String char;
   const _SingleDigitRolling({required this.char});
@@ -293,6 +295,4 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
       ),
     );
   }
-}
-
 }
