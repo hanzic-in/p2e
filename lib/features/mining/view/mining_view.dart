@@ -148,53 +148,54 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
-Widget _buildTokenBalance(MiningProvider prov, Color color) {
+  Widget _buildTokenBalance(MiningProvider prov, Color color) {
   String formatted = formatBalance(_balanceInt);
 
   return Column(
     children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Logo D
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Logo D
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+              ),
+              child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
             ),
-            child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: formatted.split('').asMap().entries.map<Widget>((entry) { 
-              final index = entry.key;
-              final char = entry.value;
-              final num = int.tryParse(char);
+            const SizedBox(width: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: formatted.split('').asMap().entries.map<Widget>((entry) { 
+                final index = entry.key;
+                final char = entry.value;
+                final num = int.tryParse(char);
 
-              if (num == null) {
-                return Text(
-                  char,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                  ),
+                if (num == null) {
+                  return Text(
+                    char,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  );
+                }
+
+                return SlotDigit(
+                  key: ValueKey('slot-$index'),
+                  digit: num,
                 );
-              }
-
-              return SlotDigit(
-                key: ValueKey('slot-$index'),
-                digit: num,
-              );
-            }).toList(),
+              }).toList(),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       const SizedBox(height: 4),
       Text("TOTAL D-COIN EARNED", style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
@@ -202,6 +203,8 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
   );
 }
 
+
+  
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -388,7 +391,7 @@ class _SlotDigitState extends State<SlotDigit>
   }
 
   TextStyle _style() => const TextStyle(
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: FontWeight.w900,
         fontFamily: 'monospace',
         color: Colors.white,
