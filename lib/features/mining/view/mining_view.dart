@@ -185,7 +185,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     return RollingDigit(
       key: ValueKey('digit-$index'),
       digit: num,
-      speed: 5.0 + (index * 2.0),
+      velocity: 8.0 + ((13 - index) * 1.5),
     );
   }).toList(),
 ),
