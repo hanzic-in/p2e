@@ -189,9 +189,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 }
 
                 return SlotDigit(
-                  key: ValueKey('slot-$index'),
                   digit: num,
-                  delay: index * 50,
+                  delay: 0,
                 );
               }).toList(),
             ),
