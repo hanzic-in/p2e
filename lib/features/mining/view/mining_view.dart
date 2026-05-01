@@ -32,12 +32,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
           if (random.nextDouble() > 0.2) {
             _currentBalance += 0.0000000000001;
           }
-          if (random.nextDouble() > 0.7) {
-            _currentBalance += 0.0000000001;
-          }
-          if (random.nextDouble() > 0.95) {
-            _currentBalance += 0.000001;
-          }
         });
       }
     });
@@ -172,7 +166,14 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: formatted.split('').map<Widget>((char) {
-              return _SingleDigitRolling(char: char);
+              final num = int.tryParse(char);
+              if (num == null) {
+                return Text(char, style: const TextStyle(    
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900));
+              }
+              return _SingleDigitRolling(digit: num);
             }).toList(),
           ),
         ],
@@ -278,61 +279,62 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
 
 }
 
-class _SingleDigitRolling extends StatelessWidget {
-  final String char;
-  const _SingleDigitRolling({required this.char, super.key});
+class _SingleDigitRolling extends StatefulWidget {
+  final int digit;
+  const _SingleDigitRolling({required this.digit, super.key});
+
+  @override
+  State<_SingleDigitRolling> createState() => _SingleDigitRollingState();
+}
+
+class _SingleDigitRollingState extends State<_SingleDigitRolling> {
+  int current = 0;
+
+  @override
+  void didUpdateWidget(covariant _SingleDigitRolling oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.digit != current) {
+      _animateTo(widget.digit);
+    }
+  }
+
+  void _animateTo(int target) async {
+    while (current != target) {
+      await Future.delayed(const Duration(milliseconds: 40));
+      setState(() {
+        current = (current + 1) % 10;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    const double fontSize = 24.0;
-    const double digitHeight = fontSize * 1.2;
-
-    if (int.tryParse(char) == null) {
-      return Text(char, style: _textStyle(fontSize));
-    }
-
-    return Container(
-      height: digitHeight,
-      width: fontSize * 0.62,
-      alignment: Alignment.center,
-      child: ClipRect(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 350),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            final Animation<Offset> inAnim = Tween<Offset>(
-              begin: const Offset(0, 1), 
-              end: Offset.zero
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack));
-
-            final Animation<Offset> outAnim = Tween<Offset>(
-              begin: const Offset(0, -1), 
-              end: Offset.zero
-            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack));
-
-            if (child.key == ValueKey<String>(char)) {
-              return SlideTransition(position: inAnim, child: child);
-            } else {
-              return SlideTransition(position: outAnim, child: child);
-            }
-          },
-          child: Text(
-            char,
-            key: ValueKey<String>(char),
-            style: _textStyle(fontSize),
+    return SizedBox(
+      width: 14,
+      height: 26,
+      child: TweenAnimationBuilder(
+        tween: Tween<double>(begin: 1, end: 0),
+        duration: const Duration(milliseconds: 120),
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, value * 20),
+            child: Opacity(
+              opacity: 1 - value,
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          '$current',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'monospace',
+            color: Colors.white,
           ),
         ),
       ),
     );
   }
-
-  TextStyle _textStyle(double size) {
-    return TextStyle(
-      color: Colors.white,
-      fontSize: size,
-      fontWeight: FontWeight.w900,
-      fontFamily: 'monospace',
-      height: 1.0,
-    );
-  }
 }
-
