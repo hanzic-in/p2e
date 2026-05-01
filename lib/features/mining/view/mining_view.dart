@@ -298,10 +298,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 class RollingDigit extends StatefulWidget {
   final int digit;
-  final double speed; // putaran per detik (higher = faster)
+  final double speed;
   const RollingDigit({
     required this.digit,
-    this.speed = 8.0, // default 8 putaran/detik
+    this.speed = 8.0,
     super.key,
   });
 
@@ -313,7 +313,6 @@ class _RollingDigitState extends State<RollingDigit>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
-  // Posisi "virtual" — bisa 1.5, 2.3, etc (bukan integer)
   double _position = 0.0;
   double _targetPosition = 0.0;
   
@@ -338,18 +337,15 @@ class _RollingDigitState extends State<RollingDigit>
   void didUpdateWidget(covariant RollingDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.digit != oldWidget.digit) {
-      // Naikkan target — bisa loncat banyak angka
       double diff = (widget.digit - oldWidget.digit + 10) % 10;
-      if (diff == 0) diff = 10; // minimal 1 putaran
+      if (diff == 0) diff = 10;
       _targetPosition += diff;
     }
   }
 
   void _onTick() {
-    // Lerp ke target dengan kecepatan
     double delta = (_targetPosition - _position) * 0.15;
     
-    // Minimal movement biar gak stuck
     if (delta.abs() < 0.01 && _position != _targetPosition) {
       delta = (_targetPosition > _position) ? 0.05 : -0.05;
     }
@@ -361,7 +357,6 @@ class _RollingDigitState extends State<RollingDigit>
 
   @override
   Widget build(BuildContext context) {
-    // Extract fractional part untuk posisi Y
     double fraction = _position - _position.floor();
     int currentDigit = _position.floor() % 10;
     int nextDigit = (currentDigit + 1) % 10;
@@ -373,10 +368,10 @@ class _RollingDigitState extends State<RollingDigit>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // TRAIL / BLUR — angka yang sudah lewat (ghosting)
-            ..._buildTrails(),
+            // TRAILS
+            ..._buildTrails(fraction),
             
-            // CURRENT — angka utama (sedang keluar ke atas)
+            // CURRENT (naik ke atas)
             Transform.translate(
               offset: Offset(0, -fraction * _h),
               child: Opacity(
@@ -385,7 +380,7 @@ class _RollingDigitState extends State<RollingDigit>
               ),
             ),
             
-            // NEXT — angka berikutnya (masuk dari bawah)
+            // NEXT (masuk dari bawah)
             Transform.translate(
               offset: Offset(0, (1 - fraction) * _h),
               child: Opacity(
@@ -399,31 +394,29 @@ class _RollingDigitState extends State<RollingDigit>
     );
   }
 
-  List<Widget> _buildTrails() {
-  List<Widget> trails = [];
-  double frac = _position - _position.floor();
-  
-  for (int i = 1; i <= 3; i++) {
-    int trailDigit = (_position.floor() - i) % 10;
-    double trailOffset = (-frac - i) * _h;
-    double trailOpacity = math.max(0, 0.3 - (i * 0.08));
+  List<Widget> _buildTrails(double fraction) {
+    List<Widget> trails = [];
     
-    if (trailOpacity > 0) {
-      trails.add(
-        Transform.translate(
-          offset: Offset(0, trailOffset),
-          child: Opacity(
-            opacity: trailOpacity,
-            child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
+    for (int i = 1; i <= 3; i++) {
+      int trailDigit = (_position.floor() - i) % 10;
+      double trailOffset = (-fraction - i) * _h;
+      double trailOpacity = math.max(0, 0.3 - (i * 0.08));
+      
+      if (trailOpacity > 0) {
+        trails.add(
+          Transform.translate(
+            offset: Offset(0, trailOffset),
+            child: Opacity(
+              opacity: trailOpacity,
+              child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
+    
+    return trails;
   }
-  
-  return trails;
-}
-
 
   Widget _digitText(int digit, {required bool isMain, double blur = 0}) {
     return SizedBox(
