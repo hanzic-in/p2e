@@ -169,8 +169,8 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
           const SizedBox(width: 12),
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: formatted.split('').asMap().entries.map<Widget>((entry) {
-             final index = entry.key;
+            children: formatted.split('').asMap().entries.map<Widget>((entry) { 
+              final index = entry.key;
               final char = entry.value;
               final num = int.tryParse(char);
 
@@ -309,11 +309,15 @@ class _SlotDigitState extends State<SlotDigit>
 
   int current = 0;
   int next = 0;
+  bool isAnimating = false;
+
+  static const double height = 28;
 
   @override
   void initState() {
     super.initState();
     current = widget.digit;
+    next = widget.digit;
 
     _controller = AnimationController(
       vsync: this,
@@ -321,7 +325,7 @@ class _SlotDigitState extends State<SlotDigit>
     );
 
     _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
   }
 
@@ -329,35 +333,47 @@ class _SlotDigitState extends State<SlotDigit>
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.digit != current) {
+    if (widget.digit != current && !isAnimating) {
       next = widget.digit;
-      _startAnim();
+      _roll();
     }
   }
 
-  void _startAnim() async {
+  Future<void> _roll() async {
+    isAnimating = true;
+
     await _controller.forward();
+
     setState(() {
       current = next;
     });
+
     _controller.reset();
+    isAnimating = false;
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 16,
-      height: 28,
+      height: height,
       child: ClipRect(
         child: AnimatedBuilder(
           animation: _animation,
           builder: (context, child) {
             return Transform.translate(
-              offset: Offset(0, _animation.value * 28),
+              offset: Offset(0, _animation.value * height),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('$current', style: _style()),
-                  Text('$next', style: _style()),
+                  SizedBox(
+                    height: height,
+                    child: Center(child: Text('$current', style: _style())),
+                  ),
+                  SizedBox(
+                    height: height,
+                    child: Center(child: Text('$next', style: _style())),
+                  ),
                 ],
               ),
             );
