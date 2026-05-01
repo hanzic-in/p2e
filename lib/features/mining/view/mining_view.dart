@@ -300,24 +300,34 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
+
 class SlotDigit extends StatefulWidget {
   final int digit;
-  const SlotDigit({required this.digit, super.key});
+  final Duration duration;
+  const SlotDigit({
+    required this.digit,
+    this.duration = const Duration(milliseconds: 200),
+    super.key,
+  });
 
   @override
   State<SlotDigit> createState() => _SlotDigitState();
 }
 
-class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
+class _SlotDigitState extends State<SlotDigit>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   int current = 0;
   int next = 0;
   bool isAnimating = false;
+  
+  // Queue buat nampung digit yang belum di-roll
+  final List<int> _pendingDigits = [];
 
-  static const double height = 36; 
-  static const double width = 20;
+  static const double height = 32;
+  static const double width = 18;
 
   @override
   void initState() {
@@ -327,34 +337,54 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: widget.duration,
     );
 
     _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
   }
 
   @override
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.digit != current && !isAnimating) {
-      next = widget.digit;
-      _roll();
+
+    if (widget.digit != current) {
+      if (isAnimating) {
+        // Kalau lagi animasi, masukin ke queue
+        _pendingDigits.add(widget.digit);
+      } else {
+        // Langsung roll
+        next = widget.digit;
+        _roll();
+      }
     }
   }
 
   Future<void> _roll() async {
     if (!mounted) return;
     isAnimating = true;
+
     await _controller.forward();
+
     if (mounted) {
       setState(() {
         current = next;
       });
       _controller.reset();
     }
-    isAnimating = false;
+
+    // Cek ada pending nggak
+    if (_pendingDigits.isNotEmpty) {
+      // Ambil yang terakhir (paling baru), skip yang di tengah-tengah
+      final latestDigit = _pendingDigits.last;
+      _pendingDigits.clear();
+      next = latestDigit;
+      isAnimating = false;
+      _roll(); // Recursive roll ke angka terbaru
+    } else {
+      isAnimating = false;
+    }
   }
 
   @override
@@ -368,20 +398,32 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
           builder: (context, child) {
             return Stack(
               children: [
+                // Current digit (slide up)
                 Transform.translate(
                   offset: Offset(0, _animation.value * height),
                   child: SizedBox(
                     height: height,
                     width: width,
-                    child: Center(child: Text('$current', style: _style())),
+                    child: Center(
+                      child: Text(
+                        '$current',
+                        style: _style(),
+                      ),
+                    ),
                   ),
                 ),
+                // Next digit (slide in from bottom)
                 Transform.translate(
                   offset: Offset(0, (_animation.value + 1) * height),
                   child: SizedBox(
                     height: height,
                     width: width,
-                    child: Center(child: Text('$next', style: _style())),
+                    child: Center(
+                      child: Text(
+                        '$next',
+                        style: _style(),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -393,9 +435,15 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   }
 
   TextStyle _style() => const TextStyle(
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: FontWeight.w900,
         fontFamily: 'monospace',
         color: Colors.white,
       );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 }
