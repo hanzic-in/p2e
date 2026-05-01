@@ -29,7 +29,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       if (prov.isMining) {
         final random = math.Random();
         setState(() {
-          List<String> digits = _currentBalance.toStringAsFixed(13).split('');
           if (random.nextDouble() > 0.2) {
             _currentBalance += 0.0000000000001;
           }
@@ -281,47 +280,39 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
 
 class _SingleDigitRolling extends StatelessWidget {
   final String char;
-  const _SingleDigitRolling({required this.char});
+  const _SingleDigitRolling({required this.char, super.key});
 
   @override
   Widget build(BuildContext context) {
     const double fontSize = 24.0;
-    const double digitHeight = fontSize * 1.2; 
+    const double digitHeight = fontSize * 1.2;
+
     if (int.tryParse(char) == null) {
       return Text(char, style: _textStyle(fontSize));
     }
 
     return Container(
       height: digitHeight,
-      width: fontSize * 0.65,
+      width: fontSize * 0.62,
       alignment: Alignment.center,
       child: ClipRect(
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 350),
           transitionBuilder: (Widget child, Animation<double> animation) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.5),
-                end: Offset.zero
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutBack
-              )),
-              child: child,
-            );
-          },
-          
-            final snappyAnimation = CurvedAnimation( 
-              parent: animation, 
-              curve: Curves.easeInOutBack 
-            );
-            final inAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(animation);
-            final outAnimation = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(animation);
+            final Animation<Offset> inAnim = Tween<Offset>(
+              begin: const Offset(0, 1), 
+              end: Offset.zero
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack));
+
+            final Animation<Offset> outAnim = Tween<Offset>(
+              begin: const Offset(0, -1), 
+              end: Offset.zero
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack));
 
             if (child.key == ValueKey<String>(char)) {
-              return SlideTransition(position: inAnimation, child: child);
+              return SlideTransition(position: inAnim, child: child);
             } else {
-              return SlideTransition(position: outAnimation, child: child);
+              return SlideTransition(position: outAnim, child: child);
             }
           },
           child: Text(
@@ -344,3 +335,4 @@ class _SingleDigitRolling extends StatelessWidget {
     );
   }
 }
+
