@@ -300,145 +300,154 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
-class SlotDigit extends StatefulWidget {
+class RollingDigit extends StatefulWidget {
   final int digit;
-  final int delay;
-  const SlotDigit({required this.digit, this.delay = 0, super.key});
+  final double speed; // putaran per detik (higher = faster)
+  const RollingDigit({
+    required this.digit,
+    this.speed = 8.0, // default 8 putaran/detik
+    super.key,
+  });
 
   @override
-  State<SlotDigit> createState() => _SlotDigitState();
+  State<RollingDigit> createState() => _RollingDigitState();
 }
 
-class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
+class _RollingDigitState extends State<RollingDigit>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
-  int _current = 0;
-  int _next = 0;
-  int _start = 0;
-  int _target = 0;
-  bool _isRolling = false;
-
-  static const double _height = 36;
-  static const double _width = 20;
+  // Posisi "virtual" — bisa 1.5, 2.3, etc (bukan integer)
+  double _position = 0.0;
+  double _targetPosition = 0.0;
+  
+  static const double _h = 36;
+  static const double _w = 20;
 
   @override
   void initState() {
     super.initState();
-    _current = widget.digit;
-    _start = widget.digit;
-    _target = widget.digit;
+    _position = widget.digit.toDouble();
+    _targetPosition = widget.digit.toDouble();
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
+      duration: const Duration(seconds: 1),
+    )..repeat();
+    
+    _controller.addListener(_onTick);
   }
 
   @override
-  void didUpdateWidget(covariant SlotDigit oldWidget) {
+  void didUpdateWidget(covariant RollingDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.digit != _target && !_isRolling) {
-      _startRolling();
+    if (widget.digit != oldWidget.digit) {
+      // Naikkan target — bisa loncat banyak angka
+      double diff = (widget.digit - oldWidget.digit + 10) % 10;
+      if (diff == 0) diff = 10; // minimal 1 putaran
+      _targetPosition += diff;
     }
   }
 
-  void _startRolling() {
-    _start = _current;
-    _target = widget.digit;
-    _isRolling = true;
+  void _onTick() {
+    // Lerp ke target dengan kecepatan
+    double delta = (_targetPosition - _position) * 0.15;
     
-    int distance = (_target - _start + 10) % 10;
-    if (distance == 0) distance = 10;
+    // Minimal movement biar gak stuck
+    if (delta.abs() < 0.01 && _position != _targetPosition) {
+      delta = (_targetPosition > _position) ? 0.05 : -0.05;
+    }
     
-    int speedPerDigit = math.max(30, 80 - (distance * 4));
-    int totalDuration = distance * speedPerDigit;
-    
-    _controller.duration = Duration(milliseconds: totalDuration);
-    _controller.forward(from: 0).whenComplete(() {
-      if (mounted) {
-        setState(() {
-          _isRolling = false;
-        });
-      }
+    setState(() {
+      _position += delta;
     });
-    
-    // Timer untuk update angka per step
-    _rollStepByStep(distance, speedPerDigit);
-  }
-
-  Future<void> _rollStepByStep(int distance, int speedPerDigit) async {
-    for (int i = 1; i <= distance; i++) {
-      await Future.delayed(Duration(milliseconds: speedPerDigit));
-      if (!mounted) return;
-      
-      int newNext = (_start + i) % 10;
-      
-      setState(() {
-        _next = newNext;
-      });
-      
-      // Trigger animasi slide
-      await _controller.forward(from: 0);
-      
-      if (mounted) {
-        setState(() {
-          _current = _next;
-        });
-        _controller.reset();
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Extract fractional part untuk posisi Y
+    double fraction = _position - _position.floor();
+    int currentDigit = _position.floor() % 10;
+    int nextDigit = (currentDigit + 1) % 10;
+    
     return SizedBox(
-      width: _width,
-      height: _height,
+      width: _w,
+      height: _h,
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            double slideValue = _controller.value;
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // TRAIL / BLUR — angka yang sudah lewat (ghosting)
+            ..._buildTrails(),
             
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // Angka LAMA — naik ke atas (keluar)
-                Transform.translate(
-                  offset: Offset(0, -slideValue * _height),
-                  child: Opacity(
-                    opacity: 1 - slideValue,
-                    child: _digitText(_current),
-                  ),
-                ),
-                // Angka BARU — masuk dari bawah
-                Transform.translate(
-                  offset: Offset(0, (1 - slideValue) * _height),
-                  child: Opacity(
-                    opacity: slideValue,
-                    child: _digitText(_next),
-                  ),
-                ),
-              ],
-            );
-          },
+            // CURRENT — angka utama (sedang keluar ke atas)
+            Transform.translate(
+              offset: Offset(0, -fraction * _h),
+              child: Opacity(
+                opacity: 1 - fraction,
+                child: _digitText(currentDigit, isMain: true),
+              ),
+            ),
+            
+            // NEXT — angka berikutnya (masuk dari bawah)
+            Transform.translate(
+              offset: Offset(0, (1 - fraction) * _h),
+              child: Opacity(
+                opacity: fraction,
+                child: _digitText(nextDigit, isMain: true),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _digitText(int digit) {
+  List<Widget> _buildTrails() {
+    List<Widget> trails = [];
+    
+    // 2-3 angka sebelumnya sebagai ghost/blur
+    for (int i = 1; i <= 3; i++) {
+      int trailDigit = (_position.floor() - i) % 10;
+      double trailOffset = (-fraction - i) * _h;
+      double trailOpacity = math.max(0, 0.3 - (i * 0.08));
+      
+      if (trailOpacity > 0) {
+        trails.add(
+          Transform.translate(
+            offset: Offset(0, trailOffset),
+            child: Opacity(
+              opacity: trailOpacity,
+              child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
+            ),
+          ),
+        );
+      }
+    }
+    
+    return trails;
+  }
+
+  Widget _digitText(int digit, {required bool isMain, double blur = 0}) {
     return SizedBox(
-      height: _height,
-      width: _width,
+      height: _h,
+      width: _w,
       child: Center(
         child: Text(
           '$digit',
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
+          style: TextStyle(
+            fontSize: isMain ? 22 : 18,
+            fontWeight: isMain ? FontWeight.w900 : FontWeight.w500,
             fontFamily: 'monospace',
-            color: Colors.white,
+            color: isMain 
+              ? Colors.white 
+              : Colors.white.withOpacity(0.4),
+            shadows: isMain ? null : [
+              Shadow(
+                blurRadius: blur * 2,
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ],
           ),
         ),
       ),
