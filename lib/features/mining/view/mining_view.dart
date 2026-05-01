@@ -304,14 +304,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 class SlotDigit extends StatefulWidget {
   final int digit;
   final int delay;
-  final Duration duration;
-  
-  const SlotDigit({
-    required this.digit,
-    this.delay = 0,
-    this.duration = const Duration(milliseconds: 400),
-    super.key,
-  });
+  const SlotDigit({required this.digit, this.delay = 0, super.key});
 
   @override
   State<SlotDigit> createState() => _SlotDigitState();
@@ -320,12 +313,9 @@ class SlotDigit extends StatefulWidget {
 class _SlotDigitState extends State<SlotDigit>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
-
+  
   int current = 0;
-  int target = 0;
-  bool isAnimating = false;
-  List<int> _sequence = [];
+  int next = 0;
 
   static const double height = 30;
   static const double width = 16;
@@ -334,124 +324,55 @@ class _SlotDigitState extends State<SlotDigit>
   void initState() {
     super.initState();
     current = widget.digit;
-    target = widget.digit;
+    next = widget.digit;
+    
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150), // Cepet!
+    );
   }
 
   @override
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.digit != target) {
-      target = widget.digit;
-      
-      // Bangun sequence: dari current ke target, lewat semua angka
-      _buildSequence();
-      
-      if (!isAnimating) {
-        _startRoll();
-      }
-    }
-  }
-
-  void _buildSequence() {
-    _sequence = [];
-    int start = current;
-    int end = target;
     
-    // Selalu roll ke depan (0→1→2→...→9→0)
-    while (start != end) {
-      start = (start + 1) % 10;
-      _sequence.add(start);
-    }
-  }
-
-  Future<void> _startRoll() async {
-    if (_sequence.isEmpty || !mounted) return;
-    
-    isAnimating = true;
-
-    for (int i = 0; i < _sequence.length; i++) {
-      if (!mounted) return;
-      
-      int nextDigit = _sequence[i];
-      
-      // Setup controller untuk 1 step
-      _controller = AnimationController(
-        vsync: this,
-        duration: Duration(
-          milliseconds: widget.duration.inMilliseconds ~/ _sequence.length.clamp(1, 10)
-        ),
-      );
-      
-      _animation = Tween<double>(begin: 0, end: -1).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-      );
-
-      setState(() {
-        // current tetap, next = angka berikutnya
+    if (widget.digit != current) {
+      next = widget.digit;
+      _controller.forward(from: 0).then((_) {
+        if (mounted) {
+          setState(() {
+            current = next;
+          });
+        }
       });
-
-      await _controller.forward();
-      
-      if (mounted) {
-        setState(() {
-          current = nextDigit;
-        });
-      }
-      
-      _controller.dispose();
-    }
-
-    if (mounted) {
-      setState(() {
-        current = target;
-      });
-    }
-    
-    isAnimating = false;
-    
-    // Cek ada sequence baru nggak
-    if (_sequence.isNotEmpty && _sequence.last != target) {
-      _buildSequence();
-      _startRoll();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Tentukan next digit untuk animasi
-    int nextDigit = _sequence.isNotEmpty ? _sequence.first : current;
-    
     return SizedBox(
       width: width,
       height: height,
       child: ClipRect(
-        child: _controller.isAnimating 
-          ? AnimatedBuilder(
-              animation: _animation,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, _animation.value * height),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        height: height,
-                        child: Center(child: Text('$current', style: _style())),
-                      ),
-                      SizedBox(
-                        height: height,
-                        child: Center(child: Text('$nextDigit', style: _style())),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            )
-          : SizedBox(
-              height: height,
-              child: Center(child: Text('$current', style: _style())),
-            ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            double offset = Tween<double>(begin: 0, end: -1)
+                .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
+                .value;
+                
+            return Transform.translate(
+              offset: Offset(0, offset * height),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: height, child: Center(child: Text('$current', style: _style()))),
+                  SizedBox(height: height, child: Center(child: Text('$next', style: _style()))),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
