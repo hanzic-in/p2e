@@ -35,7 +35,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       if (prov.isMining) {
         final random = math.Random();
         setState(() {
-          _balanceInt += random.nextInt(2) + 1;
+          _balanceInt += 1;
         });
       }
     });
@@ -325,7 +325,7 @@ class _SlotDigitState extends State<SlotDigit> {
       await _controller.animateToItem(
         current,
         duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
+        curve: Curves.decelerate,
       );
     }
 
