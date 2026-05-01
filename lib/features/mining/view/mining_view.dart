@@ -310,42 +310,53 @@ class SlotDigit extends StatefulWidget {
   State<SlotDigit> createState() => _SlotDigitState();
 }
 
-class _SlotDigitState extends State<SlotDigit>
-    with SingleTickerProviderStateMixin {
+class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  
+  late Animation<double> _animation;
+
   int current = 0;
   int next = 0;
+  bool isAnimating = false;
 
-  static const double height = 30;
-  static const double width = 16;
+  static const double height = 36; 
+  static const double width = 20;
 
   @override
   void initState() {
     super.initState();
     current = widget.digit;
     next = widget.digit;
-    
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150), // Cepet!
+      duration: const Duration(milliseconds: 250),
+    );
+
+    _animation = Tween<double>(begin: 0, end: -1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
 
   @override
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    if (widget.digit != current) {
+    if (widget.digit != current && !isAnimating) {
       next = widget.digit;
-      _controller.forward(from: 0).then((_) {
-        if (mounted) {
-          setState(() {
-            current = next;
-          });
-        }
-      });
+      _roll();
     }
+  }
+
+  Future<void> _roll() async {
+    if (!mounted) return;
+    isAnimating = true;
+    await _controller.forward();
+    if (mounted) {
+      setState(() {
+        current = next;
+      });
+      _controller.reset();
+    }
+    isAnimating = false;
   }
 
   @override
@@ -355,21 +366,27 @@ class _SlotDigitState extends State<SlotDigit>
       height: height,
       child: ClipRect(
         child: AnimatedBuilder(
-          animation: _controller,
+          animation: _animation,
           builder: (context, child) {
-            double offset = Tween<double>(begin: 0, end: -1)
-                .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
-                .value;
-                
-            return Transform.translate(
-              offset: Offset(0, offset * height),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: height, child: Center(child: Text('$current', style: _style()))),
-                  SizedBox(height: height, child: Center(child: Text('$next', style: _style()))),
-                ],
-              ),
+            return Stack(
+              children: [
+                Transform.translate(
+                  offset: Offset(0, _animation.value * height),
+                  child: SizedBox(
+                    height: height,
+                    width: width,
+                    child: Center(child: Text('$current', style: _style())),
+                  ),
+                ),
+                Transform.translate(
+                  offset: Offset(0, (_animation.value + 1) * height),
+                  child: SizedBox(
+                    height: height,
+                    width: width,
+                    child: Center(child: Text('$next', style: _style())),
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -378,15 +395,9 @@ class _SlotDigitState extends State<SlotDigit>
   }
 
   TextStyle _style() => const TextStyle(
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: FontWeight.w900,
         fontFamily: 'monospace',
         color: Colors.white,
       );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 }
