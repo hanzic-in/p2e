@@ -30,7 +30,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final random = math.Random();
         setState(() {
           if (random.nextDouble() > 0.2) {
-            _currentBalance += 0.0000000000001;
+            _balanceInt += 1;
           }
         });
       }
@@ -145,7 +145,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   }
 
 Widget _buildTokenBalance(MiningProvider prov, Color color) {
-  String formatted = _currentBalance.toStringAsFixed(13);
+  String formatted = formatBalance(_balanceInt);
 
   return Column(
     children: [
