@@ -173,7 +173,13 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
                   fontSize: 24,
                   fontWeight: FontWeight.w900));
               }
-              return _SingleDigitRolling(digit: num);
+              return SlotDigit(digit: num);
+              @override
+              void initState() {
+                super.initState();
+                current = widget.digit;
+                _controller.jumpToItem(current);
+              }
             }).toList(),
           ),
         ],
@@ -277,64 +283,4 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
     );
   }
 
-}
-
-class _SingleDigitRolling extends StatefulWidget {
-  final int digit;
-  const _SingleDigitRolling({required this.digit, super.key});
-
-  @override
-  State<_SingleDigitRolling> createState() => _SingleDigitRollingState();
-}
-
-class _SingleDigitRollingState extends State<_SingleDigitRolling> {
-  int current = 0;
-
-  @override
-  void didUpdateWidget(covariant _SingleDigitRolling oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.digit != current) {
-      _animateTo(widget.digit);
-    }
-  }
-
-  void _animateTo(int target) async {
-    while (current != target) {
-      await Future.delayed(const Duration(milliseconds: 40));
-      setState(() {
-        current = (current + 1) % 10;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 14,
-      height: 26,
-      child: TweenAnimationBuilder(
-        tween: Tween<double>(begin: 1, end: 0),
-        duration: const Duration(milliseconds: 120),
-        builder: (context, value, child) {
-          return Transform.translate(
-            offset: Offset(0, value * 20),
-            child: Opacity(
-              opacity: 1 - value,
-              child: child,
-            ),
-          );
-        },
-        child: Text(
-          '$current',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            fontFamily: 'monospace',
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
 }
