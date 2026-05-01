@@ -171,29 +171,25 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
             ),
             const SizedBox(width: 12),
             Row(
-              mainAxisSize: MainAxisSize.min,
-              children: formatted.split('').asMap().entries.map<Widget>((entry) { 
-                final index = entry.key;
-                final char = entry.value;
-                final num = int.tryParse(char);
+  mainAxisSize: MainAxisSize.min,
+  children: formatted.split('').asMap().entries.map<Widget>((entry) { 
+    final index = entry.key;
+    final char = entry.value;
+    final num = int.tryParse(char);
 
-                if (num == null) {
-                  return Text(
-                    char,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  );
-                }
+    if (num == null) {
+      return Text(char, style: const TextStyle(
+        color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900,
+      ));
+    }
+    return RollingDigit(
+      key: ValueKey('digit-$index'),
+      digit: num,
+      speed: 5.0 + (index * 2.0),
+    );
+  }).toList(),
+),
 
-                return SlotDigit(
-                  digit: num,
-                  delay: 0,
-                );
-              }).toList(),
-            ),
           ],
         ),
       ),
