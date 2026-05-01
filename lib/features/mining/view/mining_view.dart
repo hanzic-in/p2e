@@ -302,16 +302,27 @@ class SlotDigit extends StatefulWidget {
   State<SlotDigit> createState() => _SlotDigitState();
 }
 
-class _SlotDigitState extends State<SlotDigit> {
-  late FixedExtentScrollController _controller;
+class _SlotDigitState extends State<SlotDigit>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   int current = 0;
-  bool isAnimating = false;
+  int next = 0;
 
   @override
   void initState() {
     super.initState();
     current = widget.digit;
-    _controller = FixedExtentScrollController(initialItem: current);
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+
+    _animation = Tween<double>(begin: 0, end: -1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
   }
 
   @override
@@ -319,53 +330,35 @@ class _SlotDigitState extends State<SlotDigit> {
     super.didUpdateWidget(oldWidget);
 
     if (widget.digit != current) {
-      _rollTo(widget.digit);
+      next = widget.digit;
+      _startAnim();
     }
   }
 
-  void _rollTo(int target) async {
-    if (isAnimating) return;
-    isAnimating = true;
-
-    int steps = (target - current) % 10;
-    if (steps < 0) steps += 10;
-
-    for (int i = 0; i < steps; i++) {
-      current = (current + 1) % 10;
-
-      await _controller.animateToItem(
-        current,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.decelerate,
-      );
-    }
-
-    isAnimating = false;
+  void _startAnim() async {
+    await _controller.forward();
+    setState(() {
+      current = next;
+    });
+    _controller.reset();
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 16,
-      height: 30,
-      child: ListWheelScrollView.useDelegate(
-        controller: _controller,
-        physics: const NeverScrollableScrollPhysics(),
-        itemExtent: 28,
-        perspective: 0.003,
-        diameterRatio: 2,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: 10,
-          builder: (context, index) {
-            return Center(
-              child: Text(
-                '$index',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                  color: Colors.white,
-                ),
+      height: 28,
+      child: ClipRect(
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _animation.value * 28),
+              child: Column(
+                children: [
+                  Text('$current', style: _style()),
+                  Text('$next', style: _style()),
+                ],
               ),
             );
           },
@@ -373,4 +366,11 @@ class _SlotDigitState extends State<SlotDigit> {
       ),
     );
   }
+
+  TextStyle _style() => const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w900,
+        fontFamily: 'monospace',
+        color: Colors.white,
+      );
 }
