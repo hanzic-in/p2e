@@ -301,89 +301,93 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
-class SlotDigit extends StatefulWidget {
-  final int digit;
-  final int delay;
-  const SlotDigit({required this.digit, this.delay = 0, super.key});
+class RollingDigit extends StatefulWidget {
+  final int digit;      // angka target saat ini
+  final int speed;      // kecepatan gulir (ms per angka). Semakin KECIL = semakin CEPAT
+  const RollingDigit({
+    required this.digit,
+    this.speed = 80,     // default 80ms per angka
+    super.key,
+  });
 
   @override
-  State<SlotDigit> createState() => _SlotDigitState();
+  State<RollingDigit> createState() => _RollingDigitState();
 }
 
-class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _RollingDigitState extends State<RollingDigit> {
+  int _displayed = 0;   // angka yang lagi ditampilkan
+  int _target = 0;      // angka tujuan
+  bool _isRolling = false;
 
-  int current = 0;
-  int next = 0;
-  bool isAnimating = false;
-
-  static const double height = 36; 
-  static const double width = 20;
+  static const double _height = 36;
+  static const double _width = 20;
 
   @override
   void initState() {
     super.initState();
-    current = widget.digit;
-    next = widget.digit;
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-
-    _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _displayed = widget.digit;
+    _target = widget.digit;
   }
 
   @override
-  void didUpdateWidget(covariant SlotDigit oldWidget) {
+  void didUpdateWidget(covariant RollingDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.digit != current && !isAnimating) {
-      next = widget.digit;
-      _roll();
+    
+    // Target berubah? Update target dan pastikan rolling jalan
+    if (widget.digit != _target) {
+      _target = widget.digit;
+      if (!_isRolling) {
+        _startRolling();
+      }
     }
   }
 
-  Future<void> _roll() async {
+  Future<void> _startRolling() async {
     if (!mounted) return;
-    isAnimating = true;
-    await _controller.forward();
-    if (mounted) {
+    _isRolling = true;
+
+    while (_displayed != _target && mounted) {
+      await Future.delayed(Duration(milliseconds: widget.speed));
+      
+      if (!mounted) break;
+      
       setState(() {
-        current = next;
+        // Naik 1, kalau sudah 9 balik ke 0 (rolling terus)
+        _displayed = (_displayed + 1) % 10;
       });
-      _controller.reset();
     }
-    isAnimating = false;
+
+    _isRolling = false;
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width,
-      height: height,
+      width: _width,
+      height: _height,
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
+        child: TweenAnimationBuilder<double>(
+          // Animasi smooth saat angka berganti
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: Duration(milliseconds: widget.speed),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
             return Stack(
               children: [
+                // Angka lama (naik ke atas)
                 Transform.translate(
-                  offset: Offset(0, _animation.value * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(child: Text('$current', style: _style())),
+                  offset: Offset(0, -value * _height),
+                  child: Opacity(
+                    opacity: 1 - value,
+                    child: _digitText(_previousDigit()),
                   ),
                 ),
+                // Angka baru (masuk dari bawah)
                 Transform.translate(
-                  offset: Offset(0, (_animation.value + 1) * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(child: Text('$next', style: _style())),
+                  offset: Offset(0, (1 - value) * _height),
+                  child: Opacity(
+                    opacity: value,
+                    child: _digitText(_displayed),
                   ),
                 ),
               ],
@@ -394,10 +398,25 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
     );
   }
 
-  TextStyle _style() => const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w900,
-        fontFamily: 'monospace',
-        color: Colors.white,
-      );
+  int _previousDigit() => (_displayed - 1 + 10) % 10;
+
+  Widget _digitText(int digit) {
+    return SizedBox(
+      height: _height,
+      width: _width,
+      child: Center(
+        child: Text(
+          '$digit',
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'monospace',
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
 }
+
+
