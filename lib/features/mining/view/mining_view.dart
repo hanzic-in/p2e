@@ -300,30 +300,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
-
-                    height: height,
-                    child: Center(child: Text('$current', style: _style())),
-                  ),
-                  SizedBox(
-                    height: height,
-                    child: Center(child: Text('$next', style: _style())),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  TextStyle _style() => GoogleFonts.robotoMono(
-        fontSize: 20,
-        fontWeight: FontWeight.w900,
-        color: Colors.white,
-      );
-}
-
 class SlotDigit extends StatefulWidget {
   final int digit;
   const SlotDigit({required this.digit, super.key});
