@@ -308,6 +308,7 @@ class SlotDigit extends StatefulWidget {
   final Duration duration;
   const SlotDigit({
     required this.digit,
+    required this.delay,
     this.duration = const Duration(milliseconds: 200),
     super.key,
   });
