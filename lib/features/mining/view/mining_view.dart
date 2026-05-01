@@ -177,7 +177,10 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
                   fontSize: 24,
                   fontWeight: FontWeight.w900));
               }
-              return SlotDigit(digit: num);
+              return SlotDigit(
+                key: ValueKey('${char}_$num'),
+                digit: num,
+              );
             }).toList(),
           ),
         ],
