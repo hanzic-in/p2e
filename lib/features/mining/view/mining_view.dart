@@ -155,6 +155,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisSize.min,
         children: [
           // Logo D
           Container(
@@ -167,7 +168,8 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
             child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
           ),
           const SizedBox(width: 12),
-          Row(
+          Flexible(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: formatted.split('').asMap().entries.map<Widget>((entry) { 
               final index = entry.key;
@@ -190,6 +192,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
                 digit: num,
               );
             }).toList(),
+            ),
           ),
         ],
       ),
