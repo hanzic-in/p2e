@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -301,80 +300,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
-class SlotDigit extends StatefulWidget {
-  final int digit;
-  const SlotDigit({required this.digit, super.key});
 
-  @override
-  State<SlotDigit> createState() => _SlotDigitState();
-}
-
-class _SlotDigitState extends State<SlotDigit>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  int current = 0;
-  int next = 0;
-  bool isAnimating = false;
-
-  static const double height = 30;
-  static const double width = 20;
-
-  @override
-  void initState() {
-    super.initState();
-    current = widget.digit;
-    next = widget.digit;
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-    );
-
-    _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void didUpdateWidget(covariant SlotDigit oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.digit != current && !isAnimating) {
-      next = widget.digit;
-      _roll();
-    }
-  }
-
-  Future<void> _roll() async {
-    isAnimating = true;
-
-    await _controller.forward();
-
-    setState(() {
-      current = next;
-    });
-
-    _controller.reset();
-    isAnimating = false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Transform.translate(
-              offset: Offset(0, _animation.value * height),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
                     height: height,
                     child: Center(child: Text('$current', style: _style())),
                   ),
@@ -394,6 +320,106 @@ class _SlotDigitState extends State<SlotDigit>
   TextStyle _style() => GoogleFonts.robotoMono(
         fontSize: 20,
         fontWeight: FontWeight.w900,
+        color: Colors.white,
+      );
+}
+
+class SlotDigit extends StatefulWidget {
+  final int digit;
+  const SlotDigit({required this.digit, super.key});
+
+  @override
+  State<SlotDigit> createState() => _SlotDigitState();
+}
+
+class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  int current = 0;
+  int next = 0;
+  bool isAnimating = false;
+
+  static const double height = 36; 
+  static const double width = 20;
+
+  @override
+  void initState() {
+    super.initState();
+    current = widget.digit;
+    next = widget.digit;
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+
+    _animation = Tween<double>(begin: 0, end: -1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant SlotDigit oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.digit != current && !isAnimating) {
+      next = widget.digit;
+      _roll();
+    }
+  }
+
+  Future<void> _roll() async {
+    if (!mounted) return;
+    isAnimating = true;
+    await _controller.forward();
+    if (mounted) {
+      setState(() {
+        current = next;
+      });
+      _controller.reset();
+    }
+    isAnimating = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: ClipRect(
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                Transform.translate(
+                  offset: Offset(0, _animation.value * height),
+                  child: SizedBox(
+                    height: height,
+                    width: width,
+                    child: Center(child: Text('$current', style: _style())),
+                  ),
+                ),
+                Transform.translate(
+                  offset: Offset(0, (_animation.value + 1) * height),
+                  child: SizedBox(
+                    height: height,
+                    width: width,
+                    child: Center(child: Text('$next', style: _style())),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  TextStyle _style() => const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w900,
+        fontFamily: 'monospace',
         color: Colors.white,
       );
 }
