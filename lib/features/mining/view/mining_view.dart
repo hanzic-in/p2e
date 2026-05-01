@@ -169,19 +169,27 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
           const SizedBox(width: 12),
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: formatted.split('').map<Widget>((char) {
+            children: formatted.split('').asMap().entries.map<Widget>((entry) {
+             final index = entry.key;
+              final char = entry.value;
               final num = int.tryParse(char);
+
               if (num == null) {
-                return Text(char, style: const TextStyle(    
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900));
+                return Text(
+                  char,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                );
               }
+
               return SlotDigit(
-                key: ValueKey('${char}_$num'),
+                key: ValueKey('$index-$num'),
                 digit: num,
               );
-            }).toList(),
+            }).toList();
           ),
         ],
       ),
