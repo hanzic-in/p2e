@@ -191,6 +191,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 return SlotDigit(
                   key: ValueKey('slot-$index'),
                   digit: num,
+                  delay: index * 50,
                 );
               }).toList(),
             ),
@@ -303,6 +304,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 class SlotDigit extends StatefulWidget {
   final int digit;
+  final int delay;
   final Duration duration;
   const SlotDigit({
     required this.digit,
@@ -356,7 +358,8 @@ class _SlotDigitState extends State<SlotDigit>
       } else {
         // Langsung roll
         next = widget.digit;
-        _roll();
+        Future.delayed(Duration(milliseconds: widget.delay),
+        if (mounted) _roll();
       }
     }
   }
