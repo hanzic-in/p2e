@@ -358,8 +358,9 @@ class _SlotDigitState extends State<SlotDigit>
       } else {
         // Langsung roll
         next = widget.digit;
-        Future.delayed(Duration(milliseconds: widget.delay),
-        if (mounted) _roll(););
+        Future.delayed(Duration(milliseconds: widget.delay), () {
+        if (mounted) _roll();
+        });
       }
     }
   }
