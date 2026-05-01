@@ -12,7 +12,7 @@ class MiningView extends StatefulWidget {
 }
 
 class _MiningViewState extends State<MiningView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _shimmerController;
 
   // Pakai double biar bisa increment kecil-kecil
