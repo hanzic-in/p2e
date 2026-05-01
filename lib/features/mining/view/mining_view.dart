@@ -155,7 +155,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisAlignment: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Logo D
           Container(
