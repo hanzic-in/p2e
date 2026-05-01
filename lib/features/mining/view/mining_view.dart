@@ -186,7 +186,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
               }
 
               return SlotDigit(
-                key: ValueKey('digit-$index'),
+                key: ValueKey('slot-$index'),
                 digit: num,
               );
             }).toList(),
