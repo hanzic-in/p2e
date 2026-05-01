@@ -47,21 +47,25 @@ class _MiningViewState extends State<MiningView>
   }
 
   void _onTick(Duration elapsed) {
-    // Delta time dalam detik, di-clamp max 100ms biar aman kalau frame drop
-    final double dt =
-        ((elapsed - _lastElapsed).inMicroseconds / 1000000.0).clamp(0.0, 0.1);
-    _lastElapsed = elapsed;
+  final double dt = ((elapsed - _lastElapsed).inMicroseconds / 1000000.0).clamp(0.0, 0.05);
+  _lastElapsed = elapsed;
 
-    final prov = Provider.of<MiningProvider>(context, listen: false);
-    if (!prov.isMining) return;
+  final prov = Provider.of<MiningProvider>(context, listen: false);
+  if (!prov.isMining) return;
 
-    final rate =
-        prov.isBoostActive ? _miningRateBoost : _miningRateNormal;
+  final double baseRate = prov.isBoostActive ? _miningRateBoost : _miningRateNormal;
 
+  final double seconds = elapsed.inMicroseconds / 1000000.0;
+  final double period = 0.8;
+  final double phase = seconds % period;
+  final bool isActive = phase < (period / 2);
+
+  if (isActive) {
     setState(() {
-      _balanceExact += rate * dt;
+      _balanceExact += baseRate * dt;
     });
   }
+}
 
   @override
   void dispose() {
