@@ -298,10 +298,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 class RollingDigit extends StatefulWidget {
   final int digit;
-  final double speed;
+  final double velocity; // angka per detik yang lewat (higher = lebih cepat gulir)
   const RollingDigit({
     required this.digit,
-    this.speed = 8.0,
+    this.velocity = 15.0, // 15 angka/detik = sangat cepat tapi masih keliatan
     super.key,
   });
 
@@ -313,21 +313,27 @@ class _RollingDigitState extends State<RollingDigit>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
-  double _position = 0.0;
-  double _targetPosition = 0.0;
+  double _currentPos = 0.0;   // posisi sekarang (bisa 1.5, 2.3, etc)
+  double _targetPos = 0.0;    // posisi tujuan
+  double _velocity = 0.0;     // kecepatan saat ini
   
   static const double _h = 36;
   static const double _w = 20;
+  
+  // Konstanta physics
+  static const double _accel = 8.0;      // percepatan
+  static const double _maxVel = 25.0;    // kecepatan maksimum
+  static const double _friction = 0.92;  // gesekan (makin kecil = makin lama berhenti)
 
   @override
   void initState() {
     super.initState();
-    _position = widget.digit.toDouble();
-    _targetPosition = widget.digit.toDouble();
+    _currentPos = widget.digit.toDouble();
+    _targetPos = widget.digit.toDouble();
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(days: 1), // dummy, kita kontrol manual
     )..repeat();
     
     _controller.addListener(_onTick);
@@ -337,29 +343,45 @@ class _RollingDigitState extends State<RollingDigit>
   void didUpdateWidget(covariant RollingDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.digit != oldWidget.digit) {
+      // Tambah target — bisa loncat banyak angka sekaligus
       double diff = (widget.digit - oldWidget.digit + 10) % 10;
       if (diff == 0) diff = 10;
-      _targetPosition += diff;
+      _targetPos += diff;
     }
   }
 
   void _onTick() {
-    double delta = (_targetPosition - _position) * 0.15;
+    // Physics: velocity menuju target
+    double dist = _targetPos - _currentPos;
     
-    if (delta.abs() < 0.01 && _position != _targetPosition) {
-      delta = (_targetPosition > _position) ? 0.05 : -0.05;
+    // Percepat kalau masih jauh
+    if (dist.abs() > 0.5) {
+      _velocity += dist.sign * _accel * 0.016; // 16ms per frame
+      _velocity = _velocity.clamp(-_maxVel, _maxVel);
+    } else {
+      // Dekat target, perlambat (settle smoothly)
+      _velocity *= _friction;
     }
     
-    setState(() {
-      _position += delta;
-    });
+    // Minimal movement biar gak stuck
+    if (dist.abs() < 0.01 && _velocity.abs() < 0.1) {
+      _currentPos = _targetPos;
+      _velocity = 0;
+    } else {
+      _currentPos += _velocity * 0.016;
+    }
+    
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    double fraction = _position - _position.floor();
-    int currentDigit = _position.floor() % 10;
-    int nextDigit = (currentDigit + 1) % 10;
+    // Extract untuk rendering
+    int baseDigit = _currentPos.floor() % 10;
+    double fraction = _currentPos - _currentPos.floor();
+    
+    // Hitung kecepatan visual untuk efek blur
+    double speedFactor = (_velocity.abs() / _maxVel).clamp(0.0, 1.0);
     
     return SizedBox(
       width: _w,
@@ -368,47 +390,42 @@ class _RollingDigitState extends State<RollingDigit>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // TRAILS
-            ..._buildTrails(fraction),
+            // GHOST TRAILS — semakin cepat = semakin banyak & samar
+            ..._buildTrails(fraction, speedFactor),
             
-            // CURRENT (naik ke atas)
-            Transform.translate(
-              offset: Offset(0, -fraction * _h),
-              child: Opacity(
-                opacity: 1 - fraction,
-                child: _digitText(currentDigit, isMain: true),
-              ),
-            ),
-            
-            // NEXT (masuk dari bawah)
-            Transform.translate(
-              offset: Offset(0, (1 - fraction) * _h),
-              child: Opacity(
-                opacity: fraction,
-                child: _digitText(nextDigit, isMain: true),
-              ),
-            ),
+            // MAIN DIGITS — current & next dengan slide
+            _buildMainDigits(fraction, baseDigit, speedFactor),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> _buildTrails(double fraction) {
+  List<Widget> _buildTrails(double fraction, double speedFactor) {
     List<Widget> trails = [];
+    int trailCount = (2 + speedFactor * 4).floor(); // 2-6 trails tergantung kecepatan
     
-    for (int i = 1; i <= 3; i++) {
-      int trailDigit = (_position.floor() - i) % 10;
+    for (int i = 1; i <= trailCount; i++) {
+      int trailDigit = (_currentPos.floor() - i) % 10;
       double trailOffset = (-fraction - i) * _h;
-      double trailOpacity = math.max(0, 0.3 - (i * 0.08));
       
-      if (trailOpacity > 0) {
+      // Opacity berkurang eksponensial + dipengaruhi kecepatan
+      double baseOpacity = math.pow(0.6, i).toDouble();
+      double velocityFade = 1.0 - (speedFactor * 0.3); // cepat = lebih samar
+      double opacity = (baseOpacity * velocityFade).clamp(0.0, 0.5);
+      
+      if (opacity > 0.02) {
         trails.add(
           Transform.translate(
             offset: Offset(0, trailOffset),
             child: Opacity(
-              opacity: trailOpacity,
-              child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
+              opacity: opacity,
+              child: _digitText(
+                trailDigit, 
+                isMain: false, 
+                blur: i * 1.5 + speedFactor * 3,
+                scale: 1.0 - (i * 0.08),
+              ),
             ),
           ),
         );
@@ -418,26 +435,68 @@ class _RollingDigitState extends State<RollingDigit>
     return trails;
   }
 
-  Widget _digitText(int digit, {required bool isMain, double blur = 0}) {
-    return SizedBox(
-      height: _h,
-      width: _w,
-      child: Center(
-        child: Text(
-          '$digit',
-          style: TextStyle(
-            fontSize: isMain ? 22 : 18,
-            fontWeight: isMain ? FontWeight.w900 : FontWeight.w500,
-            fontFamily: 'monospace',
-            color: isMain 
-              ? Colors.white 
-              : Colors.white.withOpacity(0.4),
-            shadows: isMain ? null : [
-              Shadow(
-                blurRadius: blur * 2,
-                color: Colors.white.withOpacity(0.2),
-              ),
-            ],
+  Widget _buildMainDigits(double fraction, int baseDigit, double speedFactor) {
+    int nextDigit = (baseDigit + 1) % 10;
+    
+    // Easing untuk slide — makin cepat = makin linear
+    double easedFraction = speedFactor > 0.5 
+      ? fraction // linear saat cepat
+      : Curves.easeOutCubic.transform(fraction); // smooth saat lambat
+    
+    return Stack(
+      children: [
+        // CURRENT — naik ke atas (opacity fade out)
+        Transform.translate(
+          offset: Offset(0, -easedFraction * _h),
+          child: Opacity(
+            opacity: (1 - easedFraction) * (1 - speedFactor * 0.3),
+            child: _digitText(baseDigit, isMain: true),
+          ),
+        ),
+        
+        // NEXT — naik dari bawah (opacity fade in)
+        Transform.translate(
+          offset: Offset(0, (1 - easedFraction) * _h),
+          child: Opacity(
+            opacity: easedFraction * (1 - speedFactor * 0.3),
+            child: _digitText(nextDigit, isMain: true),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _digitText(int digit, {
+    required bool isMain, 
+    double blur = 0,
+    double scale = 1.0,
+  }) {
+    return Transform.scale(
+      scale: scale,
+      child: SizedBox(
+        height: _h,
+        width: _w,
+        child: Center(
+          child: Text(
+            '$digit',
+            style: TextStyle(
+              fontSize: isMain ? 22 : 20,
+              fontWeight: isMain ? FontWeight.w900 : FontWeight.w600,
+              fontFamily: 'monospace',
+              color: isMain 
+                ? Colors.white 
+                : Colors.white.withOpacity(0.5),
+              shadows: blur > 0 ? [
+                Shadow(
+                  blurRadius: blur,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+                Shadow(
+                  blurRadius: blur * 0.5,
+                  color: isMain ? Colors.cyan.withOpacity(0.2) : Colors.transparent,
+                ),
+              ] : null,
+            ),
           ),
         ),
       ),
