@@ -189,7 +189,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
                 key: ValueKey('$index-$num'),
                 digit: num,
               );
-            }).toList();
+            }).toList(),
           ),
         ],
       ),
