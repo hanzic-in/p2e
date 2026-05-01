@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -390,10 +391,9 @@ class _SlotDigitState extends State<SlotDigit>
     );
   }
 
-  TextStyle _style() => const TextStyle(
+  TextStyle _style() => GoogleFonts.robotoMono(
         fontSize: 20,
         fontWeight: FontWeight.w900,
-        fontFamily: 'monospace',
         color: Colors.white,
       );
 }
