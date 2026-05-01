@@ -365,19 +365,6 @@ Future<void> _rollTo(int target) async {
   isAnimating = false;
 }
 
-  Future<void> _roll() async {
-    if (!mounted) return;
-    isAnimating = true;
-    await _controller.forward();
-    if (mounted) {
-      setState(() {
-        current = next;
-      });
-      _controller.reset();
-    }
-    isAnimating = false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
