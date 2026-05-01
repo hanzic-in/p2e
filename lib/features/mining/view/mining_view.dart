@@ -311,7 +311,8 @@ class _SlotDigitState extends State<SlotDigit>
   int next = 0;
   bool isAnimating = false;
 
-  static const double height = 28;
+  static const double height = 30;
+  static const double width = 20;
 
   @override
   void initState() {
@@ -355,7 +356,7 @@ class _SlotDigitState extends State<SlotDigit>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 16,
+      width: width,
       height: height,
       child: ClipRect(
         child: AnimatedBuilder(
