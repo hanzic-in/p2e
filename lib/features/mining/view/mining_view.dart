@@ -18,10 +18,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-  final str = value.toString().padLeft(14, '0');
-  final whole = str.substring(0, str.length - 13);
-  final decimal = str.substring(str.length - 13);
-  return "$whole.$decimal";
+    final str = value.toString().padLeft(14, '0');
+    final whole = str.substring(0, 1);
+    final decimal = str.substring(1);
+    return "$whole.$decimal";
   }
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       if (prov.isMining) {
         final random = math.Random();
         setState(() {
-          _balanceInt += 1;
+          _balanceInt += math.Random().nextInt(999) + 1;
         });
       }
     });
@@ -186,7 +186,7 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
               }
 
               return SlotDigit(
-                key: ValueKey('$index-$num'),
+                key: ValueKey('digit-$index'),
                 digit: num,
               );
             }).toList(),
