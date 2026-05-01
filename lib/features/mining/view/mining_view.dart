@@ -303,10 +303,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 class SlotDigit extends StatefulWidget {
   final int digit;
+  final int delay;
   final Duration duration;
   
   const SlotDigit({
     required this.digit,
+    this.delay = 0,
     this.duration = const Duration(milliseconds: 400),
     super.key,
   });
