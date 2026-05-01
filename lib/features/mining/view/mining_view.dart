@@ -312,9 +312,10 @@ class SlotDigit extends StatefulWidget {
 class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
-  int _displayed = 0;
-  int _target = 0;
+  int _current = 0;
+  int _next = 0;
   int _start = 0;
+  int _target = 0;
   bool _isRolling = false;
 
   static const double _height = 36;
@@ -323,14 +324,14 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _displayed = widget.digit;
-    _target = widget.digit;
+    _current = widget.digit;
     _start = widget.digit;
+    _target = widget.digit;
     
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-    )..addListener(_onTick);
+    );
   }
 
   @override
@@ -342,37 +343,49 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   }
 
   void _startRolling() {
-    _start = _displayed;
+    _start = _current;
     _target = widget.digit;
     _isRolling = true;
     
     int distance = (_target - _start + 10) % 10;
     if (distance == 0) distance = 10;
     
-    int speedPerDigit = math.max(20, 80 - (distance * 5));
+    int speedPerDigit = math.max(30, 80 - (distance * 4));
     int totalDuration = distance * speedPerDigit;
     
     _controller.duration = Duration(milliseconds: totalDuration);
-    _controller.forward(from: 0);
+    _controller.forward(from: 0).whenComplete(() {
+      if (mounted) {
+        setState(() {
+          _isRolling = false;
+        });
+      }
+    });
+    
+    // Timer untuk update angka per step
+    _rollStepByStep(distance, speedPerDigit);
   }
 
-  void _onTick() {
-    if (!mounted) return;
-    
-    double progress = _controller.value;
-    int distance = (_target - _start + 10) % 10;
-    if (distance == 0) distance = 10;
-    
-    int newDisplayed = (_start + (progress * distance).floor()) % 10;
-    
-    if (newDisplayed != _displayed) {
+  Future<void> _rollStepByStep(int distance, int speedPerDigit) async {
+    for (int i = 1; i <= distance; i++) {
+      await Future.delayed(Duration(milliseconds: speedPerDigit));
+      if (!mounted) return;
+      
+      int newNext = (_start + i) % 10;
+      
       setState(() {
-        _displayed = newDisplayed;
+        _next = newNext;
       });
-    }
-    
-    if (progress >= 1.0) {
-      _isRolling = false;
+      
+      // Trigger animasi slide
+      await _controller.forward(from: 0);
+      
+      if (mounted) {
+        setState(() {
+          _current = _next;
+        });
+        _controller.reset();
+      }
     }
   }
 
@@ -382,45 +395,55 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
       width: _width,
       height: _height,
       child: ClipRect(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 50),
-          transitionBuilder: (child, animation) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.8),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            double slideValue = _controller.value;
+            
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Angka LAMA — naik ke atas (keluar)
+                Transform.translate(
+                  offset: Offset(0, -slideValue * _height),
+                  child: Opacity(
+                    opacity: 1 - slideValue,
+                    child: _digitText(_current),
+                  ),
+                ),
+                // Angka BARU — masuk dari bawah
+                Transform.translate(
+                  offset: Offset(0, (1 - slideValue) * _height),
+                  child: Opacity(
+                    opacity: slideValue,
+                    child: _digitText(_next),
+                  ),
+                ),
+              ],
             );
           },
-          child: SizedBox(
-            key: ValueKey<int>(_displayed),
-            height: _height,
-            width: _width,
-            child: Center(
-              child: Text(
-                '$_displayed',
-                style: _style(),
-              ),
-            ),
-          ),
         ),
       ),
     );
   }
 
-  TextStyle _style() => const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w900,
-        fontFamily: 'monospace',
-        color: Colors.white,
-      );
+  Widget _digitText(int digit) {
+    return SizedBox(
+      height: _height,
+      width: _width,
+      child: Center(
+        child: Text(
+          '$digit',
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'monospace',
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
