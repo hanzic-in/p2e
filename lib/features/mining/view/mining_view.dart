@@ -337,14 +337,33 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
     );
   }
 
-  @override
-  void didUpdateWidget(covariant SlotDigit oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.digit != current && !isAnimating) {
-      next = widget.digit;
-      _roll();
-    }
+@override
+void didUpdateWidget(covariant SlotDigit oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  if (widget.digit != current && !isAnimating) {
+    _rollTo(widget.digit);
   }
+}
+
+Future<void> _rollTo(int target) async {
+  if (!mounted) return;
+  isAnimating = true;
+
+  int steps = (target - current + 10) % 10;
+  if (steps == 0) steps = 10;
+
+  for (int i = 0; i < steps; i++) {
+    if (!mounted) break;
+    next = (current + 1) % 10;
+    await _controller.forward();
+    if (!mounted) break;
+    setState(() { current = next; });
+    _controller.reset();
+    await Future.delayed(Duration(milliseconds: steps > 5 ? 60 : 100));
+  }
+
+  isAnimating = false;
+}
 
   Future<void> _roll() async {
     if (!mounted) return;
