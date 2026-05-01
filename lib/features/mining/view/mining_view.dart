@@ -14,9 +14,15 @@ class MiningView extends StatefulWidget {
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
 
-  double _currentBalance = 0.0;
   Timer? _balanceTimer; 
+  int _balanceInt = 0;
   
+  String formatBalance(int value) {
+  final str = value.toString().padLeft(14, '0');
+  final whole = str.substring(0, str.length - 13);
+  final decimal = str.substring(str.length - 13);
+  return "$whole.$decimal";
+  }
   @override
   void initState() {
     super.initState();
@@ -29,9 +35,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       if (prov.isMining) {
         final random = math.Random();
         setState(() {
-          if (random.nextDouble() > 0.2) {
-            _balanceInt += 1;
-          }
+          _balanceInt += random.nextInt(2) + 1;
         });
       }
     });
