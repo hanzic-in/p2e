@@ -316,6 +316,7 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 
   int current = 0;
   int next = 0;
+  int? _pendingTarget;
   bool isAnimating = false;
 
   static const double height = 36; 
@@ -340,8 +341,12 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 @override
 void didUpdateWidget(covariant SlotDigit oldWidget) {
   super.didUpdateWidget(oldWidget);
-  if (widget.digit != current && !isAnimating) {
-    _rollTo(widget.digit);
+  if (widget.digit != current) {
+    if (isAnimating) {
+      _pendingTarget = widget.digit;
+    } else {
+      _rollTo(widget.digit);
+    }
   }
 }
 
@@ -363,6 +368,11 @@ Future<void> _rollTo(int target) async {
   }
 
   isAnimating = false;
+  if (_pendingTarget != null && _pendingTarget != current) {
+    final t = _pendingTarget!;
+    _pendingTarget = null;
+    _rollTo(t);
+  }
 }
 
   @override
