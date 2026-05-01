@@ -174,12 +174,6 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
                   fontWeight: FontWeight.w900));
               }
               return SlotDigit(digit: num);
-              @override
-              void initState() {
-                super.initState();
-                current = widget.digit;
-                _controller.jumpToItem(current);
-              }
             }).toList(),
           ),
         ],
@@ -283,4 +277,85 @@ Widget _buildTokenBalance(MiningProvider prov, Color color) {
     );
   }
 
+}
+
+class SlotDigit extends StatefulWidget {
+  final int digit;
+  const SlotDigit({required this.digit, super.key});
+
+  @override
+  State<SlotDigit> createState() => _SlotDigitState();
+}
+
+class _SlotDigitState extends State<SlotDigit> {
+  late FixedExtentScrollController _controller;
+  int current = 0;
+  bool isAnimating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    current = widget.digit;
+    _controller = FixedExtentScrollController(initialItem: current);
+  }
+
+  @override
+  void didUpdateWidget(covariant SlotDigit oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.digit != current) {
+      _rollTo(widget.digit);
+    }
+  }
+
+  void _rollTo(int target) async {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    int steps = (target - current) % 10;
+    if (steps < 0) steps += 10;
+
+    for (int i = 0; i < steps; i++) {
+      current = (current + 1) % 10;
+
+      await _controller.animateToItem(
+        current,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+      );
+    }
+
+    isAnimating = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 16,
+      height: 30,
+      child: ListWheelScrollView.useDelegate(
+        controller: _controller,
+        physics: const NeverScrollableScrollPhysics(),
+        itemExtent: 28,
+        perspective: 0.003,
+        diameterRatio: 2,
+        childDelegate: ListWheelChildBuilderDelegate(
+          childCount: 10,
+          builder: (context, index) {
+            return Center(
+              child: Text(
+                '$index',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace',
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
