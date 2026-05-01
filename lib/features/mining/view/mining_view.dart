@@ -299,6 +299,18 @@ class _SingleDigitRolling extends StatelessWidget {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           transitionBuilder: (Widget child, Animation<double> animation) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack
+              )),
+              child: child,
+            );
+          },
+          
             final snappyAnimation = CurvedAnimation( 
               parent: animation, 
               curve: Curves.easeInOutBack 
