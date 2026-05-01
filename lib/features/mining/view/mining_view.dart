@@ -27,8 +27,18 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     _balanceTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       final prov = Provider.of<MiningProvider>(context, listen: false);
       if (prov.isMining) {
+        final random = math.Random();
         setState(() {
-          _currentBalance += prov.isBoostActive ? 0.0000000000125 : 0.0000000000062;
+          List<String> digits = _currentBalance.toStringAsFixed(13).split('');
+          if (random.nextDouble() > 0.2) {
+            _currentBalance += 0.0000000000001;
+          }
+          if (random.nextDouble() > 0.7) {
+            _currentBalance += 0.0000000001;
+          }
+          if (random.nextDouble() > 0.95) {
+            _currentBalance += 0.000001;
+          }
         });
       }
     });
