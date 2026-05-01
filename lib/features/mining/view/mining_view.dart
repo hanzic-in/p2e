@@ -400,29 +400,30 @@ class _RollingDigitState extends State<RollingDigit>
   }
 
   List<Widget> _buildTrails() {
-    List<Widget> trails = [];
+  List<Widget> trails = [];
+  double frac = _position - _position.floor();
+  
+  for (int i = 1; i <= 3; i++) {
+    int trailDigit = (_position.floor() - i) % 10;
+    double trailOffset = (-frac - i) * _h;
+    double trailOpacity = math.max(0, 0.3 - (i * 0.08));
     
-    // 2-3 angka sebelumnya sebagai ghost/blur
-    for (int i = 1; i <= 3; i++) {
-      int trailDigit = (_position.floor() - i) % 10;
-      double trailOffset = (-fraction - i) * _h;
-      double trailOpacity = math.max(0, 0.3 - (i * 0.08));
-      
-      if (trailOpacity > 0) {
-        trails.add(
-          Transform.translate(
-            offset: Offset(0, trailOffset),
-            child: Opacity(
-              opacity: trailOpacity,
-              child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
-            ),
+    if (trailOpacity > 0) {
+      trails.add(
+        Transform.translate(
+          offset: Offset(0, trailOffset),
+          child: Opacity(
+            opacity: trailOpacity,
+            child: _digitText(trailDigit, isMain: false, blur: i.toDouble()),
           ),
-        );
-      }
+        ),
+      );
     }
-    
-    return trails;
   }
+  
+  return trails;
+}
+
 
   Widget _digitText(int digit, {required bool isMain, double blur = 0}) {
     return SizedBox(
