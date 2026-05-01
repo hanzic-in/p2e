@@ -301,15 +301,13 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
 }
 
-
 class SlotDigit extends StatefulWidget {
   final int digit;
-  final int delay;
   final Duration duration;
+  
   const SlotDigit({
     required this.digit,
-    required this.delay,
-    this.duration = const Duration(milliseconds: 200),
+    this.duration = const Duration(milliseconds: 400),
     super.key,
   });
 
@@ -323,124 +321,141 @@ class _SlotDigitState extends State<SlotDigit>
   late Animation<double> _animation;
 
   int current = 0;
-  int next = 0;
+  int target = 0;
   bool isAnimating = false;
-  
-  // Queue buat nampung digit yang belum di-roll
-  final List<int> _pendingDigits = [];
+  List<int> _sequence = [];
 
-  static const double height = 32;
-  static const double width = 18;
+  static const double height = 30;
+  static const double width = 16;
 
   @override
   void initState() {
     super.initState();
     current = widget.digit;
-    next = widget.digit;
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
-
-    _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    target = widget.digit;
   }
 
   @override
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.digit != current) {
-      if (isAnimating) {
-        // Kalau lagi animasi, masukin ke queue
-        _pendingDigits.add(widget.digit);
-      } else {
-        // Langsung roll
-        next = widget.digit;
-        Future.delayed(Duration(milliseconds: widget.delay), () {
-        if (mounted) _roll();
-        });
+    if (widget.digit != target) {
+      target = widget.digit;
+      
+      // Bangun sequence: dari current ke target, lewat semua angka
+      _buildSequence();
+      
+      if (!isAnimating) {
+        _startRoll();
       }
     }
   }
 
-  Future<void> _roll() async {
-    if (!mounted) return;
+  void _buildSequence() {
+    _sequence = [];
+    int start = current;
+    int end = target;
+    
+    // Selalu roll ke depan (0→1→2→...→9→0)
+    while (start != end) {
+      start = (start + 1) % 10;
+      _sequence.add(start);
+    }
+  }
+
+  Future<void> _startRoll() async {
+    if (_sequence.isEmpty || !mounted) return;
+    
     isAnimating = true;
 
-    await _controller.forward();
+    for (int i = 0; i < _sequence.length; i++) {
+      if (!mounted) return;
+      
+      int nextDigit = _sequence[i];
+      
+      // Setup controller untuk 1 step
+      _controller = AnimationController(
+        vsync: this,
+        duration: Duration(
+          milliseconds: widget.duration.inMilliseconds ~/ _sequence.length.clamp(1, 10)
+        ),
+      );
+      
+      _animation = Tween<double>(begin: 0, end: -1).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+      );
+
+      setState(() {
+        // current tetap, next = angka berikutnya
+      });
+
+      await _controller.forward();
+      
+      if (mounted) {
+        setState(() {
+          current = nextDigit;
+        });
+      }
+      
+      _controller.dispose();
+    }
 
     if (mounted) {
       setState(() {
-        current = next;
+        current = target;
       });
-      _controller.reset();
     }
-
-    // Cek ada pending nggak
-    if (_pendingDigits.isNotEmpty) {
-      // Ambil yang terakhir (paling baru), skip yang di tengah-tengah
-      final latestDigit = _pendingDigits.last;
-      _pendingDigits.clear();
-      next = latestDigit;
-      isAnimating = false;
-      _roll(); // Recursive roll ke angka terbaru
-    } else {
-      isAnimating = false;
+    
+    isAnimating = false;
+    
+    // Cek ada sequence baru nggak
+    if (_sequence.isNotEmpty && _sequence.last != target) {
+      _buildSequence();
+      _startRoll();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Tentukan next digit untuk animasi
+    int nextDigit = _sequence.isNotEmpty ? _sequence.first : current;
+    
     return SizedBox(
       width: width,
       height: height,
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Stack(
-              children: [
-                // Current digit (slide up)
-                Transform.translate(
+        child: _controller.isAnimating 
+          ? AnimatedBuilder(
+              animation: _animation,
+              builder: (context, child) {
+                return Transform.translate(
                   offset: Offset(0, _animation.value * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(
-                      child: Text(
-                        '$current',
-                        style: _style(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: height,
+                        child: Center(child: Text('$current', style: _style())),
                       ),
-                    ),
-                  ),
-                ),
-                // Next digit (slide in from bottom)
-                Transform.translate(
-                  offset: Offset(0, (_animation.value + 1) * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(
-                      child: Text(
-                        '$next',
-                        style: _style(),
+                      SizedBox(
+                        height: height,
+                        child: Center(child: Text('$nextDigit', style: _style())),
                       ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            );
-          },
-        ),
+                );
+              },
+            )
+          : SizedBox(
+              height: height,
+              child: Center(child: Text('$current', style: _style())),
+            ),
       ),
     );
   }
 
   TextStyle _style() => const TextStyle(
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: FontWeight.w900,
         fontFamily: 'monospace',
         color: Colors.white,
