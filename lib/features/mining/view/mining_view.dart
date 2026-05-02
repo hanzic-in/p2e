@@ -174,6 +174,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutQuart,
                 loop: true,
+                enableDecimalPoint: true,
+                single: false,
               ),
             ],
           ),
