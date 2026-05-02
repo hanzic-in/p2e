@@ -35,7 +35,18 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       if (prov.isMining) {
         final random = math.Random();
         setState(() {
-          _balanceInt += math.Random().nextInt(99) + 1;
+          _balanceTimer = Timer.periodic(
+  const Duration(milliseconds: 1800),
+  (timer) {
+    final prov = Provider.of<MiningProvider>(context, listen: false);
+
+    if (prov.isMining) {
+      setState(() {
+        _balanceInt += 2000 + math.Random().nextInt(2000);
+      });
+    }
+  },
+);
         });
       }
     });
@@ -191,7 +202,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 return SlotDigit(
                   key: ValueKey('slot-$index'),
                   digit: num,
-                  delay: index * 50,
+                  delay: (length - index) * 30,
                 );
               }).toList(),
             ),
@@ -330,7 +341,7 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 120),
     );
 
     _animation = Tween<double>(begin: 0, end: -1).animate(
@@ -352,6 +363,7 @@ void didUpdateWidget(covariant SlotDigit oldWidget) {
 
 Future<void> _rollTo(int target) async {
   if (!mounted) return;
+  await Future.delayed(Duration(milliseconds: widget.delay));
   isAnimating = true;
 
   int steps = (target - current + 10) % 10;
@@ -364,7 +376,7 @@ Future<void> _rollTo(int target) async {
     if (!mounted) break;
     setState(() { current = next; });
     _controller.reset();
-    await Future.delayed(Duration(milliseconds: steps > 5 ? 60 : 100));
+    await Future.delayed(const Duration(milliseconds: 40));
   }
 
   isAnimating = false;
