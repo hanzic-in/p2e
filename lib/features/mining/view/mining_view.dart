@@ -42,7 +42,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
     if (prov.isMining) {
       setState(() {
-        _balanceInt += 2000 + math.Random().nextInt(2000);
+        _balanceInt += 2000;
       });
     }
   },
