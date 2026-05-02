@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../provider/mining_provider.dart';
 import 'package:animated_digit/animated_digit.dart';
+import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -14,17 +14,8 @@ class MiningView extends StatefulWidget {
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
-  late AnimatedDigitController _balanceController;
+  late AnimatedDigitController _balanceController; // FIX: nama benar
   Timer? _balanceTimer;
-  
-  int _balanceInt = 0;
-  
-  String formatBalance(int value) {
-    final str = value.toString().padLeft(15, '0');
-    final whole = str.substring(0, 1);
-    final decimal = str.substring(1);
-    return "$whole.$decimal";
-  }
 
   @override
   void initState() {
@@ -34,6 +25,9 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat();
+
+    // Init controller dengan value 0
+    _balanceController = AnimatedDigitController(0);
 
     _balanceTimer = Timer.periodic(
       const Duration(milliseconds: 800),
@@ -50,7 +44,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   void dispose() {
     _shimmerController.dispose();
-    _balanceContoller.dispose();
+    _balanceController.dispose(); // FIX: nama benar
     _balanceTimer?.cancel();
     super.dispose();
   }
@@ -89,12 +83,16 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       ],
                     ),
                     const SizedBox(height: 30),
-                    _buildTokenBalance(formatted, tokenColor),
+                    
+                    // FIX: hanya butuh color, tidak perlu formatted
+                    _buildTokenBalance(tokenColor),
+                    
                     const SizedBox(height: 35),
                     _buildStreamBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
                     const SizedBox(height: 12),
                     _buildStreamBar(color: activeThemeColor, isMining: prov.isMining, offset: 0.5),
                     const SizedBox(height: 25),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -140,7 +138,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
-    Widget _buildTokenBalance(Color color) {
+  // FIX: hanya butuh Color, tidak perlu String formatted
+  Widget _buildTokenBalance(Color color) {
     return Column(
       children: [
         FittedBox(
@@ -160,28 +159,22 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
+              // Pakai AnimatedDigitWidget
               AnimatedDigitWidget(
                 controller: _balanceController,
-                textStyle: TextStyle(
+                textStyle: const TextStyle(
                   color: Colors.white,
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
-                  letterSpacing: 1,
                 ),
                 fractionDigits: 14,
                 decimalSeparator: '.',
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeOutCubic,
+                enableSeparator: false,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutQuart,
                 loop: true,
-  
-                valueColors: [
-                  ValueColor(
-                    condition: () => _balanceController.value > 1000000,
-                    color: Colors.greenAccent,
-                  ),
-                ],
-              )
+              ),
             ],
           ),
         ),
@@ -294,5 +287,3 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 }
-
-
