@@ -144,7 +144,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   Widget _buildTokenBalance(String formatted, Color color) {
     return Column(
       children: [
-        F [
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(
