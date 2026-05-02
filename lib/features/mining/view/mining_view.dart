@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:animated_digit/animated_digit.dart';
+import 'package:number_flow/number_flow.dart';
 import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -14,8 +14,10 @@ class MiningView extends StatefulWidget {
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
-  late AnimatedDigitController _balanceController;
   Timer? _balanceTimer;
+  
+  // Value untuk NumberFlow
+  double _balanceValue = 0.0;
 
   @override
   void initState() {
@@ -26,17 +28,15 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 2000),
     )..repeat();
 
-    // Init controller dengan value 0
-    _balanceController = AnimatedDigitController(0);
-
     _balanceTimer = Timer.periodic(
       const Duration(milliseconds: 800),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
-          // Increment kecil (0.0001 - 0.0005)
-          final increment = (1 + math.Random().nextInt(5)) / 10000;
-          _balanceController.addValue(increment);
+          setState(() {
+            // Increment kecil (0.0001 - 0.0005)
+            _balanceValue += (1 + math.Random().nextInt(5)) / 10000;
+          });
         }
       },
     );
@@ -45,7 +45,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   void dispose() {
     _shimmerController.dispose();
-    _balanceController.dispose();
     _balanceTimer?.cancel();
     super.dispose();
   }
@@ -54,7 +53,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
     final tokenColor = const Color(0xFF00E5FF); 
-    final boostColor = const Color(0xFFC154F7);
+    final boostColor = const Color(0xXC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
 
     return Scaffold(
@@ -155,21 +154,18 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // Pakai AnimatedDigitWidget
-              AnimatedDigitWidget(
-                controller: _balanceController,
-                textStyle: const TextStyle(
+              // GANTI dengan NumberFlow
+              NumberFlow(
+                _balanceValue,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
                 fractionDigits: 14,           // 14 digit desimal
-                decimalSeparator: '.',
-                enableSeparator: false,
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutQuart,
-                loop: true,
               ),
             ],
           ),
