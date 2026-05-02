@@ -8,7 +8,7 @@ class MiningView extends StatefulWidget {
   const MiningView({super.key});
 
   @override
-  _MiningViewState createState()State createState() => _MiningViewState();
+  _MiningViewState createState() => _MiningViewState();
 }
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
