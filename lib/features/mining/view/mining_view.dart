@@ -8,43 +8,50 @@ class MiningView extends StatefulWidget {
   const MiningView({super.key});
 
   @override
-  _MiningViewState createState() => _MiningViewState();
+  _MiningViewState createState()State createState() => _MiningViewState();
 }
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
-
-  Timer? _balanceTimer; 
+  Timer? _balanceTimer;
+  
+  // PENTING: Gunakan fixed-point arithmetic (satuan terkecil)
+  // Daripada int besar yang loncat, pakai increment kecil & konsisten
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-    final str = value.toString().padLeft(10, '0');
+    // Format: X.XXXXXXXX (1 digit whole + 8 decimal)
+    final str = value.toString().padLeft(9, '0');
     final whole = str.substring(0, 1);
     final decimal = str.substring(1);
     return "$whole.$decimal";
   }
-@override
-void initState() {
-  super.initState();
 
-  _shimmerController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1800),
-  )..repeat();
+  @override
+  void initState() {
+    super.initState();
+    
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
 
-  _balanceTimer = Timer.periodic(
-    const Duration(milliseconds: 1800),
-    (timer) {
-      final prov = Provider.of<MiningProvider>(context, listen: false);
-
-      if (prov.isMining) {
-        setState(() {
-          _balanceInt += 2000 + math.Random().nextInt(2000);
-        });
-      }
-    },
-  );
-}
+    // Timer lebih cepat untuk update balance, tapi increment kecil
+    _balanceTimer = Timer.periodic(
+      const Duration(milliseconds: 800), // Lebih sering, increment lebih kecil
+      (timer) {
+        final prov = Provider.of<MiningProvider>(context, listen: false);
+        if (prov.isMining && mounted) {
+          // Increment kecil & konsisten (simulasi satoshi)
+          // 1-5 satoshi per 800ms = terlihat realistis
+          final increment = 1 + math.Random().nextInt(4);
+          setState(() {
+            _balanceInt += increment;
+          });
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -56,10 +63,10 @@ void initState() {
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
-    // Token in-game color: Electric Cyan
     final tokenColor = const Color(0xFF00E5FF); 
     final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
+    final formatted = formatBalance(_balanceInt);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
@@ -69,7 +76,6 @@ void initState() {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- 1. MAIN MINING PANEL (TOP SECTION) ---
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(22),
@@ -83,30 +89,29 @@ void initState() {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("D-COIN CLOUD MINING", style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                        Text("D-COIN CLOUD MINING", 
+                          style: TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                         Icon(Icons.bolt_rounded, color: Colors.orangeAccent, size: 18),
                       ],
                     ),
                     const SizedBox(height: 30),
                     
-                    // In-Game Token Balance Section
-                    _buildTokenBalance(prov, tokenColor),
+                    // PENTING: Gunakan const key untuk prevent unnecessary rebuild
+                    _buildTokenBalance(formatted, tokenColor),
                     
                     const SizedBox(height: 35),
-
-                    // --- LOADING STREAMS (LARI ASINKRON) ---
                     _buildStreamBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
                     const SizedBox(height: 12),
                     _buildStreamBar(color: activeThemeColor, isMining: prov.isMining, offset: 0.5),
-
                     const SizedBox(height: 25),
 
-                    // Hashrate Info
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          prov.isMining ? (prov.isBoostActive ? "15.90 Gh/s" : "8.20 Gh/s") : "0.00 Gh/s",
+                          prov.isMining 
+                            ? (prov.isBoostActive ? "15.90 Gh/s" : "8.20 Gh/s") 
+                            : "0.00 Gh/s",
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.9), 
                             fontSize: 18, 
@@ -119,12 +124,8 @@ void initState() {
                   ],
                 ),
               ),
-
               const SizedBox(height: 25),
-
-              // --- 2. TIMER ACTION BUTTON (30 MINS LOGIC) ---
               _buildTimerButton(prov, activeThemeColor),
-
               const SizedBox(height: 15),
               const Center(
                 child: Text(
@@ -133,10 +134,7 @@ void initState() {
                   style: TextStyle(color: Colors.white24, fontSize: 10),
                 ),
               ),
-
               const SizedBox(height: 30),
-
-              // --- 3. REWARD CARDS (NO FAQ) ---
               Row(
                 children: [
                   Expanded(child: _buildRewardCard("Daily Check-in", "5.0 Gh/s", activeThemeColor)),
@@ -144,7 +142,6 @@ void initState() {
                   Expanded(child: _buildRewardCard("Ad-Boost", "12.5 Gh/s", activeThemeColor)),
                 ],
               ),
-              
               const SizedBox(height: 50),
             ],
           ),
@@ -153,63 +150,62 @@ void initState() {
     );
   }
 
-  Widget _buildTokenBalance(MiningProvider prov, Color color) {
-  String formatted = formatBalance(_balanceInt);
-    final length = formatted.length;
-  return Column(
-    children: [
-      FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Logo D
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                shape: BoxShape.circle,
-                border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+  Widget _buildTokenBalance(String formatted, Color color) {
+    return Column(
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+                ),
+                child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
               ),
-              child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
-            ),
-            const SizedBox(width: 12),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: formatted.split('').asMap().entries.map<Widget>((entry) { 
-                final index = entry.key;
-                final char = entry.value;
-                final num = int.tryParse(char);
+              const SizedBox(width: 12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: formatted.split('').asMap().entries.map<Widget>((entry) { 
+                  final index = entry.key;
+                  final char = entry.value;
+                  final num = int.tryParse(char);
 
-                if (num == null) {
-                  return Text(
-                    char,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  if (num == null) {
+                    return Text(
+                      char,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28, // Perbesar untuk proporsi
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace',
+                        height: 1.0,
+                      ),
+                    );
+                  }
+
+                  // PENTING: Key unik yang stabil berdasarkan posisi digit
+                  return SlotDigit(
+                    key: ValueKey('digit-$index'),
+                    digit: num,
+                    delayMs: index * 40, // Delay berdasarkan posisi (ripple effect)
                   );
-                }
-
-                return SlotDigit(
-                  key: ValueKey('slot-$index'),
-                  digit: num,
-                  delay: (length - index) * 30,
-                );
-              }).toList(),
-            ),
-          ],
+                }).toList(),
+              ),
+            ],
+          ),
         ),
-      ),
-      const SizedBox(height: 4),
-      Text("TOTAL D-COIN EARNED", style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
-    ],
-  );
-}
-
-
+        const SizedBox(height: 4),
+        Text("TOTAL D-COIN EARNED", 
+          style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
+      ],
+    );
+  }
   
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
@@ -229,7 +225,12 @@ void initState() {
                     width: 150,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.transparent, color.withOpacity(0.5), color.withOpacity(0.9), Colors.transparent],
+                        colors: [
+                          Colors.transparent, 
+                          color.withOpacity(0.5), 
+                          color.withOpacity(0.9), 
+                          Colors.transparent
+                        ],
                       ),
                     ),
                   ),
@@ -251,7 +252,9 @@ void initState() {
           foregroundColor: prov.isMining ? Colors.white : Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: prov.isMining ? BorderSide(color: Colors.white.withOpacity(0.1)) : BorderSide.none,
+            side: prov.isMining 
+              ? BorderSide(color: Colors.white.withOpacity(0.1)) 
+              : BorderSide.none,
           ),
           elevation: 0,
         ),
@@ -297,19 +300,28 @@ void initState() {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8)
             ),
-            child: Center(child: Text("CLAIM", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold))),
+            child: Center(
+              child: Text("CLAIM", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold))
+            ),
           )
         ],
       ),
     );
   }
-
 }
 
+// ============================================
+// SLOT DIGIT - VERSI STABIL & SMOOTH
+// ============================================
 class SlotDigit extends StatefulWidget {
   final int digit;
-  final int delay;
-  const SlotDigit({required this.digit, this.delay = 0, super.key});
+  final int delayMs;
+  
+  const SlotDigit({
+    required this.digit, 
+    this.delayMs = 0, 
+    super.key
+  });
 
   @override
   State<SlotDigit> createState() => _SlotDigitState();
@@ -318,100 +330,134 @@ class SlotDigit extends StatefulWidget {
 class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  
+  late int _displayDigit;
+  int? _queuedDigit;
+  bool _isRolling = false;
 
-  int current = 0;
-  int next = 0;
-  int? _pendingTarget;
-  bool isAnimating = false;
-
-  static const double height = 36; 
-  static const double width = 20;
+  static const double _itemHeight = 32.0;
+  static const double _itemWidth = 18.0;
 
   @override
   void initState() {
     super.initState();
-    current = widget.digit;
-    next = widget.digit;
-
+    _displayDigit = widget.digit;
+    
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 120),
+      duration: const Duration(milliseconds: 250), // Sedikit lebih lambat = lebih smooth
     );
 
-    _animation = Tween<double>(begin: 0, end: -1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _animation = Tween<double>(begin: 0.0, end: -1.0).animate(
+      CurvedAnimation(
+        parent: _controller, 
+        curve: Curves.easeOutCubic, // Lebih natural
+      ),
     );
   }
 
-@override
-void didUpdateWidget(covariant SlotDigit oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  if (widget.digit != current) {
-    if (isAnimating) {
-      _pendingTarget = widget.digit;
-    } else {
-      _rollTo(widget.digit);
+  @override
+  void didUpdateWidget(covariant SlotDigit oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Hanya proses kalau digit benar-benar berbeda
+    if (widget.digit != oldWidget.digit) {
+      _handleDigitChange(widget.digit);
     }
   }
-}
 
-Future<void> _rollTo(int target) async {
-  if (!mounted) return;
-  await Future.delayed(Duration(milliseconds: widget.delay));
-  isAnimating = true;
-
-  int diff = target - current;  
-  if (diff.abs() > 5) {
-  diff = diff > 0 ? diff - 10 : diff + 10;
-}
-
-  int steps = diff.abs();
-  int direction = diff > 0 ? 1 : -1;
-
-for (int i = 0; i < steps; i++) {
-  if (!mounted) break;
-  next = (current + direction + 10) % 10;
-  await _controller.forward();
-  if (!mounted) break;
-  setState(() => current = next);
-  _controller.reset();
-  await Future.delayed(const Duration(milliseconds: 40));
-}
-
-  isAnimating = false;
-  if (_pendingTarget != null && _pendingTarget != current) {
-    final t = _pendingTarget!;
-    _pendingTarget = null;
-    _rollTo(t);
+  void _handleDigitChange(int newDigit) {
+    if (_isRolling) {
+      // Queue digit terbaru, overwrite yang lama
+      _queuedDigit = newDigit;
+      return;
+    }
+    _startRoll(newDigit);
   }
-}
+
+  Future<void> _startRoll(int targetDigit) async {
+    if (!mounted) return;
+    
+    // Delay berbasis posisi untuk efek ripple
+    if (widget.delayMs > 0) {
+      await Future.delayed(Duration(milliseconds: widget.delayMs));
+    }
+    
+    if (!mounted || targetDigit == _displayDigit) return;
+
+    setState(() => _isRolling = true);
+
+    // Hitung jarak terpendek (contoh: 9->1 lebih baik roll backward)
+    int diff = targetDigit - _displayDigit;
+    if (diff > 5) diff -= 10;
+    if (diff < -5) diff += 10;
+    
+    final steps = diff.abs();
+    final direction = diff > 0 ? 1 : -1;
+
+    for (int i = 0; i < steps; i++) {
+      if (!mounted) break;
+      
+      final nextDigit = (_displayDigit + direction + 10) % 10;
+      
+      // Reset controller untuk animasi baru
+      _controller.reset();
+      await _controller.forward();
+      
+      if (!mounted) break;
+      
+      setState(() {
+        _displayDigit = nextDigit;
+      });
+      
+      // Jeda antar step - semakin cepat = semakin "kacau" tapi seru
+      await Future.delayed(const Duration(milliseconds: 60));
+    }
+
+    if (!mounted) return;
+    
+    setState(() => _isRolling = false);
+
+    // Proses queue kalau ada
+    if (_queuedDigit != null && _queuedDigit != _displayDigit) {
+      final next = _queuedDigit!;
+      _queuedDigit = null;
+      _startRoll(next);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Hitung next digit untuk animasi
+    final nextDigit = (_displayDigit + 1) % 10;
+    final prevDigit = (_displayDigit - 1 + 10) % 10;
+    
     return SizedBox(
-      width: width,
-      height: height,
+      width: _itemWidth,
+      height: _itemHeight,
       child: ClipRect(
         child: AnimatedBuilder(
           animation: _animation,
           builder: (context, child) {
+            final offset = _animation.value * _itemHeight;
+            
             return Stack(
               children: [
+                // Digit saat ini (bergerak keluar)
                 Transform.translate(
-                  offset: Offset(0, _animation.value * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(child: Text('$current', style: _style())),
-                  ),
+                  offset: Offset(0, offset),
+                  child: _digitBox(_displayDigit),
                 ),
+                // Digit berikutnya (masuk dari arah roll)
                 Transform.translate(
-                  offset: Offset(0, (_animation.value + 1) * height),
-                  child: SizedBox(
-                    height: height,
-                    width: width,
-                    child: Center(child: Text('$next', style: _style())),
-                  ),
+                  offset: Offset(0, offset + _itemHeight),
+                  child: _digitBox(nextDigit),
                 ),
               ],
             );
@@ -421,10 +467,22 @@ for (int i = 0; i < steps; i++) {
     );
   }
 
-  TextStyle _style() => const TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w900,
-        fontFamily: 'monospace',
-        color: Colors.white,
-      );
+  Widget _digitBox(int digit) {
+    return SizedBox(
+      height: _itemHeight,
+      width: _itemWidth,
+      child: Center(
+        child: Text(
+          '$digit',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'monospace',
+            color: Colors.white,
+            height: 1.0,
+          ),
+        ),
+      ),
+    );
+  }
 }
