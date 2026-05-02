@@ -33,7 +33,7 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  rolling_animated_number_text: ^1.0.0
+  animated_digit: ^3.3.2
   google_fonts: ^8.0.2
   provider: ^6.1.2
   percent_indicator: ^4.2.4
