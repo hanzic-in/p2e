@@ -23,34 +23,28 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     final decimal = str.substring(1);
     return "$whole.$decimal";
   }
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat();
-    _balanceTimer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
-      final prov = Provider.of<MiningProvider>(context, listen: false);
-      if (prov.isMining) {
-        final random = math.Random();
-        setState(() {
-          _balanceTimer = Timer.periodic(
-  const Duration(milliseconds: 1800),
-  (timer) {
-    final prov = Provider.of<MiningProvider>(context, listen: false);
+@override
+void initState() {
+  super.initState();
 
-    if (prov.isMining) {
-      setState(() {
-        _balanceInt += 2000;
-      });
-    }
-  },
-);
+  _shimmerController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  )..repeat();
+
+  _balanceTimer = Timer.periodic(
+    const Duration(milliseconds: 1800),
+    (timer) {
+      final prov = Provider.of<MiningProvider>(context, listen: false);
+
+      if (prov.isMining) {
+        setState(() {
+          _balanceInt += 2000 + math.Random().nextInt(2000);
         });
       }
-    });
-  }
+    },
+  );
+}
 
   @override
   void dispose() {
@@ -366,18 +360,23 @@ Future<void> _rollTo(int target) async {
   await Future.delayed(Duration(milliseconds: widget.delay));
   isAnimating = true;
 
-  int steps = (target - current + 10) % 10;
-  if (steps == 0) steps = 10;
+  int diff = target - current;  
+  if (diff.abs() > 5) {
+  diff = diff > 0 ? diff - 10 : diff + 10;
+}
 
-  for (int i = 0; i < steps; i++) {
-    if (!mounted) break;
-    next = (current + 1) % 10;
-    await _controller.forward();
-    if (!mounted) break;
-    setState(() { current = next; });
-    _controller.reset();
-    await Future.delayed(const Duration(milliseconds: 40));
-  }
+  int steps = diff.abs();
+  int direction = diff > 0 ? 1 : -1;
+
+for (int i = 0; i < steps; i++) {
+  if (!mounted) break;
+  next = (current + direction + 10) % 10;
+  await _controller.forward();
+  if (!mounted) break;
+  setState(() => current = next);
+  _controller.reset();
+  await Future.delayed(const Duration(milliseconds: 40));
+}
 
   isAnimating = false;
   if (_pendingTarget != null && _pendingTarget != current) {
