@@ -18,7 +18,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-    final str = value.toString().padLeft(14, '0');
+    final str = value.toString().padLeft(10, '0');
     final whole = str.substring(0, 1);
     final decimal = str.substring(1);
     return "$whole.$decimal";
