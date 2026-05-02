@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:number_flow/number_flow.dart';
+import 'package:flutter_number_flow/flutter_number_flow.dart'; // FIX: nama package
 import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -16,7 +16,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // Value untuk NumberFlow
   double _balanceValue = 0.0;
 
   @override
@@ -34,7 +33,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           setState(() {
-            // Increment kecil (0.0001 - 0.0005)
             _balanceValue += (1 + math.Random().nextInt(5)) / 10000;
           });
         }
@@ -53,7 +51,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
     final tokenColor = const Color(0xFF00E5FF); 
-    final boostColor = const Color(0xXC154F7);
+    final boostColor = const Color(0xFFC154F7); // FIX: 0xFF bukan 0xX
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
 
     return Scaffold(
@@ -154,16 +152,20 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // GANTI dengan NumberFlow
+              // FIX: pakai flutter_number_flow
               NumberFlow(
-                _balanceValue,
-                style: const TextStyle(
+                value: _balanceValue,
+                textStyle: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                fractionDigits: 14,           // 14 digit desimal
+                format: const NumberFlowFormat(
+                  minimumFractionDigits: 14,
+                  maximumFractionDigits: 14,
+                ),
+                animationStyle: NumberFlowAnimation.slide,
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutQuart,
               ),
