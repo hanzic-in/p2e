@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/mining_provider.dart';
@@ -16,12 +15,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // 18 decimal places = satoshi-level precision
+  // 14 decimal places
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-    // 1 whole digit + 18 decimal = 19 digits total
-    final str = value.toString().padLeft(19, '0');
+    // 1 whole digit + 14 decimal = 15 digits total
+    final str = value.toString().padLeft(15, '0');
     final whole = str.substring(0, 1);
     final decimal = str.substring(1);
     return "$whole.$decimal";
@@ -36,14 +35,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 2000),
     )..repeat();
 
-    // Timer lebih sering untuk efek "hidup", increment sangat kecil
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 400),
+      const Duration(milliseconds: 500),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
-          // Increment 1-2 satoshi per 400ms = realistis & smooth
-          final increment = 1 + math.Random().nextInt(2);
+          final increment = 1 + math.Random().nextInt(3);
           setState(() {
             _balanceInt += increment;
           });
@@ -94,15 +91,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       ],
                     ),
                     const SizedBox(height: 30),
-                    
                     _buildTokenBalance(formatted, tokenColor),
-                    
                     const SizedBox(height: 35),
                     _buildStreamBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
                     const SizedBox(height: 12),
                     _buildStreamBar(color: activeThemeColor, isMining: prov.isMining, offset: 0.5),
                     const SizedBox(height: 25),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -179,7 +173,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       char,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'monospace',
                         height: 1.0,
@@ -187,12 +181,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                     );
                   }
 
-                  // Delay berbasis posisi: digit kanan delay 0, kiri delay bertambah
-                  // Untuk 18 digit, delay max = 19 * 12 = 228ms (cepat)
                   return SlotDigit(
                     key: ValueKey('digit-$index'),
                     digit: num,
-                    delayMs: index * 12,
+                    delayMs: index * 15,
                   );
                 }).toList(),
               ),
@@ -309,9 +301,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   }
 }
 
-// ============================================
-// SLOT DIGIT - OPTIMIZED FOR 18 DECIMALS
-// ============================================
 class SlotDigit extends StatefulWidget {
   final int digit;
   final int delayMs;
@@ -333,11 +322,11 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   int _next = 0;
   bool _isAnimating = false;
 
-  // Ukuran lebih kecil untuk 19 digit muat di layar
-  static const double _h = 22.0;
-  static const double _w = 12.0;
+  // Ukuran sedang untuk 15 digit total
+  static const double _h = 24.0;
+  static const double _w = 14.0;
   static const _style = TextStyle(
-    fontSize: 16, 
+    fontSize: 18, 
     fontWeight: FontWeight.w900, 
     fontFamily: 'monospace', 
     color: Colors.white, 
@@ -352,7 +341,7 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150), // Cepat untuk banyak digit
+      duration: const Duration(milliseconds: 180),
     );
   }
 
