@@ -329,30 +329,24 @@ class SlotDigit extends StatefulWidget {
 
 class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
   
-  late int _displayDigit;
-  int? _queuedDigit;
-  bool _isRolling = false;
+  // State machine: idle -> rolling -> idle
+  int _current = 0;
+  int _next = 0;
+  bool _isAnimating = false;
 
-  static const double _itemHeight = 32.0;
-  static const double _itemWidth = 18.0;
+  static const double _h = 32.0;
+  static const double _w = 18.0;
 
   @override
   void initState() {
     super.initState();
-    _displayDigit = widget.digit;
+    _current = widget.digit;
+    _next = widget.digit;
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250), // Sedikit lebih lambat = lebih smooth
-    );
-
-    _animation = Tween<double>(begin: 0.0, end: -1.0).animate(
-      CurvedAnimation(
-        parent: _controller, 
-        curve: Curves.easeOutCubic, // Lebih natural
-      ),
+      duration: const Duration(milliseconds: 200),
     );
   }
 
@@ -360,69 +354,37 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // Hanya proses kalau digit benar-benar berbeda
-    if (widget.digit != oldWidget.digit) {
-      _handleDigitChange(widget.digit);
-    }
+    // Cegah trigger berulang dari setState parent
+    if (widget.digit == oldWidget.digit) return;
+    
+    // Kalau sedang animasi, tunggu selesai lalu trigger lagi via listener
+    if (_isAnimating) return;
+    
+    _triggerRoll(widget.digit);
   }
 
-  void _handleDigitChange(int newDigit) {
-    if (_isRolling) {
-      // Queue digit terbaru, overwrite yang lama
-      _queuedDigit = newDigit;
-      return;
-    }
-    _startRoll(newDigit);
-  }
-
-  Future<void> _startRoll(int targetDigit) async {
+  void _triggerRoll(int target) async {
+    if (target == _current || !mounted) return;
+    
+    await Future.delayed(Duration(milliseconds: widget.delayMs));
+    if (!mounted || target != widget.digit) return; // Cek ulang setelah delay
+    
+    _next = target;
+    
+    setState(() => _isAnimating = true);
+    
+    await _controller.forward(from: 0);
+    
     if (!mounted) return;
     
-    // Delay berbasis posisi untuk efek ripple
-    if (widget.delayMs > 0) {
-      await Future.delayed(Duration(milliseconds: widget.delayMs));
-    }
+    setState(() {
+      _current = _next;
+      _isAnimating = false;
+    });
     
-    if (!mounted || targetDigit == _displayDigit) return;
-
-    setState(() => _isRolling = true);
-
-    // Hitung jarak terpendek (contoh: 9->1 lebih baik roll backward)
-    int diff = targetDigit - _displayDigit;
-    if (diff > 5) diff -= 10;
-    if (diff < -5) diff += 10;
-    
-    final steps = diff.abs();
-    final direction = diff > 0 ? 1 : -1;
-
-    for (int i = 0; i < steps; i++) {
-      if (!mounted) break;
-      
-      final nextDigit = (_displayDigit + direction + 10) % 10;
-      
-      // Reset controller untuk animasi baru
-      _controller.reset();
-      await _controller.forward();
-      
-      if (!mounted) break;
-      
-      setState(() {
-        _displayDigit = nextDigit;
-      });
-      
-      // Jeda antar step - semakin cepat = semakin "kacau" tapi seru
-      await Future.delayed(const Duration(milliseconds: 60));
-    }
-
-    if (!mounted) return;
-    
-    setState(() => _isRolling = false);
-
-    // Proses queue kalau ada
-    if (_queuedDigit != null && _queuedDigit != _displayDigit) {
-      final next = _queuedDigit!;
-      _queuedDigit = null;
-      _startRoll(next);
+    // Cek apakah widget.digit berubah lagi saat animasi
+    if (widget.digit != _current) {
+      _triggerRoll(widget.digit);
     }
   }
 
@@ -434,55 +396,50 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // Hitung next digit untuk animasi
-    final nextDigit = (_displayDigit + 1) % 10;
-    final prevDigit = (_displayDigit - 1 + 10) % 10;
-    
+    // Arah roll
+    int diff = _next - _current;
+    if (diff > 5) diff -= 10;
+    if (diff < -5) diff += 10;
+    final bool up = diff > 0; // true = 0->1 (naik)
+
     return SizedBox(
-      width: _itemWidth,
-      height: _itemHeight,
+      width: _w,
+      height: _h,
       child: ClipRect(
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            final offset = _animation.value * _itemHeight;
-            
-            return Stack(
-              children: [
-                // Digit saat ini (bergerak keluar)
-                Transform.translate(
-                  offset: Offset(0, offset),
-                  child: _digitBox(_displayDigit),
-                ),
-                // Digit berikutnya (masuk dari arah roll)
-                Transform.translate(
-                  offset: Offset(0, offset + _itemHeight),
-                  child: _digitBox(nextDigit),
-                ),
-              ],
-            );
-          },
-        ),
+        child: _isAnimating
+          ? AnimatedBuilder(
+              animation: _controller,
+              builder: (_, __) {
+                final t = Curves.easeOutCubic.transform(_controller.value);
+                final y = up ? -t * _h : t * _h;
+                
+                return Stack(
+                  children: up
+                    ? [
+                        // Naik: current ke atas, next dari bawah
+                        Transform.translate(offset: Offset(0, y), child: _txt(_current)),
+                        Transform.translate(offset: Offset(0, y + _h), child: _txt(_next)),
+                      ]
+                    : [
+                        // Turun: current ke bawah, next dari atas
+                        Transform.translate(offset: Offset(0, y - _h), child: _txt(_next)),
+                        Transform.translate(offset: Offset(0, y), child: _txt(_current)),
+                      ],
+                );
+              },
+            )
+          : _txt(_current),
       ),
     );
   }
 
-  Widget _digitBox(int digit) {
-    return SizedBox(
-      height: _itemHeight,
-      width: _itemWidth,
-      child: Center(
-        child: Text(
-          '$digit',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            fontFamily: 'monospace',
-            color: Colors.white,
-            height: 1.0,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _txt(int d) => SizedBox(
+    height: _h,
+    width: _w,
+    child: Center(
+      child: Text('$d', style: const TextStyle(
+        fontSize: 24, fontWeight: FontWeight.w900, 
+        fontFamily: 'monospace', color: Colors.white, height: 1)),
+    ),
+  );
 }
