@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/mining_provider.dart';
@@ -15,13 +16,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // PENTING: Gunakan fixed-point arithmetic (satuan terkecil)
-  // Daripada int besar yang loncat, pakai increment kecil & konsisten
+  // 18 decimal places = satoshi-level precision
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-    // Format: X.XXXXXXXX (1 digit whole + 8 decimal)
-    final str = value.toString().padLeft(9, '0');
+    // 1 whole digit + 18 decimal = 19 digits total
+    final str = value.toString().padLeft(19, '0');
     final whole = str.substring(0, 1);
     final decimal = str.substring(1);
     return "$whole.$decimal";
@@ -36,15 +36,14 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 2000),
     )..repeat();
 
-    // Timer lebih cepat untuk update balance, tapi increment kecil
+    // Timer lebih sering untuk efek "hidup", increment sangat kecil
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 800), // Lebih sering, increment lebih kecil
+      const Duration(milliseconds: 400),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
-          // Increment kecil & konsisten (simulasi satoshi)
-          // 1-5 satoshi per 800ms = terlihat realistis
-          final increment = 1 + math.Random().nextInt(4);
+          // Increment 1-2 satoshi per 400ms = realistis & smooth
+          final increment = 1 + math.Random().nextInt(2);
           setState(() {
             _balanceInt += increment;
           });
@@ -96,7 +95,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 30),
                     
-                    // PENTING: Gunakan const key untuk prevent unnecessary rebuild
                     _buildTokenBalance(formatted, tokenColor),
                     
                     const SizedBox(height: 35),
@@ -181,7 +179,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       char,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 28, // Perbesar untuk proporsi
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'monospace',
                         height: 1.0,
@@ -189,11 +187,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                     );
                   }
 
-                  // PENTING: Key unik yang stabil berdasarkan posisi digit
+                  // Delay berbasis posisi: digit kanan delay 0, kiri delay bertambah
+                  // Untuk 18 digit, delay max = 19 * 12 = 228ms (cepat)
                   return SlotDigit(
                     key: ValueKey('digit-$index'),
                     digit: num,
-                    delayMs: index * 40, // Delay berdasarkan posisi (ripple effect)
+                    delayMs: index * 12,
                   );
                 }).toList(),
               ),
@@ -311,7 +310,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 }
 
 // ============================================
-// SLOT DIGIT - VERSI STABIL & SMOOTH
+// SLOT DIGIT - OPTIMIZED FOR 18 DECIMALS
 // ============================================
 class SlotDigit extends StatefulWidget {
   final int digit;
@@ -330,13 +329,20 @@ class SlotDigit extends StatefulWidget {
 class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
-  // State machine: idle -> rolling -> idle
   int _current = 0;
   int _next = 0;
   bool _isAnimating = false;
 
-  static const double _h = 32.0;
-  static const double _w = 18.0;
+  // Ukuran lebih kecil untuk 19 digit muat di layar
+  static const double _h = 22.0;
+  static const double _w = 12.0;
+  static const _style = TextStyle(
+    fontSize: 16, 
+    fontWeight: FontWeight.w900, 
+    fontFamily: 'monospace', 
+    color: Colors.white, 
+    height: 1,
+  );
 
   @override
   void initState() {
@@ -346,31 +352,28 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
     
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 150), // Cepat untuk banyak digit
     );
   }
 
   @override
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    // Cegah trigger berulang dari setState parent
     if (widget.digit == oldWidget.digit) return;
-    
-    // Kalau sedang animasi, tunggu selesai lalu trigger lagi via listener
     if (_isAnimating) return;
-    
     _triggerRoll(widget.digit);
   }
 
   void _triggerRoll(int target) async {
     if (target == _current || !mounted) return;
     
-    await Future.delayed(Duration(milliseconds: widget.delayMs));
-    if (!mounted || target != widget.digit) return; // Cek ulang setelah delay
+    if (widget.delayMs > 0) {
+      await Future.delayed(Duration(milliseconds: widget.delayMs));
+    }
+    
+    if (!mounted || target != widget.digit) return;
     
     _next = target;
-    
     setState(() => _isAnimating = true);
     
     await _controller.forward(from: 0);
@@ -382,7 +385,6 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
       _isAnimating = false;
     });
     
-    // Cek apakah widget.digit berubah lagi saat animasi
     if (widget.digit != _current) {
       _triggerRoll(widget.digit);
     }
@@ -396,11 +398,10 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // Arah roll
     int diff = _next - _current;
     if (diff > 5) diff -= 10;
     if (diff < -5) diff += 10;
-    final bool up = diff > 0; // true = 0->1 (naik)
+    final bool up = diff > 0;
 
     return SizedBox(
       width: _w,
@@ -416,12 +417,10 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
                 return Stack(
                   children: up
                     ? [
-                        // Naik: current ke atas, next dari bawah
                         Transform.translate(offset: Offset(0, y), child: _txt(_current)),
                         Transform.translate(offset: Offset(0, y + _h), child: _txt(_next)),
                       ]
                     : [
-                        // Turun: current ke bawah, next dari atas
                         Transform.translate(offset: Offset(0, y - _h), child: _txt(_next)),
                         Transform.translate(offset: Offset(0, y), child: _txt(_current)),
                       ],
@@ -437,9 +436,7 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
     height: _h,
     width: _w,
     child: Center(
-      child: Text('$d', style: const TextStyle(
-        fontSize: 24, fontWeight: FontWeight.w900, 
-        fontFamily: 'monospace', color: Colors.white, height: 1)),
+      child: Text('$d', style: _style),
     ),
   );
 }
