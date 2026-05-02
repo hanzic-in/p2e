@@ -159,22 +159,28 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // GANTI DENGAN AnimatedDigitWidget
               AnimatedDigitWidget(
                 controller: _balanceController,
                 textStyle: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
+                  letterSpacing: 1,
                 ),
-                fractionDigits: 14, // 14 decimal places
+                fractionDigits: 14,
                 decimalSeparator: '.',
-                enableSeparator: false, // Tidak perlu separator untuk mining
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutQuart,
-                loop: true, // Scroll terus menerus
-              ),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutCubic,
+                loop: true,
+  
+                valueColors: [
+                  ValueColor(
+                    condition: () => _balanceController.value > 1000000,
+                    color: Colors.greenAccent,
+                  ),
+                ],
+              )
             ],
           ),
         ),
