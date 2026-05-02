@@ -15,11 +15,9 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // 14 decimal places
   int _balanceInt = 0;
   
   String formatBalance(int value) {
-    // 1 whole digit + 14 decimal = 15 digits total
     final str = value.toString().padLeft(15, '0');
     final whole = str.substring(0, 1);
     final decimal = str.substring(1);
@@ -36,11 +34,11 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     )..repeat();
 
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 500),
+      const Duration(milliseconds: 800),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
-          final increment = 1 + math.Random().nextInt(3);
+          final increment = 1 + math.Random().nextInt(5);
           setState(() {
             _balanceInt += increment;
           });
@@ -184,7 +182,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   return SlotDigit(
                     key: ValueKey('digit-$index'),
                     digit: num,
-                    delayMs: index * 15,
+                    delayMs: index * 20,
                   );
                 }).toList(),
               ),
@@ -301,6 +299,9 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   }
 }
 
+// ============================================
+// SLOT DIGIT - CONTINUOUS SCROLL (SLOT MACHINE)
+// ============================================
 class SlotDigit extends StatefulWidget {
   final int digit;
   final int delayMs;
@@ -316,13 +317,14 @@ class SlotDigit extends StatefulWidget {
 }
 
 class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _spinController;
+  late Animation<double> _spinAnimation;
   
-  int _current = 0;
-  int _next = 0;
-  bool _isAnimating = false;
+  // Posisi scroll saat ini (0.0 = digit 0, 1.0 = digit 1, dst)
+  double _currentOffset = 0.0;
+  double _targetOffset = 0.0;
+  bool _isSettling = false;
 
-  // Ukuran sedang untuk 15 digit total
   static const double _h = 24.0;
   static const double _w = 14.0;
   static const _style = TextStyle(
@@ -336,12 +338,19 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _current = widget.digit;
-    _next = widget.digit;
+    _currentOffset = widget.digit.toDouble();
+    _targetOffset = widget.digit.toDouble();
     
-    _controller = AnimationController(
+    _spinController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 180),
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _spinAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _spinController,
+        curve: Curves.easeOutCubic,
+      ),
     );
   }
 
@@ -349,83 +358,103 @@ class _SlotDigitState extends State<SlotDigit> with SingleTickerProviderStateMix
   void didUpdateWidget(covariant SlotDigit oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.digit == oldWidget.digit) return;
-    if (_isAnimating) return;
-    _triggerRoll(widget.digit);
+    
+    // Hitung offset target (bisa lebih dari 1 putaran)
+    final double currentDigit = _currentOffset % 10;
+    final double targetDigit = widget.digit.toDouble();
+    
+    // Jarak terpendek dengan arah (selalu maju/naik untuk efek slot machine)
+    double diff = targetDigit - currentDigit;
+    if (diff < 0) diff += 10; // Selalu putar maju
+    
+    // Tambah 2-3 putaran penuh untuk efek scrolling panjang
+    final double spins = 2.0 + (math.Random().nextDouble() * 1.5);
+    _targetOffset = _currentOffset + diff + (spins * 10);
+    
+    _startSpin();
   }
 
-  void _triggerRoll(int target) async {
-    if (target == _current || !mounted) return;
+  void _startSpin() async {
+    if (_isSettling) return;
     
-    if (widget.delayMs > 0) {
-      await Future.delayed(Duration(milliseconds: widget.delayMs));
-    }
+    await Future.delayed(Duration(milliseconds: widget.delayMs));
+    if (!mounted) return;
     
-    if (!mounted || target != widget.digit) return;
+    setState(() => _isSettling = true);
     
-    _next = target;
-    setState(() => _isAnimating = true);
+    // Animasi dari currentOffset ke targetOffset
+    final double startOffset = _currentOffset;
+    final double distance = _targetOffset - startOffset;
     
-    await _controller.forward(from: 0);
+    _spinController.reset();
+    
+    // Custom animation: cepat di awal, lambat di akhir
+    await _spinController.animateTo(
+      1.0,
+      duration: Duration(milliseconds: 800 + (distance * 20).toInt().clamp(0, 1500)),
+      curve: Curves.easeOutQuart, // Deceleration kuat
+    );
     
     if (!mounted) return;
     
     setState(() {
-      _current = _next;
-      _isAnimating = false;
+      _currentOffset = _targetOffset;
+      _isSettling = false;
     });
-    
-    if (widget.digit != _current) {
-      _triggerRoll(widget.digit);
-    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _spinController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    int diff = _next - _current;
-    if (diff > 5) diff -= 10;
-    if (diff < -5) diff += 10;
-    final bool up = diff > 0;
-
     return SizedBox(
       width: _w,
       height: _h,
       child: ClipRect(
-        child: _isAnimating
-          ? AnimatedBuilder(
-              animation: _controller,
-              builder: (_, __) {
-                final t = Curves.easeOutCubic.transform(_controller.value);
-                final y = up ? -t * _h : t * _h;
-                
-                return Stack(
-                  children: up
-                    ? [
-                        Transform.translate(offset: Offset(0, y), child: _txt(_current)),
-                        Transform.translate(offset: Offset(0, y + _h), child: _txt(_next)),
-                      ]
-                    : [
-                        Transform.translate(offset: Offset(0, y - _h), child: _txt(_next)),
-                        Transform.translate(offset: Offset(0, y), child: _txt(_current)),
-                      ],
-                );
-              },
-            )
-          : _txt(_current),
+        child: AnimatedBuilder(
+          animation: _spinAnimation,
+          builder: (context, child) {
+            // Interpolasi offset saat ini
+            final double startOffset = _isSettling ? _currentOffset : _targetOffset;
+            final double distance = _targetOffset - startOffset;
+            final double currentOffset = startOffset + (distance * _spinAnimation.value);
+            
+            // Hitung posisi Y (modulo 10 untuk looping digit 0-9)
+            final double y = -(currentOffset % 10) * _h;
+            
+            return Stack(
+              children: [
+                // Digit yang sedang terlihat + beberapa di atas/bawah untuk looping
+                _buildDigitColumn(y),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _txt(int d) => SizedBox(
-    height: _h,
-    width: _w,
-    child: Center(
-      child: Text('$d', style: _style),
-    ),
-  );
+  Widget _buildDigitColumn(double offsetY) {
+    // Buat column dengan 30 digit (0-9 x 3) untuk looping seamless
+    return Transform.translate(
+      offset: Offset(0, offsetY),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(30, (index) {
+          final digit = index % 10;
+          return SizedBox(
+            height: _h,
+            width: _w,
+            child: Center(
+              child: Text('$digit', style: _style),
+            ),
+          );
+        }),
+      ),
+    );
+  }
 }
