@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/mining_provider.dart';
+import 'package:animated_digit/animated_digit.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
