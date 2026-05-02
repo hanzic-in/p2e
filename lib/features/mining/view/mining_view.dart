@@ -13,6 +13,7 @@ class MiningView extends StatefulWidget {
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
+  late AnimatedDigitController _balanceController;
   Timer? _balanceTimer;
   
   int _balanceInt = 0;
@@ -39,9 +40,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           final increment = 1 + math.Random().nextInt(5);
-          setState(() {
-            _balanceInt += increment;
-          });
+          _balanceController.addValue(increment);
         }
       },
     );
@@ -50,6 +49,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   void dispose() {
     _shimmerController.dispose();
+    _balanceContoller.dispose();
     _balanceTimer?.cancel();
     super.dispose();
   }
@@ -60,7 +60,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     final tokenColor = const Color(0xFF00E5FF); 
     final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
-    final formatted = formatBalance(_balanceInt);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
@@ -140,6 +139,51 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
+    Widget _buildTokenBalance(Color color) {
+    return Column(
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: color.withOpacity(0.5), width: 1.5)
+                ),
+                child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+              ),
+              const SizedBox(width: 12),
+              
+              // GANTI DENGAN AnimatedDigitWidget
+              AnimatedDigitWidget(
+                controller: _balanceController,
+                textStyle: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'monospace',
+                ),
+                fractionDigits: 14, // 14 decimal places
+                decimalSeparator: '.',
+                enableSeparator: false, // Tidak perlu separator untuk mining
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutQuart,
+                loop: true, // Scroll terus menerus
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text("TOTAL D-COIN EARNED", 
+          style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
+      ],
+    );
+  }
   
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
