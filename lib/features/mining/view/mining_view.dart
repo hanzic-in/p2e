@@ -164,7 +164,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                fractionDigits: 12,
+                fractionDigits: 14,
                 decimalSeparator: '.',
                 wholeDigits: 1, // 1 digit sebelum titik (0-9)
                 hideLeadingZeroes: false, // Tampilkan leading zeros
