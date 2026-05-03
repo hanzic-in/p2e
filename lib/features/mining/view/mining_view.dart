@@ -16,8 +16,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // Value untuk flip counter (double)
-  double _balanceValue = 0.0;
+  int _balanceMicro = 0;
 
   @override
   void initState() {
@@ -36,8 +35,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
           setState(() {
             // Increment kecil (0.0001 - 0.0005)
             _balanceMicro += (1 + math.Random().nextInt(5));
-            value: _balanceMicro / 1e12,
-            fractionDigits: 12,
           });
         }
       },
@@ -158,7 +155,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               
               // Pakai AnimatedFlipCounter
               AnimatedFlipCounter(
-                value: _balanceValue,
+                value: _balanceMicro / 1e12,
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
@@ -167,7 +164,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                fractionDigits: 14, // 14 digit desimal
+                fractionDigits: 12,
                 decimalSeparator: '.',
                 wholeDigits: 1, // 1 digit sebelum titik (0-9)
                 hideLeadingZeroes: false, // Tampilkan leading zeros
