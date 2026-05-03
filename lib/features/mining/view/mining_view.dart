@@ -139,79 +139,81 @@ _balanceTimer = Timer.periodic(
   }
 
   Widget _buildTokenBalance(Color color) {
-    // Format manual: 1 digit whole + 14 digit decimal
-    final limitedValue = _balanceInt % (maxValue + 1);
-    final str = _balanceInt.toString().padLeft(15, '0');
-    final whole = str.substring(0, 1); // "0"
-    final decimal = str.substring(1);  // "00000000000000"
+  // Shift value ke posisi ke-11 dari kiri (index 10)
+  final shiftedValue = _balanceInt * 10000000000; // 10 miliar = 10^10
+  
+  final str = shiftedValue.toString().padLeft(15, '0');
+  final whole = str.substring(0, 1);
+  final decimal = str.substring(1);
 
-    return Column(
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: color.withOpacity(0.5), width: 1.5)
-                ),
-                child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+  return Column(
+    children: [
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.5), width: 1.5)
               ),
-              const SizedBox(width: 12),
-              
-              // Digit whole (sebelum titik)
-              AnimatedFlipCounter(
-                value: int.parse(whole),
-                duration: const Duration(milliseconds: 400),
-                textStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                ),
+              child: Text("D", style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
+            ),
+            const SizedBox(width: 12),
+            
+            // Digit whole
+            AnimatedFlipCounter(
+              value: int.parse(whole),
+              duration: const Duration(milliseconds: 400),
+              textStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'monospace',
               ),
-              
-              // Titik desimal
-              const Text(
-                ".",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                ),
+            ),
+            
+            // Titik
+            const Text(
+              ".",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'monospace',
               ),
-              
-              // 14 digit desimal (setelah titik)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: decimal.split('').map((char) {
-                  return AnimatedFlipCounter(
-                    value: int.parse(char),
-                    duration: const Duration(milliseconds: 400),
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
+            ),
+            
+            // 14 digit desimal
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: decimal.split('').map((char) {
+                return AnimatedFlipCounter(
+                  value: int.parse(char),
+                  duration: const Duration(milliseconds: 400),
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'monospace',
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text("TOTAL D-COIN EARNED", 
-          style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
-      ],
-    );
-  }
+      ),
+      const SizedBox(height: 4),
+      Text("TOTAL D-COIN EARNED", 
+        style: TextStyle(color: color.withOpacity(0.4), fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
+    ],
+  );
+}
+
   
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
     return ClipRRect(
