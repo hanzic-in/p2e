@@ -24,7 +24,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 3000),
     )..repeat();
 
     _balanceTimer = Timer.periodic(
@@ -33,7 +33,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           setState(() {
-            // Increment kecil (0.0001 - 0.0005)
             _balanceMicro += (1000 + math.Random().nextInt(5000));
           });
         }
@@ -153,10 +152,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // Pakai AnimatedFlipCounter
+              // AnimatedFlipCounter
               AnimatedFlipCounter(
                 value: _balanceMicro / 1e14,
-                duration: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 1000),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
                   color: Colors.white,
@@ -166,8 +165,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                 ),
                 fractionDigits: 14,
                 decimalSeparator: '.',
-                wholeDigits: 1, // 1 digit sebelum titik (0-9)
-                hideLeadingZeroes: false, // Tampilkan leading zeros
+                wholeDigits: 1,
+                hideLeadingZeroes: false,
               ),
             ],
           ),
