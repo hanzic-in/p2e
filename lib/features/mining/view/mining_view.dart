@@ -28,7 +28,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     )..repeat();
 
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 2000),
+      const Duration(milliseconds: 3000),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
@@ -155,7 +155,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               // AnimatedFlipCounter
               AnimatedFlipCounter(
                 value: _balanceMicro / 1e14,
-                duration: const Duration(milliseconds: 1000),
+                duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
                   color: Colors.white,
