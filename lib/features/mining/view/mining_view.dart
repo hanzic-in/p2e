@@ -16,8 +16,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  // Integer besar (0 = 0.00000000000000)
-  int _balanceInt = 0;
+  // Value untuk flip counter (double)
+  double _balanceValue = 0.0;
 
   @override
   void initState() {
@@ -34,7 +34,8 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           setState(() {
-            _balanceInt += 1 + math.Random().nextInt(3);
+            // Increment kecil (0.0001 - 0.0005)
+            _balanceValue += (1 + math.Random().nextInt(5)) / 10000;
           });
         }
       },
@@ -134,11 +135,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   }
 
   Widget _buildTokenBalance(Color color) {
-    // Format manual: 1 digit whole + 14 digit decimal
-    final str = _balanceInt.toString().padLeft(15, '0');
-    final whole = str.substring(0, 1); // "0"
-    final decimal = str.substring(1);  // "00000000000000"
-
     return Column(
       children: [
         FittedBox(
@@ -158,44 +154,21 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // Digit whole (sebelum titik)
+              // Pakai AnimatedFlipCounter
               AnimatedFlipCounter(
-                value: int.parse(whole),
-                duration: const Duration(milliseconds: 400),
+                value: _balanceValue,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-              ),
-              
-              // Titik desimal
-              const Text(
-                ".",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: 'monospace',
-                ),
-              ),
-              
-              // 14 digit desimal (setelah titik)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: decimal.split('').map((char) {
-                  return AnimatedFlipCounter(
-                    value: int.parse(char),
-                    duration: const Duration(milliseconds: 400),
-                    textStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'monospace',
-                    ),
-                  );
-                }).toList(),
+                fractionDigits: 14, // 14 digit desimal
+                decimalSeparator: '.',
+                wholeDigits: 1, // 1 digit sebelum titik (0-9)
+                hideLeadingZeroes: false, // Tampilkan leading zeros
               ),
             ],
           ),
