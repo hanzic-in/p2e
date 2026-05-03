@@ -139,12 +139,15 @@ _balanceTimer = Timer.periodic(
   }
 
   Widget _buildTokenBalance(Color color) {
-  // Shift value ke posisi ke-11 dari kiri (index 10)
-  final shiftedValue = _balanceInt * 10000000000; // 10 miliar = 10^10
+  // Value dibatasi 4 digit (0-9999)
+  final limited = _balanceInt % (maxValue + 1); // 0-9999
   
-  final str = shiftedValue.toString().padLeft(15, '0');
-  final whole = str.substring(0, 1);
-  final decimal = str.substring(1);
+  // Format: 4 digit, pad KANAN dengan 0 sampai 14 digit total
+  // Jadi 123 → "12300000000000" (14 digit, 4 aktif + 10 frozen di kanan)
+  final decimalStr = limited.toString().padRight(14, '0');
+  
+  // Ambil digit per digit
+  final digits = decimalStr.split('');
 
   return Column(
     children: [
@@ -165,9 +168,9 @@ _balanceTimer = Timer.periodic(
             ),
             const SizedBox(width: 12),
             
-            // Digit whole
+            // Whole digit (selalu 0)
             AnimatedFlipCounter(
-              value: int.parse(whole),
+              value: 0,
               duration: const Duration(milliseconds: 400),
               textStyle: const TextStyle(
                 color: Colors.white,
@@ -188,10 +191,17 @@ _balanceTimer = Timer.periodic(
               ),
             ),
             
-            // 14 digit desimal
+            // 14 digit desimal: 4 aktif (kiri) + 10 frozen (kanan)
             Row(
               mainAxisSize: MainAxisSize.min,
-              children: decimal.split('').map((char) {
+              children: digits.asMap().entries.map((entry) {
+                final index = entry.key;  // 0-13
+                final char = entry.value; // '0'-'9'
+                
+                // Digit 0-3 (index 0-3) = aktif, bergerak
+                // Digit 4-13 (index 4-13) = frozen, selalu 0
+                // Tapi karena padRight, digit 4-13 sudah pasti '0'
+                
                 return AnimatedFlipCounter(
                   value: int.parse(char),
                   duration: const Duration(milliseconds: 400),
@@ -213,6 +223,7 @@ _balanceTimer = Timer.periodic(
     ],
   );
 }
+
 
   
   Widget _buildStreamBar({required Color color, required bool isMining, required double offset}) {
