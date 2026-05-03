@@ -155,7 +155,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               // AnimatedFlipCounter
               AnimatedFlipCounter(
                 value: _balanceMicro / 1e14,
-                duration: const Duration(milliseconds: 250),
+                duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
                   color: Colors.white,
