@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_number_flow/flutter_number_flow.dart'; // FIX: nama package
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import '../provider/mining_provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
@@ -16,6 +16,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
+  // Value untuk flip counter (double)
   double _balanceValue = 0.0;
 
   @override
@@ -28,11 +29,12 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     )..repeat();
 
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 800),
+      const Duration(milliseconds: 600),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           setState(() {
+            // Increment kecil (0.0001 - 0.0005)
             _balanceValue += (1 + math.Random().nextInt(5)) / 10000;
           });
         }
@@ -51,7 +53,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
     final tokenColor = const Color(0xFF00E5FF); 
-    final boostColor = const Color(0xFFC154F7); // FIX: 0xFF bukan 0xX
+    final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
 
     return Scaffold(
@@ -152,22 +154,21 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               ),
               const SizedBox(width: 12),
               
-              // FIX: pakai flutter_number_flow
-              NumberFlow(
+              // Pakai AnimatedFlipCounter
+              AnimatedFlipCounter(
                 value: _balanceValue,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                format: const NumberFlowFormat(
-                  minimumFractionDigits: 14,
-                  maximumFractionDigits: 14,
-                ),
-                animationStyle: NumberFlowAnimation.slide,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutQuart,
+                fractionDigits: 14, // 14 digit desimal
+                decimalSeparator: '.',
+                wholeDigits: 1, // 1 digit sebelum titik (0-9)
+                hideLeadingZeroes: false, // Tampilkan leading zeros
               ),
             ],
           ),
