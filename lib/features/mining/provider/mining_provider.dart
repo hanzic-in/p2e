@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+  
 class MiningProvider extends ChangeNotifier {
-  // --- STATE MINING UTAMA ---
   bool _isMining = false;
   Duration _remainingMiningTime = Duration.zero;
   Timer? _miningTimer;
@@ -10,7 +9,7 @@ class MiningProvider extends ChangeNotifier {
   double _baseHashRate = 10.0; 
   double _minedCoinBalance = 0.0;
 
-  // --- STATE BOOST KECEPATAN ---
+  // STATE BOOST SPEED
   bool _isBoostActive = false;
   Duration _remainingBoostTime = Duration.zero;
   Timer? _boostTimer;
@@ -24,7 +23,7 @@ class MiningProvider extends ChangeNotifier {
   bool get isBoostActive => _isBoostActive;
   String get remainingBoostTimeStr => _formatDuration(_remainingBoostTime);
 
-  // --- ACTION: MULAI MINING ---
+  // ACTION MINING START
   void startMiningSession() {
 
     _isMining = true;
@@ -54,7 +53,7 @@ class MiningProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- ACTION: CLAIM BOOST ---
+  // ACTION CLAIM BOOST
   bool canClaimBoost() {
     if (_lastBoostClaimTime == null) return true;
     final now = DateTime.now();
