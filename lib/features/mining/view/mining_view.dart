@@ -28,7 +28,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     )..repeat();
 
     _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 600),
+      const Duration(milliseconds: 2000),
       (timer) {
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
