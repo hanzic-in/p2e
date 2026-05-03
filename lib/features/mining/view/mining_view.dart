@@ -35,7 +35,9 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         if (prov.isMining && mounted) {
           setState(() {
             // Increment kecil (0.0001 - 0.0005)
-            _balanceValue += (1 + math.Random().nextInt(5)) / 10000;
+            _balanceMicro += (1 + math.Random().nextInt(5));
+            value: _balanceMicro / 1e12,
+            fractionDigits: 12,
           });
         }
       },
