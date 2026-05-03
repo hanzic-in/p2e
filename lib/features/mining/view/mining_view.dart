@@ -24,7 +24,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 2500),
     )..repeat();
 
     _balanceTimer = Timer.periodic(
