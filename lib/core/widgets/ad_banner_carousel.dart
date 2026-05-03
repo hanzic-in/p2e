@@ -38,7 +38,6 @@ class AdBannerCarousel extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-                // Label "AD" kecil di pojok biar jujur
                 child: Stack(
                   children: [
                     Positioned(
