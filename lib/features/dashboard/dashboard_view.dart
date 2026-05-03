@@ -23,7 +23,7 @@ class DashboardView extends StatelessWidget {
               TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
               const AdBannerCarousel(),
 
-              // TAB NAVIGASI
+              // TAB Navigation
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -49,7 +49,7 @@ class DashboardView extends StatelessWidget {
                 ),
               ),
 
-              // (Isi list setiap sektor)
+              // Isi list tiap sector
               Expanded(
                 child: TabBarView(
                   children: [
@@ -58,7 +58,7 @@ class DashboardView extends StatelessWidget {
 
                     if (sectorItems.isEmpty) {
                       return const Center(
-                        child: Text("Belum ada aset di sektor ini", style: TextStyle(color: Colors.white24)),
+                        child: Text("There are no assets in this sector yet", style: TextStyle(color: Colors.white24)),
                       );
                     }
 
@@ -81,7 +81,7 @@ class DashboardView extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     backgroundColor: Colors.redAccent,
-                                    content: Text("Syarat belum terpenuhi: ${farm.unlockRequirements.join(', ')}"),
+                                    content: Text("Conditions not met: ${farm.unlockRequirements.join(', ')}"),
                                   ),
                                 );
                               }
@@ -159,14 +159,14 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-    // --- CARD (URGENT) ---
+  // CARD (URGENT)
 Widget _buildUrgentCard(DashboardProvider prov) {
   final order = prov.currentUrgentOrder;
   if (order == null) {
     return Center(
       child: ElevatedButton(
         onPressed: () => prov.generateRandomOrder(),
-        child: const Text("CARI PESANAN BARU"),
+        child: const Text("SEARCH FOR NEW ORDERS"),
       ),
     );
   }
@@ -194,15 +194,15 @@ Widget _buildUrgentCard(DashboardProvider prov) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(order.buyerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  const Text("Eddie berangkat dalam", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                  const Text("Eddie leaves in", style: TextStyle(color: Colors.white38, fontSize: 10)),
                   Text("${order.deliveryDuration.inHours}h", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.white12, minimumSize: const Size(double.infinity, 35)),
                     onPressed: () {
-                      // Logic kirim barang nanti di sini
+                      // Logic kirim
                     },
-                    child: const Text("Muat dan Kirim", style: TextStyle(color: Colors.white, fontSize: 11)),
+                    child: const Text("Load and Send", style: TextStyle(color: Colors.white, fontSize: 11)),
                   )
                 ],
               ),
@@ -210,10 +210,9 @@ Widget _buildUrgentCard(DashboardProvider prov) {
           ],
         ),
         const Padding(padding: EdgeInsets.symmetric(vertical: 15), child: Divider(color: Colors.white10)),
-        const Text("Eddie membeli", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+        const Text("Eddie bought", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
         const SizedBox(height: 15),
         
-        // --- WRAP ---
         Wrap(
           spacing: 15,
           runSpacing: 15,
@@ -228,7 +227,7 @@ Widget _buildUrgentCard(DashboardProvider prov) {
         ),
         
         const SizedBox(height: 25),
-        const Text("Hadiah dari Eddie", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+        const Text("Gifts from buyers", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -272,7 +271,7 @@ Widget _orderItem(String assetPath, String amountNeeded, int currentStock) {
         )
       ),
       Text(
-        "Stok: $currentStock", 
+        "Stock: $currentStock", 
         style: TextStyle(
           color: isEnough ? Colors.white24 : Colors.redAccent.withOpacity(0.5), 
           fontSize: 9
@@ -282,20 +281,18 @@ Widget _orderItem(String assetPath, String amountNeeded, int currentStock) {
   );
 }
 
-
-
-  // --- HELPER FUNCTIONS ---
+  // HELPER FUNCTIONS
   void _handleTap(FarmItem farm, DashboardProvider prov, BuildContext context) {
     if (farm.status == ProductionStatus.locked) {
       if (prov.canBeUnlocked(farm)) prov.startUnlock(farm.id);
-      else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Syarat belum terpenuhi")));
+      else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Conditions not met")));
     } else {
       if (farm.status == ProductionStatus.idle) prov.startProduction(farm.id);
       else if (farm.status == ProductionStatus.ready) prov.claimResult(farm.id);
     }
   }
 
-  // --- MODAL JUAL ---
+  // MODAL Sell
   void _showSellDialog(BuildContext context, int farmId, DashboardProvider prov) {
     int amountToSell = 1;
     var farm = prov.myFarms.firstWhere((f) => f.id == farmId);
@@ -319,7 +316,7 @@ Widget _orderItem(String assetPath, String amountNeeded, int currentStock) {
               children: [
                 const Icon(Icons.shopping_cart_checkout, color: AppColors.primaryGreen, size: 50),
                 const SizedBox(height: 16),
-                Text("PASAR ${farm.name.toUpperCase()}", style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text("MARKET ${farm.name.toUpperCase()}", style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 30),
                 Text("$amountToSell", style: const TextStyle(color: AppColors.primaryGreen, fontSize: 40, fontWeight: FontWeight.bold)),
                 Slider(
@@ -340,7 +337,7 @@ Widget _orderItem(String assetPath, String amountNeeded, int currentStock) {
                     prov.sellStock(farmId, amountToSell);
                     Navigator.pop(context);
                   },
-                  child: const Text("KONFIRMASI JUAL", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  child: const Text("CONFIRM SELL", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -375,20 +372,20 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
           const SizedBox(height: 15),
           Text("TINGKATKAN KE LVL ${farm.level + 1}", style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          const Text("Tingkatkan level produksi untuk meningkatkan volume pendapatan", 
+          const Text("Increase production levels to increase revenue volume", 
             textAlign: TextAlign.center, style: TextStyle(color: Colors.white38, fontSize: 11)),
           
           const SizedBox(height: 25),
           Row(
             children: [
-              _infoTile("DURASI PENINGK.", "${farm.level * 60}s", Icons.timer_outlined),
+              _infoTile("DURATION OF IMPROVEMENT.", "${farm.level * 60}s", Icons.timer_outlined),
               const SizedBox(width: 15),
-              _infoTile("BIAYA PENINGK.", "${farm.upgradePrice.toInt()}", Icons.monetization_on_outlined),
+              _infoTile("UPGRADE COSTS.", "${farm.upgradePrice.toInt()}", Icons.monetization_on_outlined),
             ],
           ),
 
           const SizedBox(height: 25),
-          const Text("PRODUKSI TINGKAT LANJUT", 
+          const Text("ADVANCED PRODUCTION", 
             style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1)),
           const SizedBox(height: 15),
           
@@ -401,7 +398,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                   const SizedBox(height: 5),
                   Text("${farm.nextLevelProductionTime}s",
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                  const Text("DURASI", style: TextStyle(color: Colors.white24, fontSize: 8)),
+                  const Text("DURATION", style: TextStyle(color: Colors.white24, fontSize: 8)),
                 ],
               ),
               const SizedBox(width: 40),
@@ -430,7 +427,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                 prov.startUpgrade(farm.id);
                 Navigator.pop(context);
               },
-              child: const Text("TINGKATKAN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text("UPGRADE", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           )
         ],
@@ -466,14 +463,14 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
-    // --- FUNGSI HALAMAN NEGARA (LIST NEGARA) ---
+  // FUNGSI LIST NEGARA
   Widget _buildCountryPage(DashboardProvider prov, Continent continent) {
     final listNegara = prov.countries.where((c) => c.continent == continent).toList();
 
     if (listNegara.isEmpty) {
       return const Center(
         child: Text(
-          "Belum ada negara di benua ini", 
+          "There are no countries on this continent yet", 
           style: TextStyle(color: Colors.white10, fontSize: 12)
         ),
       );
@@ -489,13 +486,13 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
-  // --- FUNGSI DETAIL PESANAN NEGARA ---
+  // FUNGSI DETAIL PESANAN
   Widget _buildCountryOrderDetails(CountryOrder negara, DashboardProvider prov) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(color: Colors.white10, height: 30),
-        const Text("Pesanan Negara", 
+        const Text("State Order", 
           style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
         const SizedBox(height: 15),
         
@@ -525,7 +522,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                 onPressed: () {
                   // Logic kirim barang
                 },
-                child: const Text("MUAT DAN KIRIM KE NEGARA", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                child: const Text("LOAD AND SEND TO THE COUNTRY", style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -534,7 +531,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     );
   }
 
-  // --- FUNGSI KARTU NEGARA ---
+  // FUNGSI KARTU NEGARA
   Widget _buildCountryCard(CountryOrder negara, DashboardProvider prov) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
@@ -599,7 +596,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
                   children: [
                     const Icon(Icons.lock, color: Colors.amber, size: 14),
                     const SizedBox(width: 10),
-                    Text("BUKA 💰 ${negara.unlockCost.toInt()}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text("UNLOCK 💰 ${negara.unlockCost.toInt()}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -610,6 +607,4 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
       ),
     );
   }
-
-
 }
