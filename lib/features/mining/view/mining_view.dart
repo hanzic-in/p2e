@@ -15,7 +15,8 @@ class MiningView extends StatefulWidget {
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
-  
+  static const int activeDecimals = 4;
+  static const int maxValue = 9999;
   // Integer besar (0 = 0.00000000000000)
   int _balanceInt = 0;
 
@@ -28,17 +29,21 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 2000),
     )..repeat();
 
-    _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 600),
-      (timer) {
-        final prov = Provider.of<MiningProvider>(context, listen: false);
-        if (prov.isMining && mounted) {
-          setState(() {
-            _balanceInt += 1 + math.Random().nextInt(3);
-          });
+_balanceTimer = Timer.periodic(
+  const Duration(milliseconds: 600),
+  (timer) {
+    final prov = Provider.of<MiningProvider>(context, listen: false);
+    if (prov.isMining && mounted) {
+      setState(() {
+        _balanceInt += 1 + math.Random().nextInt(3);
+        if (_balanceInt > maxValue) {
+          _balanceInt = _balanceInt % (maxValue + 1);
         }
-      },
-    );
+      });
+    }
+  },
+);
+
   }
 
   @override
@@ -135,6 +140,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
 
   Widget _buildTokenBalance(Color color) {
     // Format manual: 1 digit whole + 14 digit decimal
+    final limitedValue = _balanceInt % (maxValue + 1);
     final str = _balanceInt.toString().padLeft(15, '0');
     final whole = str.substring(0, 1); // "0"
     final decimal = str.substring(1);  // "00000000000000"
