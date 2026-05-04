@@ -104,13 +104,11 @@ class MiningProvider extends ChangeNotifier {
     final totalSeconds = effectiveNow.difference(lastUpdate!).inSeconds;
     final ticks = totalSeconds ~/ updateIntervalSeconds;
     if (ticks > 0) {
+      final rnd = math.Random();
       for (int i = 0; i < ticks; i++) {
         final ratePerSecond = currentHashRate / 3600;
         _minedCoinBalance += ratePerSecond * updateIntervalSeconds;
-        final rnd = math.Random();
-        for (int j = 0; j < updateIntervalSeconds; j++) {
-          balanceMicro += (1000 + rnd.nextInt(5000));
-        }
+        balanceMicro += (1000 + rnd.nextInt(5000));
       }
       lastUpdate = lastUpdate!.add(Duration(seconds: ticks * updateIntervalSeconds));
       changed = true;
