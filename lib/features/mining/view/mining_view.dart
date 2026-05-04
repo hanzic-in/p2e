@@ -16,7 +16,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   late AnimationController _shimmerController;
   Timer? _balanceTimer;
   
-  int _balanceMicro = 0;
 
   @override
   void initState() {
@@ -33,7 +32,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         final prov = Provider.of<MiningProvider>(context, listen: false);
         if (prov.isMining && mounted) {
           setState(() {
-            _balanceMicro += (1000 + math.Random().nextInt(5000));
+            prov.addBalance(1000 + math.Random().nextInt(5000));
           });
         }
       },
@@ -154,7 +153,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               
               // AnimatedFlipCounter
               AnimatedFlipCounter(
-                value: _balanceMicro / 1e14,
+                value: prov.balanceMicro / 1e14,
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
