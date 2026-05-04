@@ -29,6 +29,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   void dispose() {
     _shimmerController.dispose();
+    _uiTimer?.cancel();
     super.dispose();
   }
 
