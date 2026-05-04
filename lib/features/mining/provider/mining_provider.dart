@@ -8,6 +8,14 @@ class MiningProvider extends ChangeNotifier {
   double _baseHashRate = 10.0; 
   double _minedCoinBalance = 0.0;
 
+  double _currentHashRate = 8.0;
+  DateTime? _lastGhRollDate;
+
+  int rewardMin = 200;
+  int rewardMax = 400;
+
+  final _rnd = math.Random();
+
   // STATE BOOST SPEED
   bool _isBoostActive = false;
   DateTime? _lastBoostClaimTime;
@@ -25,10 +33,18 @@ class MiningProvider extends ChangeNotifier {
     return _formatDuration(remaining);
   }
   
-  double get currentHashRate => _isBoostActive ? _baseHashRate * 2 : _baseHashRate;
+  double get currentHashRate => _isBoostActive ? _currentHashRate * 2 : _currentHashRate;
   double get minedCoinBalance => _minedCoinBalance;
   bool get isBoostActive => _isBoostActive;
 
+  double _rollDailyGh() {
+    final r = _rnd.nextDouble();
+ 
+    if (r < 0.10) return 15.0;
+    if (r < 0.40) return 8.0;
+    return 3.0;
+  }
+  
   String get remainingBoostTimeStr {
     if (_boostEndTime == null) return "00:00";
     final now = DateTime.now();
