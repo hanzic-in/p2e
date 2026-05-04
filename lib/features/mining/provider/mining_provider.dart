@@ -40,9 +40,10 @@ class MiningProvider extends ChangeNotifier {
   double _rollDailyGh() {
     final r = _rnd.nextDouble();
  
-    if (r < 0.10) return 15.0;
-    if (r < 0.40) return 8.0;
-    return 3.0;
+    if (r < 0.10) return 15.5;
+    if (r < 0.35) return 7.2;
+    if (r < 0.70) return 3.6;
+    return 1.4;
   }
   
   String get remainingBoostTimeStr {
@@ -72,16 +73,19 @@ class MiningProvider extends ChangeNotifier {
       _currentHashRate = _rollDailyGh();
       _lastGhRollDate = now;
       if (_currentHashRate >= 15) {
-        rewardMin = 2000;
+        rewardMin = 1500;
         rewardMax = 4000;
-      } else if (_currentHashRate >= 8) {
-        rewardMin = 1000;
-        rewardMax = 2000;
+      } else if (_currentHashRate >= 7) {
+        rewardMin = 500;
+        rewardMax = 2500;
+      } else if (_currentHashRate >= 3) {
+        rewardMin = 500;
+        rewardMax = 1500;
       } else {
         rewardMin = 200;
-        rewardMax = 400;
+        rewardMax = 450;
       }
-
+      
       notifyListeners();
     }
   }
