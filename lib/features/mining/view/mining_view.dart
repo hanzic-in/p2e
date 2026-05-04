@@ -14,7 +14,6 @@ class MiningView extends StatefulWidget {
 
 class _MiningViewState extends State<MiningView> with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
-  Timer? _balanceTimer;
   
 
   @override
@@ -25,24 +24,11 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 2500),
     )..repeat();
-
-    _balanceTimer = Timer.periodic(
-      const Duration(milliseconds: 3000),
-      (timer) {
-        final prov = Provider.of<MiningProvider>(context, listen: false);
-        if (prov.isMining && mounted) {
-          setState(() {
-            prov.addBalance(1000 + math.Random().nextInt(5000));
-          });
-        }
-      },
-    );
   }
 
   @override
   void dispose() {
     _shimmerController.dispose();
-    _balanceTimer?.cancel();
     super.dispose();
   }
 
