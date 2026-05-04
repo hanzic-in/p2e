@@ -48,21 +48,11 @@ class MiningProvider extends ChangeNotifier {
   
   // ACTION MINING START
   void startMiningSession() {
-
+    final now = DateTime.now();
     _isMining = true;
-    _remainingMiningTime = const Duration(minutes: 30);
     _minedCoinBalance = 0.0;
-    
-    _miningTimer?.cancel();
-    _miningTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingMiningTime.inSeconds > 0) {
-        _remainingMiningTime -= const Duration(seconds: 1);
-        _minedCoinBalance += (currentHashRate / 3600);
-        notifyListeners();
-      } else {
-        stopMiningSession(completed: true);
-      }
-    });
+    _miningEndTime = now.add(const Duration(minutes: 30));
+    lastUpdate = now;
     notifyListeners();
   }
 
@@ -103,6 +93,29 @@ class MiningProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void refreshMining() {
+  if (!_isMining || _miningEndTime == null || lastUpdate == null) return;
+
+  final now = DateTime.now();
+
+  final effectiveNow = now.isAfter(_miningEndTime!)
+      ? _miningEndTime!
+      : now;
+
+  final seconds = effectiveNow.difference(lastUpdate!).inSeconds;
+  if (seconds > 0) {
+    final ratePerSecond = currentHashRate / 3600;
+    _minedCoinBalance += ratePerSecond * seconds;
+    balanceMicro += seconds * (1000 + math.Random().nextInt(5000));
+    lastUpdate = effectiveNow;
+  }
+  if (now.isAfter(_miningEndTime!)) {
+    _isMining = false;
+    _miningEndTime = null;
+  }
+  notifyListeners();
+}
+  
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String minutes = twoDigits(duration.inMinutes.remainder(60));
