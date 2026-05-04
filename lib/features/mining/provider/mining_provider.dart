@@ -3,7 +3,7 @@ import 'dart:async';
   
 class MiningProvider extends ChangeNotifier {
   bool _isMining = false;
-  
+  bool changed = false;
   double _baseHashRate = 10.0; 
   double _minedCoinBalance = 0.0;
 
@@ -55,7 +55,7 @@ class MiningProvider extends ChangeNotifier {
 
   void stopMiningSession() {
     _isMining = false;
-    _miningEndTime = null;
+    lastUpdate = null;
     notifyListeners();
   }
 
