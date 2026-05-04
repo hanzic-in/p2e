@@ -17,7 +17,14 @@ class MiningProvider extends ChangeNotifier {
 
   // Getter UI
   bool get isMining => _isMining;
-  String get remainingMiningTimeStr => _formatDuration(_remainingMiningTime);
+
+  String get remainingMiningTimeStr {
+  if (_miningEndTime == null) return "00:00";
+  final now = DateTime.now();
+  final remaining = _miningEndTime!.difference(now);
+  if (remaining.isNegative) return "00:00";
+  return _formatDuration(remaining);
+}
   double get currentHashRate => _isBoostActive ? _baseHashRate * 2 : _baseHashRate;
   double get minedCoinBalance => _minedCoinBalance;
   bool get isBoostActive => _isBoostActive;
