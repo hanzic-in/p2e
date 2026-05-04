@@ -82,13 +82,13 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          prov.isMining 
-                            ? (prov.isBoostActive ? "15.90 Gh/s" : "8.20 Gh/s") 
-                            : "0.00 Gh/s",
+                          prov.isMining
+                          ? "${prov.currentHashRate.toStringAsFixed(1)} Gh/s"
+                          : "0.00 Gh/s",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9), 
-                            fontSize: 18, 
-                            fontWeight: FontWeight.bold, 
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                             fontFamily: 'monospace'
                           ),
                         ),
