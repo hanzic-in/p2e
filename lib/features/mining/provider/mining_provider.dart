@@ -11,6 +11,7 @@ class MiningProvider extends ChangeNotifier {
   bool _isBoostActive = false;
   DateTime? _lastBoostClaimTime;
   DateTime? _boostEndTime;
+  DateTime? _miningEndTime;
 
   // Getter UI
   bool get isMining => _isMining;
@@ -118,7 +119,6 @@ class MiningProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _miningTimer?.cancel();
     _boostTimer?.cancel();
     super.dispose();
   }
