@@ -61,7 +61,30 @@ class MiningProvider extends ChangeNotifier {
     balanceMicro += val;
     notifyListeners();
   }
-  
+
+  void applyDailyGhIfNeeded() {
+    final now = DateTime.now();
+    if (_lastGhRollDate == null ||
+        now.day != _lastGhRollDate!.day ||
+        now.month != _lastGhRollDate!.month ||
+        now.year != _lastGhRollDate!.year) {
+      
+      _currentHashRate = _rollDailyGh();
+      _lastGhRollDate = now;
+      if (_currentHashRate >= 15) {
+        rewardMin = 2000;
+        rewardMax = 4000;
+      } else if (_currentHashRate >= 8) {
+        rewardMin = 1000;
+        rewardMax = 2000;
+      } else {
+        rewardMin = 200;
+        rewardMax = 400;
+      }
+
+      notifyListeners();
+    }
+  }
   // ACTION MINING START
   void startMiningSession() {
     final now = DateTime.now();
