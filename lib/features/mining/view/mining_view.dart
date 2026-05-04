@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import '../provider/mining_provider.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 class MiningView extends StatefulWidget {
   const MiningView({super.key});
