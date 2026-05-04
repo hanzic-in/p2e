@@ -217,7 +217,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
         ),
         onPressed: () {
           if (!prov.isMining) {
-            prov.startMining();
+            prov.startMiningSession();
           }
         },
         child: Row(
