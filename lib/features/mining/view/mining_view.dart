@@ -28,7 +28,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         context.read<MiningProvider>().refreshAll();
-        setState(() {});
       }
     });
   }
