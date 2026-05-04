@@ -24,6 +24,7 @@ class MiningProvider extends ChangeNotifier {
   String get remainingBoostTimeStr => _formatDuration(_remainingBoostTime);
 
   int balanceMicro = 0;
+  DateTime? lastUpdate;
   Timer? _timer;
 
   void startMining() {
