@@ -37,6 +37,7 @@ class MiningProvider extends ChangeNotifier {
     return _formatDuration(remaining);
   }
 
+  int updateIntervalSeconds = 3;
   int balanceMicro = 0;
   DateTime? lastUpdate;
 
@@ -100,15 +101,18 @@ class MiningProvider extends ChangeNotifier {
       ? _miningEndTime!
       : now;
 
-    final seconds = effectiveNow.difference(lastUpdate!).inSeconds;
-    if (seconds > 0) {
-      final ratePerSecond = currentHashRate / 3600;
-      _minedCoinBalance += ratePerSecond * seconds;
-      final rnd = math.Random();
-      for (int i = 0; i < seconds; i++) {
-        balanceMicro += (1000 + rnd.nextInt(5000));
+    final totalSeconds = effectiveNow.difference(lastUpdate!).inSeconds;
+    final ticks = totalSeconds ~/ updateIntervalSeconds;
+    if (ticks > 0) {
+      for (int i = 0; i < ticks; i++) {
+        final ratePerSecond = currentHashRate / 3600;
+        _minedCoinBalance += ratePerSecond * updateIntervalSeconds;
+        final rnd = math.Random();
+        for (int j = 0; j < updateIntervalSeconds; j++) {
+          balanceMicro += (1000 + rnd.nextInt(5000));
+        }
       }
-      lastUpdate = effectiveNow;
+      lastUpdate = lastUpdate!.add(Duration(seconds: ticks * updateIntervalSeconds));
       changed = true;
     }
     if (now.isAfter(_miningEndTime!)) {
