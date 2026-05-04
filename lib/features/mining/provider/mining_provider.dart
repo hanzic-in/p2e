@@ -100,7 +100,9 @@ class MiningProvider extends ChangeNotifier {
   if (seconds > 0) {
     final ratePerSecond = currentHashRate / 3600;
     _minedCoinBalance += ratePerSecond * seconds;
-    balanceMicro += seconds * (1000 + math.Random().nextInt(5000));
+    for (int i = 0; i < seconds; i++) {
+      balanceMicro += (1000 + math.Random().nextInt(5000));
+    }
     lastUpdate = effectiveNow;
     changed = true;
   }
