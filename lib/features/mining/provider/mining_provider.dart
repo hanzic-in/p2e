@@ -17,12 +17,13 @@ class MiningProvider extends ChangeNotifier {
   bool get isMining => _isMining;
 
   String get remainingMiningTimeStr {
-  if (_miningEndTime == null) return "00:00";
-  final now = DateTime.now();
-  final remaining = _miningEndTime!.difference(now);
-  if (remaining.isNegative) return "00:00";
-  return _formatDuration(remaining);
-}
+    if (_miningEndTime == null) return "00:00";
+    final now = DateTime.now();
+    final remaining = _miningEndTime!.difference(now);
+    if (remaining.isNegative) return "00:00";
+    return _formatDuration(remaining);
+  }
+  
   double get currentHashRate => _isBoostActive ? _baseHashRate * 2 : _baseHashRate;
   double get minedCoinBalance => _minedCoinBalance;
   bool get isBoostActive => _isBoostActive;
@@ -67,53 +68,53 @@ class MiningProvider extends ChangeNotifier {
   }
 
   void startBoostSession() {
-  final now = DateTime.now();
+    final now = DateTime.now();
 
-  _isBoostActive = true;
-  _boostEndTime = now.add(const Duration(minutes: 2));
-  _lastBoostClaimTime = now;
+    _isBoostActive = true;
+    _boostEndTime = now.add(const Duration(minutes: 2));
+    _lastBoostClaimTime = now;
 
-  notifyListeners();
-}
-
-  void refreshBoost() {
-  if (!_isBoostActive || _boostEndTime == null) return;
-
-  final now = DateTime.now();
-  if (now.isAfter(_boostEndTime!)) {
-    _isBoostActive = false;
-    _boostEndTime = null;
     notifyListeners();
   }
-}
+
+  void refreshBoost() {
+    if (!_isBoostActive || _boostEndTime == null) return;
+
+    final now = DateTime.now();
+    if (now.isAfter(_boostEndTime!)) {
+      _isBoostActive = false;
+      _boostEndTime = null;
+      notifyListeners();
+    }
+  }
 
   void refreshMining() {
     bool changed = false;
-  if (!_isMining || _miningEndTime == null || lastUpdate == null) return;
+    if (!_isMining || _miningEndTime == null || lastUpdate == null) return;
 
-  final now = DateTime.now();
+    final now = DateTime.now();
 
-  final effectiveNow = now.isAfter(_miningEndTime!)
+    final effectiveNow = now.isAfter(_miningEndTime!)
       ? _miningEndTime!
       : now;
 
-  final seconds = effectiveNow.difference(lastUpdate!).inSeconds;
-  if (seconds > 0) {
-    final ratePerSecond = currentHashRate / 3600;
-    _minedCoinBalance += ratePerSecond * seconds;
-    for (int i = 0; i < seconds; i++) {
-      balanceMicro += (1000 + math.Random().nextInt(5000));
+    final seconds = effectiveNow.difference(lastUpdate!).inSeconds;
+    if (seconds > 0) {
+      final ratePerSecond = currentHashRate / 3600;
+      _minedCoinBalance += ratePerSecond * seconds;
+      for (int i = 0; i < seconds; i++) {
+        balanceMicro += (1000 + math.Random().nextInt(5000));
+      }
+      lastUpdate = effectiveNow;
+      changed = true;
     }
-    lastUpdate = effectiveNow;
-    changed = true;
+    if (now.isAfter(_miningEndTime!)) {
+      _isMining = false;
+      _miningEndTime = null;
+      changed = true;
+    }
+    if (changed) notifyListeners();
   }
-  if (now.isAfter(_miningEndTime!)) {
-    _isMining = false;
-    _miningEndTime = null;
-    changed = true;
-  }
-  if (changed) notifyListeners();
-}
 
   void refreshAll() {
     refreshBoost();
