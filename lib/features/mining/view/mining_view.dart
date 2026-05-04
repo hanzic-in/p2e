@@ -145,7 +145,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
               
               // AnimatedFlipCounter
               AnimatedFlipCounter(
-                value: prov.balanceMicro / 1e12,
+                value: prov.balanceMicro / 1e6,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutQuart,
                 textStyle: const TextStyle(
@@ -154,7 +154,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                fractionDigits: 12,
+                fractionDigits: 6,
                 decimalSeparator: '.',
                 wholeDigits: 1,
                 hideLeadingZeroes: false,
