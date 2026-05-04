@@ -43,6 +43,22 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
       prov.refreshAll();
     });
 
+    Timer? _uiTimer;
+
+    @override
+    void initState() {
+      super.initState();
+
+      _shimmerController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 2500),
+      )..repeat();
+
+      _uiTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
       body: SafeArea(
