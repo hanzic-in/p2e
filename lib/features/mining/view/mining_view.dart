@@ -162,7 +162,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                   fontWeight: FontWeight.w900,
                   fontFamily: 'monospace',
                 ),
-                fractionDigits: 14,
+                fractionDigits: 12,
                 decimalSeparator: '.',
                 wholeDigits: 1,
                 hideLeadingZeroes: false,
