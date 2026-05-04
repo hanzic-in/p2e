@@ -46,13 +46,9 @@ class MiningProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void stopMiningSession({bool completed = false}) {
+  void stopMiningSession() {
     _isMining = false;
-    _remainingMiningTime = Duration.zero;
-    _miningTimer?.cancel();
-
-    if (completed) {
-    }
+    _miningEndTime = null;
     notifyListeners();
   }
 
