@@ -3,8 +3,6 @@ import 'dart:async';
   
 class MiningProvider extends ChangeNotifier {
   bool _isMining = false;
-  Duration _remainingMiningTime = Duration.zero;
-  Timer? _miningTimer;
   
   double _baseHashRate = 10.0; 
   double _minedCoinBalance = 0.0;
@@ -32,21 +30,6 @@ class MiningProvider extends ChangeNotifier {
 
   int balanceMicro = 0;
   DateTime? lastUpdate;
-  Timer? _timer;
-
-  void startMining() {
-    if (_timer != null) return;
-
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
-      balanceMicro += (1000 + math.Random().nextInt(5000));
-      notifyListeners();
-    });
-  }
-
-  void stopMining() {
-    _timer?.cancel();
-    _timer = null;
-  }
 
   void addBalance(int val) {
     balanceMicro += val;
