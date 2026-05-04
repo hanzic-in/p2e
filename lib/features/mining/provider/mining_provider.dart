@@ -102,12 +102,14 @@ class MiningProvider extends ChangeNotifier {
     _minedCoinBalance += ratePerSecond * seconds;
     balanceMicro += seconds * (1000 + math.Random().nextInt(5000));
     lastUpdate = effectiveNow;
+    changed = true;
   }
   if (now.isAfter(_miningEndTime!)) {
     _isMining = false;
     _miningEndTime = null;
+    changed = true;
   }
-  notifyListeners();
+  if (changed) notifyListeners();
 }
   
   String _formatDuration(Duration duration) {
@@ -119,7 +121,6 @@ class MiningProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _boostTimer?.cancel();
     super.dispose();
   }
 }
