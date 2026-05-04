@@ -108,7 +108,7 @@ class MiningProvider extends ChangeNotifier {
       for (int i = 0; i < ticks; i++) {
         final ratePerSecond = currentHashRate / 3600;
         _minedCoinBalance += ratePerSecond * updateIntervalSeconds;
-        balanceMicro += (500 + rnd.nextInt(4000));
+        balanceMicro += (200 + rnd.nextInt(4000));
       }
       lastUpdate = lastUpdate!.add(Duration(seconds: ticks * updateIntervalSeconds));
       changed = true;
