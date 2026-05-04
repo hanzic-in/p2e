@@ -113,6 +113,11 @@ class MiningProvider extends ChangeNotifier {
   }
   if (changed) notifyListeners();
 }
+
+  void refreshAll() {
+    refreshBoost();
+    refreshMining();
+  }
   
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
