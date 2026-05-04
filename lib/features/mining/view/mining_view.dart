@@ -80,7 +80,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
                       ],
                     ),
                     const SizedBox(height: 30),
-                    _buildTokenBalance(tokenColor),
+                    _buildTokenBalance(tokenColor, prov),
                     const SizedBox(height: 35),
                     _buildStreamBar(color: Colors.orangeAccent, isMining: prov.isMining, offset: 0.0),
                     const SizedBox(height: 12),
@@ -131,7 +131,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTokenBalance(Color color) {
+  Widget _buildTokenBalance(Color color, MiningProvider prov) {
     return Column(
       children: [
         FittedBox(
