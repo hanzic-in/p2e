@@ -38,8 +38,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     final tokenColor = const Color(0xFF00E5FF); 
     final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
-    prov.refreshMining();
-    prov.refreshBoost();
+    prov.refreshAll();
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
