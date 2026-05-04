@@ -35,6 +35,7 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final prov = Provider.of<MiningProvider>(context);
+    prov.refreshMining();
     final tokenColor = const Color(0xFF00E5FF); 
     final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
