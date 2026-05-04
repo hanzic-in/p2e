@@ -23,6 +23,13 @@ class MiningProvider extends ChangeNotifier {
   bool get isBoostActive => _isBoostActive;
   String get remainingBoostTimeStr => _formatDuration(_remainingBoostTime);
 
+  int balanceMicro = 0;
+
+  void addBalance(int val) {
+    balanceMicro += val;
+    notifyListeners();
+  }
+  
   // ACTION MINING START
   void startMiningSession() {
 
