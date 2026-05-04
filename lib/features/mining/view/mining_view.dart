@@ -26,7 +26,10 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     )..repeat();
 
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        context.read<MiningProvider>().refreshAll();
+        setState(() {});
+      }
     });
   }
 
@@ -43,10 +46,6 @@ class _MiningViewState extends State<MiningView> with SingleTickerProviderStateM
     final tokenColor = const Color(0xFF00E5FF); 
     final boostColor = const Color(0xFFC154F7);
     final activeThemeColor = prov.isBoostActive ? boostColor : tokenColor;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      prov.refreshAll();
-    });
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1116),
