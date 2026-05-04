@@ -24,6 +24,21 @@ class MiningProvider extends ChangeNotifier {
   String get remainingBoostTimeStr => _formatDuration(_remainingBoostTime);
 
   int balanceMicro = 0;
+  Timer? _timer;
+
+  void startMining() {
+    if (_timer != null) return;
+
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      balanceMicro += (1000 + math.Random().nextInt(5000));
+      notifyListeners();
+    });
+  }
+
+  void stopMining() {
+    _timer?.cancel();
+    _timer = null;
+  }
 
   void addBalance(int val) {
     balanceMicro += val;
