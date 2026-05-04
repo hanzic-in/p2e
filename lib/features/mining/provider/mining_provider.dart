@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math' as math;
   
 class MiningProvider extends ChangeNotifier {
   bool _isMining = false;
@@ -56,6 +57,7 @@ class MiningProvider extends ChangeNotifier {
 
   void stopMiningSession() {
     _isMining = false;
+    _miningEndTime = null;
     lastUpdate = null;
     notifyListeners();
   }
