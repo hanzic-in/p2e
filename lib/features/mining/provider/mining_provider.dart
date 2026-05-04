@@ -9,9 +9,8 @@ class MiningProvider extends ChangeNotifier {
 
   // STATE BOOST SPEED
   bool _isBoostActive = false;
-  Duration _remainingBoostTime = Duration.zero;
-  Timer? _boostTimer;
   DateTime? _lastBoostClaimTime;
+  DateTime? _boostEndTime;
 
   // Getter UI
   bool get isMining => _isMining;
@@ -26,7 +25,14 @@ class MiningProvider extends ChangeNotifier {
   double get currentHashRate => _isBoostActive ? _baseHashRate * 2 : _baseHashRate;
   double get minedCoinBalance => _minedCoinBalance;
   bool get isBoostActive => _isBoostActive;
-  String get remainingBoostTimeStr => _formatDuration(_remainingBoostTime);
+
+  String get remainingBoostTimeStr {
+    if (_boostEndTime == null) return "00:00";
+    final now = DateTime.now();
+    final remaining = _boostEndTime!.difference(now);
+    if (remaining.isNegative) return "00:00";
+    return _formatDuration(remaining);
+  }
 
   int balanceMicro = 0;
   DateTime? lastUpdate;
@@ -60,24 +66,25 @@ class MiningProvider extends ChangeNotifier {
   }
 
   void startBoostSession() {
-    _isBoostActive = true;
-    _remainingBoostTime = const Duration(minutes: 2);
-    _lastBoostClaimTime = DateTime.now();
+  final now = DateTime.now();
 
-    _boostTimer?.cancel();
-    _boostTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingBoostTime.inSeconds > 0) {
-        _remainingBoostTime -= const Duration(seconds: 1);
-        notifyListeners();
-      } else {
-        _isBoostActive = false;
-        _remainingBoostTime = Duration.zero;
-        _boostTimer?.cancel();
-        notifyListeners();
-      }
-    });
+  _isBoostActive = true;
+  _boostEndTime = now.add(const Duration(minutes: 2));
+  _lastBoostClaimTime = now;
+
+  notifyListeners();
+}
+
+  void refreshBoost() {
+  if (!_isBoostActive || _boostEndTime == null) return;
+
+  final now = DateTime.now();
+  if (now.isAfter(_boostEndTime!)) {
+    _isBoostActive = false;
+    _boostEndTime = null;
     notifyListeners();
   }
+}
 
   void refreshMining() {
   if (!_isMining || _miningEndTime == null || lastUpdate == null) return;
