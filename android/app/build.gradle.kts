@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.discire_app"
+    namespace = "com.example.greenharvest"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
