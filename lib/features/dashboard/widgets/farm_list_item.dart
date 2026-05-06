@@ -203,22 +203,50 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
   }
 
   Widget _buildVisualAset() {
+    bool isLocked = widget.item.status == ProductionStatus.locked;
+
     return Container(
-      height: 65, width: 65,
+      height: 65,
+      width: 65,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03), 
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.05))
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
-      child: widget.item.status == ProductionStatus.locked 
-        ? const Icon(Icons.lock_outline, color: Colors.white10, size: 28)
-        : ClipRRect(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+        
+          ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: Image.asset(widget.item.assetPath, fit: BoxFit.contain,
-              errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported_outlined, color: Colors.white10)),
+            child: Opacity(
+              opacity: isLocked ? 0.25 : 1.0,
+              child: Image.asset(
+                widget.item.assetPath,
+                fit: BoxFit.contain,
+                errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported_outlined, color: Colors.white10),
+              ),
+            ),
           ),
-    );
-  }
+
+          if (isLocked)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: Colors.black.withOpacity(0.4),
+              ),
+            ),
+
+          if (isLocked)
+            Icon(
+              Icons.lock_rounded,
+              color: Colors.white.withOpacity(0.7),
+              size: 20,
+            ),
+          ],
+        ),
+      );
+    }
 
   Widget _buildMainButton() {
     Color btnColor = Colors.white10;
