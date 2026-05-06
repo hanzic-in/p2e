@@ -9,7 +9,7 @@ import '../../core/widgets/ad_banner_carousel.dart';
 import './models/country_model.dart';
 
 class DashboardView extends StatelessWidget {
-  @override
+    @override
   Widget build(BuildContext context) {
     final prov = Provider.of<DashboardProvider>(context);
     
@@ -18,141 +18,141 @@ class DashboardView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.darkBg,
         body: SafeArea(
-          child: Column(
-            children: [
-              TycoonHeader(bCoin: prov.bCoin, keyCoin: prov.keyCoin, special: prov.special),
-              const AdBannerCarousel(),
-
-              // TAB Navigation
-              Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Colors.white10, width: 1)),
+          // KUNCI UTAMA: Pindah dari Column ke NestedScrollView
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                // 1. Header BCoin dkk (Ikut scroll tapi paling atas)
+                SliverToBoxAdapter(
+                  child: TycoonHeader(
+                    bCoin: prov.bCoin, 
+                    keyCoin: prov.keyCoin, 
+                    special: prov.special
+                  ),
                 ),
-                child: TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.center,
-                  indicatorColor: AppColors.primaryGreen,
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelColor: AppColors.primaryGreen,
-                  unselectedLabelColor: Colors.white24,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
-                  tabs: [
-                    ...FarmSector.values.map((sector) {
-                      return Tab(text: sector.name.toUpperCase());
-                    }).toList(),
-                    const Tab(
-                      icon: Icon(Icons.local_shipping_rounded, size: 20),
-                    ),
-                  ],
+
+                // 2. Banner Iklan (SliverToBoxAdapter biar bisa nambahin tinggi)
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 180, // Tambah tinggi biar banner gak gepeng
+                    child: const AdBannerCarousel(),
+                  ),
                 ),
-              ),
 
-              // Isi list tiap sector
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    ...FarmSector.values.map((sector) {
-                    final sectorItems = prov.myFarms.where((f) => f.sector == sector).toList();
-
-                    if (sectorItems.isEmpty) {
-                      return const Center(
-                        child: Text("There are no assets in this sector yet", style: TextStyle(color: Colors.white24)),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      itemCount: sectorItems.length,
-                      itemBuilder: (context, index) {
-                        final farm = sectorItems[index];
-                        final canOpen = prov.canBeUnlocked(farm);
-                        final isLocked = farm.status == ProductionStatus.locked;
-
-                        return FarmListItem(
-                          item: farm,
-                          allItems: prov.myFarms, 
-                          onTap: () {
-                            if (isLocked) {
-                              if (canOpen) {
-                                prov.startUnlock(farm.id);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    backgroundColor: Colors.redAccent,
-                                    content: Text("Conditions not met: ${farm.unlockRequirements.join(', ')}"),
-                                  ),
-                                );
-                              }
-                            } else {
-                              if (farm.status == ProductionStatus.idle) {
-                                prov.startProduction(farm.id);
-                              } else if (farm.status == ProductionStatus.ready) {
-                                prov.claimResult(farm.id);
-                              }
-                            }
-                          },
-                          onUpgrade: () => _showUpgradePopup(context, farm, prov),
-                          onSell: isLocked ? () {} : () => _showSellDialog(context, farm.id, prov),
-                        );
-                      },
-                    );
-                  }).toList(),
-                    DefaultTabController(
-                      length: 5,
+                // 3. Tab Navigation (Dibuat nempel/Sticky)
+                SliverPersistentHeader(
+                  pinned: true, // Ini yang bikin nempel
+                  delegate: _SliverAppBarDelegate(
+                    child: Container(
+                      color: AppColors.darkBg, // BG gelap pas nempel biar gak transparan
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: 80,
-                            child: TabBar(
-                              isScrollable: true,
-                              tabAlignment: TabAlignment.center,
-                              indicatorColor: Colors.transparent,
-                              dividerColor: Colors.transparent,
-                              labelColor: Colors.white,
-                              unselectedLabelColor: Colors.white24,
-                              labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2),
-                              tabs: [            
-                                const Tab(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 22),
-                                       SizedBox(height: 4),
-                                      Text("URGENT"),
-                                    ],
-                                  ),
-                                ),
-                                const Tab(text: "AFRIKA"),
-                                const Tab(text: "ASIA"),
-                                const Tab(text: "EROPA"),
-                                const Tab(text: "AS"),
-                              ],
-                            ),
+                          TabBar(
+                            isScrollable: true,
+                            tabAlignment: TabAlignment.center,
+                            indicatorColor: AppColors.primaryGreen,
+                            indicatorWeight: 3,
+                            indicatorSize: TabBarIndicatorSize.label,
+                            labelColor: AppColors.primaryGreen,
+                            unselectedLabelColor: Colors.white24,
+                            labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.5),
+                            tabs: [
+                              ...FarmSector.values.map((sector) {
+                                return Tab(text: sector.name.toUpperCase());
+                              }).toList(),
+                              const Tab(
+                                icon: Icon(Icons.local_shipping_rounded, size: 20),
+                              ),
+                            ],
                           ),
-                          // ISI HALAMAN
-                          Expanded(
-                            child: TabBarView(
-                              children: [
-                                SingleChildScrollView(
-                                  padding: const EdgeInsets.all(20),
-                                  child: _buildUrgentCard(prov),
-                                ),
-                                _buildCountryPage(prov, Continent.afrika),
-                                _buildCountryPage(prov, Continent.asia),
-                                _buildCountryPage(prov, Continent.eropa),
-                                _buildCountryPage(prov, Continent.as),
-                              ],
-                            ),
-                          ),
+                          const Divider(color: Colors.white10, height: 1),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ];
+            },
+            // 4. Isi List (Body dari scrollview)
+            body: TabBarView(
+              children: [
+                ...FarmSector.values.map((sector) {
+                  final sectorItems = prov.myFarms.where((f) => f.sector == sector).toList();
+
+                  if (sectorItems.isEmpty) {
+                    return const Center(
+                      child: Text("There are no assets in this sector yet", style: TextStyle(color: Colors.white24)),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    itemCount: sectorItems.length,
+                    itemBuilder: (context, index) {
+                      final farm = sectorItems[index];
+                      return FarmListItem(
+                        item: farm,
+                        allItems: prov.myFarms, 
+                        onTap: () => _handleTap(farm, prov, context),
+                        onUpgrade: () => _showUpgradePopup(context, farm, prov),
+                        onSell: farm.status == ProductionStatus.locked ? () {} : () => _showSellDialog(context, farm.id, prov),
+                      );
+                    },
+                  );
+                }).toList(),
+
+                // Tab Terakhir (Truck/Urgent Orders)
+                DefaultTabController(
+                  length: 5,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 80,
+                        child: TabBar(
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.center,
+                          indicatorColor: Colors.transparent,
+                          dividerColor: Colors.transparent,
+                          labelColor: Colors.white,
+                          unselectedLabelColor: Colors.white24,
+                          labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1.2),
+                          tabs: [            
+                            const Tab(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.directions_boat_filled_rounded, color: Colors.amber, size: 22),
+                                   SizedBox(height: 4),
+                                  Text("URGENT"),
+                                ],
+                              ),
+                            ),
+                            const Tab(text: "AFRIKA"),
+                            const Tab(text: "ASIA"),
+                            const Tab(text: "EROPA"),
+                            const Tab(text: "AS"),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            SingleChildScrollView(
+                              padding: const EdgeInsets.all(20),
+                              child: _buildUrgentCard(prov),
+                            ),
+                            _buildCountryPage(prov, Continent.afrika),
+                            _buildCountryPage(prov, Continent.asia),
+                            _buildCountryPage(prov, Continent.eropa),
+                            _buildCountryPage(prov, Continent.as),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
