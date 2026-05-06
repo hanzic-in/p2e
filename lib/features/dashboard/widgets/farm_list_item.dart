@@ -219,15 +219,24 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
         
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: Opacity(
-              opacity: isLocked ? 0.25 : 1.0,
-              child: Image.asset(
-                widget.item.assetPath,
-                fit: BoxFit.contain,
-                errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported_outlined, color: Colors.white10),
+            child: ColorFiltered(
+              colorFilter: isLocked ? const ColorFilter.matrix([
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0.2126, 0.7152, 0.0722, 0, 0,
+                0,      0,      0,      1, 0,
+              ])
+              : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+              child: Opacity(
+                opacity: isLocked ? 0.4 : 1.0,
+                child: Image.asset(
+                  widget.item.assetPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported_outlined, color: Colors.white10),
+                ),
               ),
             ),
-          ),
+          )
 
           if (isLocked)
             Container(
