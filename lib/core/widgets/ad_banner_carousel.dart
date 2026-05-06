@@ -13,17 +13,17 @@ class AdBannerCarousel extends StatelessWidget {
     ];
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 20),
+      margin: const EdgeInsets.symmetric(vertical: 12),
       child: CarouselSlider(
         options: CarouselOptions(
-          height: 160.0,
+          height: 180.0,
           autoPlay: true,
           enlargeCenterPage: true,
           aspectRatio: 16/9,
           autoPlayCurve: Curves.fastOutSlowIn,
           enableInfiniteScroll: true,
           autoPlayInterval: const Duration(seconds: 5),
-          viewportFraction: 0.85,
+          viewportFraction: 0.88,
         ),
         items: dummyAds.map((imageUrl) {
           return Builder(
