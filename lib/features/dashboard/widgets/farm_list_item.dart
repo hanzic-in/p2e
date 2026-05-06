@@ -183,6 +183,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
             ),
           ],
         ),
+      ),
       );
     }
 
