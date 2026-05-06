@@ -303,7 +303,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
           textColor = Colors.black;
           break;
         case ProductionStatus.producing: 
-          btnColor = Colors.white.withOpacity(0.05); 
+          btnColor = Colors.white.withOpacity(0.08); 
           btnText = "${widget.item.remainingSeconds}S"; 
           textColor = AppColors.primaryGreen;
           break;
