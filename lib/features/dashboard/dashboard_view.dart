@@ -18,11 +18,10 @@ class DashboardView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.darkBg,
         body: SafeArea(
-          // KUNCI UTAMA: Pindah dari Column ke NestedScrollView
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
-                // 1. Header BCoin dkk (Ikut scroll tapi paling atas)
+                // Header BCoin dkk
                 SliverToBoxAdapter(
                   child: TycoonHeader(
                     bCoin: prov.bCoin, 
@@ -31,20 +30,20 @@ class DashboardView extends StatelessWidget {
                   ),
                 ),
 
-                // 2. Banner Iklan (SliverToBoxAdapter biar bisa nambahin tinggi)
+                // Banner Iklan
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: 180, // Tambah tinggi biar banner gak gepeng
+                    height: 180,
                     child: const AdBannerCarousel(),
                   ),
                 ),
 
-                // 3. Tab Navigation (Dibuat nempel/Sticky)
+                // Tab Navigation
                 SliverPersistentHeader(
-                  pinned: true, // Ini yang bikin nempel
+                  pinned: true,
                   delegate: _SliverAppBarDelegate(
                     child: Container(
-                      color: AppColors.darkBg, // BG gelap pas nempel biar gak transparan
+                      color: AppColors.darkBg,
                       child: Column(
                         children: [
                           TabBar(
@@ -73,7 +72,7 @@ class DashboardView extends StatelessWidget {
                 ),
               ];
             },
-            // 4. Isi List (Body dari scrollview)
+            // List (Body scrollview)
             body: TabBarView(
               children: [
                 ...FarmSector.values.map((sector) {
@@ -101,7 +100,7 @@ class DashboardView extends StatelessWidget {
                   );
                 }).toList(),
 
-                // Tab Terakhir (Truck/Urgent Orders)
+                // Tab Akhir (Truck/Urgent Orders)
                 DefaultTabController(
                   length: 5,
                   child: Column(
@@ -607,4 +606,22 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
       ),
     );
   }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _SliverAppBarDelegate({required this.child});
+
+  @override
+  double get minExtent => 52.0;
+  @override
+  double get maxExtent => 52.0;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
 }
