@@ -219,6 +219,11 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
         color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
+        BoxShadow(
+          color: AppColors.primaryGreen.withOpacity(0.1),
+          blurRadius: 20,
+          spreadRadius: 2,
+        ),
       ),
       child: Stack(
         alignment: Alignment.center,
