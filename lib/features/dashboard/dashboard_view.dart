@@ -18,19 +18,19 @@ class DashboardView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.darkBg,
         body: SafeArea(
+            child: Column(
+                children: [
+                    // HEADER COIN
+                    TycoonHeader(
+                        bCoin: prov.bCoin, 
+                        keyCoin: prov.keyCoin, 
+                        special: prov.special
+                    ),
+            Expanded(
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
-                // Header BCoin dkk
-                SliverToBoxAdapter(
-                  child: TycoonHeader(
-                    bCoin: prov.bCoin, 
-                    keyCoin: prov.keyCoin, 
-                    special: prov.special
-                  ),
-                ),
-
-                // Banner Iklan
+                // Banner iklan
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: 180,
