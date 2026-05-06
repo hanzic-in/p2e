@@ -229,7 +229,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
               : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
               child: Opacity(
                 opacity: isLocked ? 0.25 : 1.0,
-                color: isLocked ? Colors.white12 : Colors.white
+                color: isLocked ? Colors.white12 : Colors.white,
                 child: Image.asset(
                   widget.item.assetPath,
                   fit: BoxFit.contain,
