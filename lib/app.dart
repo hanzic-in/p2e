@@ -24,19 +24,36 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        backgroundColor: AppColors.cardBg,
-        selectedItemColor: AppColors.primaryGreen,
-        unselectedItemColor: AppColors.textGray,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.agriculture), label: "Farm"),
-          const BottomNavigationBarItem(icon: Icon(Icons.paid), label: "Dapatkan"),
-          const BottomNavigationBarItem(icon: Icon(Icons.memory_rounded), label: "Mining"), 
-          const BottomNavigationBarItem(icon: Icon(Icons.wallet), label: "Dompet"),
-        ],
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(15),
+        height: 70,
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(25),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: AppColors.primaryGreen,
+            unselectedItemColor: AppColors.textGray,
+            type: BottomNavigationBarType.fixed,
+            selectedFontSize: 12,
+            unselectedFontSize: 10,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.agriculture_rounded), label: "Farm"),
+              BottomNavigationBarItem(icon: Icon(Icons.paid_rounded), label: "Mission"),
+              BottomNavigationBarItem(icon: Icon(Icons.memory_rounded), label: "Mining"), 
+              BottomNavigationBarItem(icon: Icon(Icons.wallet_rounded), label: "Wallet"),
+            ],
+          ),
+        ),
       ),
     );
   }
