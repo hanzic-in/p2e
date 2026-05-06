@@ -87,11 +87,11 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                   ),
                 ],
               border: Border.all(
-                color: widget.item.status == ProductionStatus.ready 
-                  ? AppColors.primaryGreen 
-                  : (isWorking ? Colors.white24 : Colors.white.withOpacity(0.05)),
-                width: widget.item.status == ProductionStatus.ready ? 1.5 : 1.8,
+                color: isLocked ? Colors.white.withOpacity(0.02)
+                : (widget.item.status == ProductionStatus.ready ? AppColors.primaryGreen : Colors.white12),
+                width: widget.item.status == ProductionStatus.ready ? 1.5 : 1,
               ),
+
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
