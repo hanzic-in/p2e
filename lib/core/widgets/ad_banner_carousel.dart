@@ -35,7 +35,7 @@ class AdBannerCarousel extends StatelessWidget {
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(16),
                   image: DecorationImage(
-                    image: NetworkImage(assetPath),
+                    image: AssetImage(assetPath),
                     fit: BoxFit.cover,
                   ),
                 ),
