@@ -79,11 +79,18 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
             decoration: BoxDecoration(
               color: AppColors.cardBg,
               borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               border: Border.all(
                 color: widget.item.status == ProductionStatus.ready 
                   ? AppColors.primaryGreen 
                   : (isWorking ? Colors.white24 : Colors.white.withOpacity(0.05)),
-                width: widget.item.status == ProductionStatus.ready ? 2 : 1,
+                width: widget.item.status == ProductionStatus.ready ? 1.5 : 1.8,
               ),
             ),
             child: Column(
