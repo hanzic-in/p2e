@@ -23,7 +23,7 @@ class AdBannerCarousel extends StatelessWidget {
           autoPlayCurve: Curves.fastOutSlowIn,
           enableInfiniteScroll: true,
           autoPlayInterval: const Duration(seconds: 5),
-          viewportFraction: 0.88,
+          viewportFraction: 0.80,
         ),
         items: dummyAds.map((imageUrl) {
           return Builder(
