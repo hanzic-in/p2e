@@ -16,7 +16,7 @@ class AdBannerCarousel extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 20),
       child: CarouselSlider(
         options: CarouselOptions(
-          height: 120.0,
+          height: 160.0,
           autoPlay: true,
           enlargeCenterPage: true,
           aspectRatio: 16/9,
