@@ -33,7 +33,7 @@ class DashboardView extends StatelessWidget {
                 // Banner iklan
                 SliverToBoxAdapter(
                   child: SizedBox(
-                    height: 180,
+                    height: 200,
                     child: const AdBannerCarousel(),
                   ),
                 ),
