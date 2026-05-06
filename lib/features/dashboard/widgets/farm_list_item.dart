@@ -47,8 +47,20 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
     bool isLocked = widget.item.status == ProductionStatus.locked;
     bool isWorking = isProducing || widget.item.isUpgrading || widget.item.isUnlocking;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      child: Container(
+        key: ValueKey("${widget.item.name}_${widget.item.status}"), 
+        margin: const EdgeInsets.only(bottom: 16),
       child: Stack(
         children: [
           if (isWorking)
