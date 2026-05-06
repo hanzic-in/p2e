@@ -236,7 +236,7 @@ class _FarmListItemState extends State<FarmListItem> with SingleTickerProviderSt
                 ),
               ),
             ),
-          )
+          ),
 
           if (isLocked)
             Container(
