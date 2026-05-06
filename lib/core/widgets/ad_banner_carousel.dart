@@ -8,8 +8,9 @@ class AdBannerCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     // Dummy Data
     final List<String> dummyAds = [
-      "https://images.unsplash.com/photo-1607083213165-cb0255907c81?q=80&w=800",
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800",
+      "assets/images/banner_1.png",
+      "assets/images/banner_2.png",
+      "assets/images/banner_3.png",
     ];
 
     return Container(
@@ -25,7 +26,7 @@ class AdBannerCarousel extends StatelessWidget {
           autoPlayInterval: const Duration(seconds: 5),
           viewportFraction: 0.80,
         ),
-        items: dummyAds.map((imageUrl) {
+        items: dummyAds.map((assetPath) {
           return Builder(
             builder: (BuildContext context) {
               return Container(
@@ -34,7 +35,7 @@ class AdBannerCarousel extends StatelessWidget {
                   color: Colors.white10,
                   borderRadius: BorderRadius.circular(16),
                   image: DecorationImage(
-                    image: NetworkImage(imageUrl),
+                    image: NetworkImage(assetPath),
                     fit: BoxFit.cover,
                   ),
                 ),
