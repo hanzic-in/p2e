@@ -27,8 +27,6 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
