@@ -24,16 +24,28 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(15),
-        height: 70,
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5)),
-          ],
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom > 0 
+              ? MediaQuery.of(context).viewPadding.bottom 
+              : 15,
+          left: 15,
+          right: 15,
+          top: 15,
         ),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            color: AppColors.cardBg,
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3), 
+                blurRadius: 10, 
+                offset: const Offset(0, 5)
+              ),
+            ],
+          ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(25),
           child: BottomNavigationBar(
