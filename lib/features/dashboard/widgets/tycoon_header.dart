@@ -16,28 +16,72 @@ class TycoonHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCoinInfo("SPECIAL", special.toStringAsFixed(4), AppColors.primaryGreen),
-          _buildCoinInfo("B-COIN", bCoin.toStringAsFixed(1), Colors.amber),
-          _buildCoinInfo("KEY", keyCoin.toStringAsFixed(1), Colors.blueGrey),
+          _buildGlowCapsule(Icons.stars_rounded, special.toStringAsFixed(4), AppColors.primaryGreen, "SPECIAL"),
+          _buildGlowCapsule(Icons.monetization_on, bCoin.toStringAsFixed(1), Colors.amber, "B-COIN"),
+          _buildGlowCapsule(Icons.vpn_key_rounded, keyCoin.toStringAsFixed(1), Colors.cyanAccent, "KEY"),
         ],
       ),
     );
   }
 
-  Widget _buildCoinInfo(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 9, letterSpacing: 1)),
-      ],
+  Widget _buildGlowCapsule(IconData icon, String value, Color color, String label) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.05),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label, 
+              style: TextStyle(
+                color: color.withOpacity(0.6), 
+                fontSize: 8, 
+                fontWeight: FontWeight.w900, 
+                letterSpacing: 0.5
+              )
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 14),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    value, 
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.w900, 
+                      fontSize: 13
+                    )
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
