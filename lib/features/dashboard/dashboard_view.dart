@@ -85,7 +85,7 @@ class DashboardView extends StatelessWidget {
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    padding: const EdgeInsets.fromLTRB( 20, 20, 20, 85,),
                     itemCount: sectorItems.length,
                     itemBuilder: (context, index) {
                       final farm = sectorItems[index];
@@ -479,7 +479,7 @@ void _showUpgradePopup(BuildContext context, FarmItem farm, DashboardProvider pr
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB( 20, 20, 20, 85,),
       itemCount: listNegara.length,
       itemBuilder: (context, index) {
         final negara = listNegara[index];
