@@ -16,72 +16,70 @@ class TycoonHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      height: 65,
+      decoration: BoxDecoration(
+        color: AppColors.cardBg.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1.5),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildGlowCapsule(Icons.stars_rounded, special.toStringAsFixed(4), AppColors.primaryGreen, "SPECIAL"),
-          _buildGlowCapsule(Icons.monetization_on, bCoin.toStringAsFixed(1), Colors.amber, "B-COIN"),
-          _buildGlowCapsule(Icons.vpn_key_rounded, keyCoin.toStringAsFixed(1), Colors.cyanAccent, "KEY"),
+          _buildGlassStat(Icons.stars_rounded, special.toStringAsFixed(2), AppColors.primaryGreen),
+          _buildVerticalDivider(),
+          _buildGlassStat(Icons.monetization_on, bCoin.toStringAsFixed(0), Colors.amber),
+          _buildVerticalDivider(),
+          _buildGlassStat(Icons.vpn_key_rounded, keyCoin.toStringAsFixed(0), Colors.cyanAccent),
         ],
       ),
     );
   }
 
-  Widget _buildGlowCapsule(IconData icon, String value, Color color, String label) {
+  Widget _buildGlassStat(IconData icon, String value, Color color) {
     return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.05),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label, 
-              style: TextStyle(
-                color: color.withOpacity(0.6), 
-                fontSize: 8, 
-                fontWeight: FontWeight.w900, 
-                letterSpacing: 0.5
-              )
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: color, size: 14),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    value, 
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white, 
-                      fontWeight: FontWeight.w900, 
-                      fontSize: 13
-                    )
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 16, shadows: [
+                Shadow(color: color.withOpacity(0.5), blurRadius: 8),
+              ]),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 0.5
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Container(
+            width: 30,
+            height: 2,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ],
-        ),
+          )
+        ],
       ),
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      height: 30,
+      width: 1,
+      color: Colors.white.withOpacity(0.05),
     );
   }
 }
