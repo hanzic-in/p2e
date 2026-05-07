@@ -15,59 +15,64 @@ class TycoonHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      height: 60,
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(15),
+        border: const Border(
+          bottom: BorderSide(color: AppColors.primaryGreen, width: 2),
+          top: BorderSide(color: Colors.white10, width: 1),
+          left: BorderSide(color: Colors.white10, width: 1),
+          right: BorderSide(color: Colors.white10, width: 1),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildOrbitalStat(Icons.stars_rounded, special.toStringAsFixed(2), AppColors.primaryGreen),
-          _buildOrbitalStat(Icons.monetization_on, bCoin.toStringAsFixed(0), Colors.amber),
-          _buildOrbitalStat(Icons.vpn_key_rounded, keyCoin.toStringAsFixed(0), Colors.cyanAccent),
+          // SPECIAL
+          _buildStat(special.toStringAsFixed(2), AppColors.primaryGreen, "SPEC"),
+          
+          Container(width: 1, height: 30, color: Colors.white10),          
+          // B-COIN
+          Expanded(
+            flex: 2,
+            child: Container(
+              color: Colors.white.withOpacity(0.03),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.monetization_on, color: Colors.amber, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        bCoin.toStringAsFixed(0),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                      ),
+                    ],
+                  ),
+                  const Text("B-COIN BALANCE", style: TextStyle(color: Colors.white38, fontSize: 8, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ),
+          Container(width: 1, height: 30, color: Colors.white10),         
+          // KEY
+          _buildStat(keyCoin.toStringAsFixed(0), Colors.cyanAccent, "KEYS"),
         ],
       ),
     );
   }
 
-  Widget _buildOrbitalStat(IconData icon, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.only(right: 12, left: 4, top: 4, bottom: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F24),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: color.withOpacity(0.4), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 12,
-            spreadRadius: 2,
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildStat(String value, Color color, String label) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.5), width: 1),
-            ),
-            child: Icon(icon, color: color, size: 16, shadows: [
-              Shadow(color: color, blurRadius: 10),
-            ]),
-          ),
-          const SizedBox(width: 8),
-          // Angkanya
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 15,
-              fontFamily: 'monospace',
-            ),
-          ),
+          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 14)),
+          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 8)),
         ],
       ),
     );
