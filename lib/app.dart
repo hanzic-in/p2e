@@ -33,7 +33,9 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
 
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(15, 15, 15, 12),
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(15, 15, 15, 13),
 
         child: Container(
           height: 64,
@@ -129,6 +131,7 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
