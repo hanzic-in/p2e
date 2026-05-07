@@ -16,45 +16,48 @@ class TycoonHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white10),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNeonStat(special.toStringAsFixed(2), AppColors.primaryGreen, "SPECIAL"),
-          _buildNeonStat(bCoin.toStringAsFixed(0), Colors.amber, "B-COIN"),
-          _buildNeonStat(keyCoin.toStringAsFixed(0), Colors.cyanAccent, "KEYS"),
+          // SPECIAL
+          _buildSimpleStat("SPECIAL", special.toStringAsFixed(2), AppColors.primaryGreen),
+          
+          // Garis Pemisah
+          Container(width: 1, height: 25, color: Colors.white10),
+          
+          // B-COIN
+          _buildSimpleStat("B-COIN", bCoin.toStringAsFixed(1), Colors.amber),
+          
+          // Garis Pemisah
+          Container(width: 1, height: 25, color: Colors.white10),
+          
+          // KEY
+          _buildSimpleStat("KEY", keyCoin.toStringAsFixed(0), Colors.cyanAccent),
         ],
       ),
     );
   }
 
-  Widget _buildNeonStat(String value, Color color, String label) {
+  Widget _buildSimpleStat(String label, String value, Color color) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Label kecil di atas
         Text(
-          label, 
-          style: TextStyle(color: color.withOpacity(0.6), fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1)
+          value, 
+          style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16)
         ),
         const SizedBox(height: 2),
-        // Angka Koin
         Text(
-          value,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
-        ),
-        // Garis Neon Glow di bawah angka
-        Container(
-          margin: const EdgeInsets.only(top: 4),
-          height: 2,
-          width: 25,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(color: color.withOpacity(0.8), blurRadius: 8, spreadRadius: 1),
-            ],
-          ),
+          label, 
+          style: const TextStyle(color: Colors.white38, fontSize: 8, fontWeight: FontWeight.bold)
         ),
       ],
     );
