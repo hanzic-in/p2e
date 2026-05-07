@@ -26,28 +26,27 @@ class _MainNavigationState extends State<MainNavigation> {
       body: _pages[_currentIndex],
       bottomNavigationBar: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewPadding.bottom > 0 
+          bottom: MediaQuery.of(context).viewPadding.bottom > 10 
               ? MediaQuery.of(context).viewPadding.bottom 
-              : 15,
-          left: 15,
-          right: 15,
-          top: 15,
+              : 20,
+          left: 20,
+          right: 20,
         ),
         child: Container(
-          height: 70,
+          height: 65,
           decoration: BoxDecoration(
             color: AppColors.cardBg,
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3), 
-                blurRadius: 10, 
-                offset: const Offset(0, 5)
+                color: Colors.black.withOpacity(0.4), 
+                blurRadius: 15, 
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(30),
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: (index) => setState(() => _currentIndex = index),
@@ -56,8 +55,10 @@ class _MainNavigationState extends State<MainNavigation> {
               selectedItemColor: AppColors.primaryGreen,
               unselectedItemColor: AppColors.textGray,
               type: BottomNavigationBarType.fixed,
-              selectedFontSize: 12,
-              unselectedFontSize: 10,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              selectedFontSize: 11,
+              unselectedFontSize: 11,
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.agriculture_rounded), label: "Farm"),
                 BottomNavigationBarItem(icon: Icon(Icons.paid_rounded), label: "Mission"),
